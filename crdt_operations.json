@@ -1,0 +1,134 @@
+{
+  "version": "1.0.0",
+  "lastOperation": null,
+  "operationLog": [],
+  "operationTypes": {
+    "create": {
+      "description": "Create new block",
+      "schema": {
+        "id": "string (OP_create_{timestamp})",
+        "type": "create",
+        "blockId": "string (UUID)",
+        "data": {
+          "type": "string",
+          "content": "any",
+          "parent": "string|null",
+          "position": "number"
+        },
+        "timestamp": "number (Lamport clock)",
+        "userId": "string",
+        "parentOp": "string|null"
+      }
+    },
+    "update": {
+      "description": "Update existing block content/properties",
+      "schema": {
+        "id": "string (OP_update_{timestamp})",
+        "type": "update", 
+        "blockId": "string (UUID)",
+        "data": {
+          "content": "any (optional)",
+          "properties": "object (optional)",
+          "type": "string (optional)"
+        },
+        "timestamp": "number",
+        "userId": "string",
+        "parentOp": "string|null"
+      }
+    },
+    "delete": {
+      "description": "Mark block as deleted (soft delete)",
+      "schema": {
+        "id": "string (OP_delete_{timestamp})",
+        "type": "delete",
+        "blockId": "string (UUID)",
+        "data": {
+          "deleted": true,
+          "preserveChildren": "boolean"
+        },
+        "timestamp": "number",
+        "userId": "string", 
+        "parentOp": "string|null"
+      }
+    },
+    "move": {
+      "description": "Change block parent or position",
+      "schema": {
+        "id": "string (OP_move_{timestamp})",
+        "type": "move",
+        "blockId": "string (UUID)",
+        "data": {
+          "newParent": "string|null",
+          "newPosition": "number",
+          "oldParent": "string|null",
+          "oldPosition": "number"
+        },
+        "timestamp": "number",
+        "userId": "string",
+        "parentOp": "string|null"
+      }
+    },
+    "ref_add": {
+      "description": "Add reference from one block to another",
+      "schema": {
+        "id": "string (OP_ref_add_{timestamp})",
+        "type": "ref_add",
+        "blockId": "string (UUID - source block)",
+        "data": {
+          "targetId": "string (UUID - target block)",
+          "refType": "string (link|embed|mention)"
+        },
+        "timestamp": "number",
+        "userId": "string",
+        "parentOp": "string|null"
+      }
+    },
+    "ref_remove": {
+      "description": "Remove reference between blocks",
+      "schema": {
+        "id": "string (OP_ref_remove_{timestamp})",
+        "type": "ref_remove", 
+        "blockId": "string (UUID - source block)",
+        "data": {
+          "targetId": "string (UUID - target block)",
+          "refType": "string"
+        },
+        "timestamp": "number",
+        "userId": "string",
+        "parentOp": "string|null"
+      }
+    }
+  },
+  "conflictResolution": {
+    "strategy": "CRDT_merge",
+    "rules": {
+      "concurrent_updates": "merge_content",
+      "move_conflicts": "last_writer_wins",
+      "delete_conflicts": "delete_wins",
+      "ref_conflicts": "union_refs"
+    },
+    "semanticConflicts": {
+      "circular_refs": "detect_and_prevent",
+      "orphaned_blocks": "auto_reparent",
+      "invalid_refs": "auto_cleanup"
+    }
+  },
+  "lamportClock": {
+    "currentTime": 0,
+    "nodeId": "user_default",
+    "description": "Logical clock for operation ordering"
+  },
+  "snapshots": {
+    "interval": 1000,
+    "retention": 100,
+    "compression": true,
+    "lastSnapshot": null
+  },
+  "metrics": {
+    "totalOperations": 0,
+    "operationsPerSecond": 0,
+    "averageOperationSize": 0,
+    "conflictRate": 0,
+    "lastCompaction": null
+  }
+}

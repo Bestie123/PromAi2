@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromAi PKM - Дерево архитектурных решений</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117; color: #c9d1d9; overflow: hidden;
+        }
+        #canvas { 
+            width: 5000px; height: 3000px; position: relative; 
+            background: radial-gradient(circle at 50% 50%, #161b22 0%, #0d1117 100%);
+            transform-origin: 0 0;
+        }
+        #viewport { 
+            width: 100vw; height: 100vh; overflow: hidden; position: relative;
+            cursor: grab; background: #0d1117;
+        }
+        #viewport.dragging { cursor: grabbing; }
+        
+        .node {
+            position: absolute; background: #21262d; border: 2px solid #30363d;
+            border-radius: 12px; padding: 16px; min-width: 280px; max-width: 320px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease;
+        }
+        .node:hover { transform: scale(1.05); box-shadow: 0 12px 48px rgba(0,0,0,0.6); }
+        
+        .critical { border-color: #f85149; background: linear-gradient(135deg, #21262d 0%, #2d1b1f 100%); }
+        .important { border-color: #f79009; background: linear-gradient(135deg, #21262d 0%, #2d2419 100%); }
+        .flexible { border-color: #3fb950; background: linear-gradient(135deg, #21262d 0%, #1b2d1f 100%); }
+        .question { border-color: #58a6ff; background: linear-gradient(135deg, #21262d 0%, #1b2332 100%); }
+        .rejected { border-color: #8b949e; background: linear-gradient(135deg, #21262d 0%, #2d2d2d 100%); opacity: 0.7; }
+        
+        .badge {
+            display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px;
+            font-weight: bold; margin-bottom: 8px;
+        }
+        .badge.critical { background: #f85149; color: #fff; }
+        .badge.important { background: #f79009; color: #fff; }
+        .badge.flexible { background: #3fb950; color: #fff; }
+        .badge.question { background: #58a6ff; color: #fff; }
+        .badge.rejected { background: #8b949e; color: #fff; }
+        
+        .node h3 { font-size: 14px; margin-bottom: 8px; color: #f0f6fc; }
+        .node p { font-size: 12px; line-height: 1.4; margin-bottom: 8px; color: #8b949e; }
+        .details { font-size: 11px; color: #6e7681; }
+        
+        .connection {
+            position: absolute; background: #30363d; height: 2px; transform-origin: left center;
+            z-index: -1;
+        }
+        .connection.critical { background: #f85149; }
+        .connection.important { background: #f79009; }
+        .connection.flexible { background: #3fb950; }
+        .connection.question { background: #58a6ff; }
+        .connection.rejected { background: #8b949e; }
+        
+        .compatibility-line {
+            transition: opacity 0.3s ease;
+        }
+        .compatibility-line:hover {
+            opacity: 1 !important;
+        }
+        
+        .controls {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 12px; border-radius: 8px;
+            border: 1px solid #30363d;
+        }
+        .controls button {
+            background: #238636; color: #fff; border: none; padding: 8px 12px;
+            border-radius: 6px; margin-right: 8px; cursor: pointer; font-size: 12px;
+        }
+        .controls button:hover { background: #2ea043; }
+        
+        .zoom-info {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 8px 12px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="resetView()">Сброс</button>
+        <button onclick="centerView()">Центр</button>
+        <span style="color: #8b949e; margin-left: 12px;">Колесо мыши - зум | ЛКМ - перетаскивание</span>
+    </div>
+    
+    <div class="zoom-info">
+        Зум: <span id="zoomLevel">100%</span>
+    </div>
+    
+    <div id="viewport">
+        <div id="canvas"></div>
+    </div>
+
+    <script>
+        // ЗАПОЛНИ: Матрица совместимости вариантов
+        const compatibility = {
+            // Пример: 'option1,option2': 'объединить|переключать|невозможно'
+        };
+
+        // ЗАПОЛНИ: Узлы диаграммы
+        const nodes = [
+            // Пример узла:
+            // {
+            //     id: 'question-id', x: 1000, y: 100, type: 'question',
+            //     title: '❓ Вопрос?',
+            //     description: 'Описание вопроса',
+            //     details: 'Варианты: A | B | C',
+            //     children: ['option-a', 'option-b', 'option-c']
+            // },
+            // {
+            //     id: 'option-a', x: 800, y: 300, type: 'critical',
+            //     title: '✅ Вариант A',
+            //     description: 'Описание варианта',
+            //     details: '➕ Плюсы ➖ Минусы',
+            //     children: []
+            // }
+        ];
+
+        let scale = 0.3;
+        let translateX = 200;
+        let translateY = 50;
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        function createNode(node) {
+            const div = document.createElement('div');
+            div.className = `node ${node.type}`;
+            div.style.left = node.x + 'px';
+            div.style.top = node.y + 'px';
+            
+            const badge = node.type === 'critical' ? 'КРИТИЧНО' : 
+                         node.type === 'important' ? 'ВАЖНО' : 
+                         node.type === 'flexible' ? 'ГИБКО' :
+                         node.type === 'question' ? 'ВОПРОС' : 'ОТКЛОНЕНО';
+            
+            div.innerHTML = `
+                <div class="badge ${node.type}">${badge}</div>
+                <h3>${node.title}</h3>
+                <p>${node.description}</p>
+                <div class="details">${node.details}</div>
+            `;
+            
+            return div;
+        }
+
+        function createConnection(from, to, type) {
+            const line = document.createElement('div');
+            line.className = `connection ${type}`;
+            
+            const dx = to.x - from.x;
+            const dy = to.y - from.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            line.style.left = (from.x + 160) + 'px';
+            line.style.top = (from.y + 60) + 'px';
+            line.style.width = length + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            return line;
+        }
+
+        function createCompatibilityLine(node1, node2, compatibility) {
+            const line = document.createElement('div');
+            line.className = 'compatibility-line';
+            line.style.position = 'absolute';
+            line.style.height = '2px';
+            line.style.background = compatibility === 'объединить' ? '#3fb950' : 
+                                   compatibility === 'переключать' ? '#f79009' : '#f85149';
+            line.style.opacity = '0.6';
+            line.style.zIndex = '-2';
+            
+            const startX = Math.min(node1.x, node2.x) + 160;
+            const endX = Math.max(node1.x, node2.x) + 160;
+            const y = node1.y + 60;
+            
+            line.style.left = startX + 'px';
+            line.style.top = y + 'px';
+            line.style.width = (endX - startX) + 'px';
+            
+            const label = document.createElement('div');
+            label.style.position = 'absolute';
+            label.style.left = ((endX - startX) / 2 - 30) + 'px';
+            label.style.top = '-20px';
+            label.style.fontSize = '10px';
+            label.style.color = '#8b949e';
+            label.style.background = '#0d1117';
+            label.style.padding = '2px 6px';
+            label.style.borderRadius = '4px';
+            label.style.whiteSpace = 'nowrap';
+            label.textContent = compatibility;
+            
+            line.appendChild(label);
+            return line;
+        }
+
+        function initCanvas() {
+            const canvas = document.getElementById('canvas');
+            const nodeMap = {};
+            
+            console.log('Инициализация диаграммы, узлов:', nodes.length);
+            
+            nodes.forEach(node => {
+                const nodeEl = createNode(node);
+                canvas.appendChild(nodeEl);
+                nodeMap[node.id] = node;
+            });
+            
+            // Создаем вертикальные связи (родитель -> дети)
+            nodes.forEach(node => {
+                if (node.children) {
+                    node.children.forEach(childId => {
+                        const child = nodeMap[childId];
+                        if (child) {
+                            const connection = createConnection(node, child, node.type);
+                            canvas.appendChild(connection);
+                        }
+                    });
+                }
+            });
+            
+            // Создаем горизонтальные связи между вариантами
+            Object.keys(compatibility).forEach(key => {
+                const [id1, id2] = key.split(',');
+                const node1 = nodeMap[id1];
+                const node2 = nodeMap[id2];
+                
+                if (node1 && node2) {
+                    const compatLine = createCompatibilityLine(node1, node2, compatibility[key]);
+                    canvas.appendChild(compatLine);
+                }
+            });
+            
+            console.log('Диаграмма создана, элементов в canvas:', canvas.children.length);
+        }
+
+        function updateTransform() {
+            const canvas = document.getElementById('canvas');
+            canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
+        }
+
+        function resetView() {
+            scale = 0.3;
+            translateX = 200;
+            translateY = 50;
+            updateTransform();
+        }
+
+        function centerView() {
+            translateX = 200;
+            translateY = 50;
+            updateTransform();
+        }
+
+        const viewport = document.getElementById('viewport');
+
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            
+            const rect = viewport.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const newScale = Math.max(0.1, Math.min(3, scale * delta));
+            
+            const canvasX = (mouseX - translateX) / scale;
+            const canvasY = (mouseY - translateY) / scale;
+            
+            scale = newScale;
+            
+            translateX = mouseX - canvasX * scale;
+            translateY = mouseY - canvasY * scale;
+            
+            updateTransform();
+        });
+
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                isDragging = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                viewport.classList.add('dragging');
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - lastMouseX;
+                const deltaY = e.clientY - lastMouseY;
+                translateX += deltaX;
+                translateY += deltaY;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                updateTransform();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            viewport.classList.remove('dragging');
+        });
+
+        initCanvas();
+        updateTransform();
+    </script>
+</body>
+</html>

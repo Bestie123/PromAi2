@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromAi PKM - Полное дерево архитектурных решений (ВСЕ 29 критериев)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117; color: #c9d1d9; overflow: hidden;
+        }
+        #canvas { 
+            width: 12000px; height: 8000px; position: relative; 
+            background: radial-gradient(circle at 50% 50%, #161b22 0%, #0d1117 100%);
+            transform-origin: 0 0;
+        }
+        #viewport { 
+            width: 100vw; height: 100vh; overflow: hidden; position: relative;
+            cursor: grab; background: #0d1117;
+        }
+        #viewport.dragging { cursor: grabbing; }
+        
+        .node {
+            position: absolute; background: #21262d; border: 2px solid #30363d;
+            border-radius: 12px; padding: 16px; min-width: 280px; max-width: 320px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease;
+        }
+        .node:hover { transform: scale(1.05); box-shadow: 0 12px 48px rgba(0,0,0,0.6); }
+        
+        .critical { border-color: #f85149; background: linear-gradient(135deg, #21262d 0%, #2d1b1f 100%); }
+        .important { border-color: #f79009; background: linear-gradient(135deg, #21262d 0%, #2d2419 100%); }
+        .flexible { border-color: #3fb950; background: linear-gradient(135deg, #21262d 0%, #1b2d1f 100%); }
+        .question { border-color: #58a6ff; background: linear-gradient(135deg, #21262d 0%, #1b2332 100%); }
+        .rejected { border-color: #8b949e; background: linear-gradient(135deg, #21262d 0%, #2d2d2d 100%); opacity: 0.7; }
+        
+        .badge {
+            display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px;
+            font-weight: bold; margin-bottom: 8px;
+        }
+        .badge.critical { background: #f85149; color: #fff; }
+        .badge.important { background: #f79009; color: #fff; }
+        .badge.flexible { background: #3fb950; color: #fff; }
+        .badge.question { background: #58a6ff; color: #fff; }
+        .badge.rejected { background: #8b949e; color: #fff; }
+        
+        .node h3 { font-size: 14px; margin-bottom: 8px; color: #f0f6fc; }
+        .node p { font-size: 12px; line-height: 1.4; margin-bottom: 8px; color: #8b949e; }
+        .details { font-size: 11px; color: #6e7681; }
+        
+        .connection {
+            position: absolute; background: #30363d; height: 2px; transform-origin: left center;
+            z-index: -1;
+        }
+        .connection.critical { background: #f85149; }
+        .connection.important { background: #f79009; }
+        .connection.flexible { background: #3fb950; }
+        .connection.question { background: #58a6ff; }
+        .connection.rejected { background: #8b949e; }
+        
+        .compatibility-line {
+            transition: opacity 0.3s ease;
+        }
+        .compatibility-line:hover {
+            opacity: 1 !important;
+        }
+        
+        .controls {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 12px; border-radius: 8px;
+            border: 1px solid #30363d;
+        }
+        .controls button {
+            background: #238636; color: #fff; border: none; padding: 8px 12px;
+            border-radius: 6px; margin-right: 8px; cursor: pointer; font-size: 12px;
+        }
+        .controls button:hover { background: #2ea043; }
+        
+        .zoom-info {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 8px 12px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 12px;
+        }
+        
+        .stats {
+            position: fixed; bottom: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 8px 12px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 12px; color: #3fb950;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="resetView()">Сброс</button>
+        <button onclick="centerView()">Центр</button>
+        <span style="color: #8b949e; margin-left: 12px;">Колесо мыши - зум | ЛКМ - перетаскивание</span>
+    </div>
+    
+    <div class="zoom-info">
+        Зум: <span id="zoomLevel">100%</span>
+    </div>
+    
+    <div class="stats">
+        Узлов: <span id="nodeCount">0</span> | Критериев: <span id="criteriaCount">29/29</span> ✅
+    </div>
+    
+    <div id="viewport">
+        <div id="canvas"></div>
+    </div>
+
+    <script>
+        const compatibility = {
+            'modular-arch,monolith-arch': 'невозможно',
+            'all-blocks,mixed-model': 'невозможно',
+            'uuid-v4,uuid-v7': 'переключать',
+            'nested-blocks,flat-only': 'невозможно',
+            'drag-drop-native,drag-drop-lib': 'объединить',
+            'markdown-rich,wysiwyg-rich': 'объединить',
+            'refs-uuid,refs-alias': 'объединить',
+            'backlinks-auto,backlinks-manual': 'объединить',
+            'json-storage,sqlite-storage': 'переключать',
+            'json-storage,hybrid-storage': 'объединить',
+            'sqlite-storage,hybrid-storage': 'объединить',
+            'offline-full,offline-partial': 'объединить',
+            'declarative-ui,imperative-ui': 'невозможно',
+            'zero-runtime,stateful-runtime': 'невозможно',
+            'yjs-crdt,automerge-crdt': 'переключать',
+            'event-sourcing-separate,event-sourcing-crdt': 'невозможно',
+            'json-schema,typescript-schema': 'объединить',
+            'json-schema,zod-schema': 'объединить',
+            'typescript-schema,zod-schema': 'объединить',
+            'crdt-only,crdt-hybrid': 'объединить',
+            'atomic-transactions,simple-ops': 'объединить',
+            'refs-crdt-first,refs-crdt-secondary': 'объединить',
+            'flat-graph,page-hierarchy': 'невозможно',
+            'no-global-state,global-state': 'невозможно',
+            'virtual-scrolling,lazy-loading': 'объединить',
+            'web-workers-all,web-workers-search': 'объединить',
+            'circular-render,circular-creation': 'объединить',
+            'e2ee-ready,e2ee-later': 'невозможно',
+            'crdt-merge,manual-merge': 'невозможно',
+            'plugin-unified,plugin-mixed': 'невозможно',
+            'composite-blocks,simple-blocks': 'объединить',
+            'block-state-json,block-state-simple': 'объединить',
+            'modular-code,monolith-code': 'невозможно'
+        };
+
+        const nodes = [
+            // 1. Модульность движка (критерий 1)
+            { id: 'q1', x: 500, y: 100, type: 'question', title: '❓ Модульность движка?', description: 'Ядро отделено от UI и плагинов', details: 'Варианты: Модульная | Монолитная', children: ['modular-arch', 'monolith-arch'] },
+            { id: 'modular-arch', x: 200, y: 300, type: 'critical', title: '✅ Модульная', description: 'Ядро легко отделяется', details: '➕ Тестирование, замена UI ➖ Сложность', children: [] },
+            { id: 'monolith-arch', x: 800, y: 300, type: 'rejected', title: '❌ Монолитная', description: 'Всё в одном модуле', details: '➕ Быстрый старт ➖ Спагетти-код', children: [] },
+
+            // 2. Блочность (критерий 2)
+            { id: 'q2', x: 1500, y: 100, type: 'question', title: '❓ Блочность элементов?', description: 'Всё является блоками', details: 'Варианты: Всё блоки | Смешанная', children: ['all-blocks', 'mixed-model'] },
+            { id: 'all-blocks', x: 1200, y: 300, type: 'critical', title: '✅ Всё - блоки', description: 'Единая модель данных', details: '➕ Единые операции ➖ Сложность', children: [] },
+            { id: 'mixed-model', x: 1800, y: 300, type: 'rejected', title: '❌ Смешанная', description: 'Блоки + особые сущности', details: '➕ Простота ➖ Ломаются refs', children: [] },
+
+            // 3. UUID (критерий 3)
+            { id: 'q3', x: 2500, y: 100, type: 'question', title: '❓ UUID для блоков?', description: 'Уникальные глобальные ID', details: 'Варианты: UUID v4 | UUID v7', children: ['uuid-v4', 'uuid-v7'] },
+            { id: 'uuid-v4', x: 2200, y: 300, type: 'critical', title: '🎲 UUID v4', description: 'Случайные UUID', details: '➕ Проверенные ➖ Нет сортировки', children: [] },
+            { id: 'uuid-v7', x: 2800, y: 300, type: 'important', title: '⏰ UUID v7', description: 'UUID с timestamp', details: '➕ Сортировка ➖ Новый стандарт', children: [] },
+
+            // 4. Вложенные блоки (критерий 4)
+            { id: 'q4', x: 3500, y: 100, type: 'question', title: '❓ Вложенные блоки?', description: 'Иерархия любой глубины', details: 'Варианты: Вложенные | Только плоские', children: ['nested-blocks', 'flat-only'] },
+            { id: 'nested-blocks', x: 3200, y: 300, type: 'critical', title: '✅ Вложенные', description: 'Иерархия любой глубины', details: '➕ Естественная структура ➖ Сложность', children: [] },
+            { id: 'flat-only', x: 3800, y: 300, type: 'rejected', title: '❌ Только плоские', description: 'Нет вложенности', details: '➕ Простота ➖ Невозможно документы', children: [] },
+
+            // 5. Drag & Drop (критерий 5)
+            { id: 'q5', x: 4500, y: 100, type: 'question', title: '❓ Drag & Drop порядка?', description: 'Порядок дочерних блоков', details: 'Варианты: Нативный | Библиотека', children: ['drag-drop-native', 'drag-drop-lib'] },
+            { id: 'drag-drop-native', x: 4200, y: 300, type: 'critical', title: '✅ Нативный', description: 'Использование HTML5 DnD API', details: '➕ Производительность ➖ Сложность API', children: [] },
+            { id: 'drag-drop-lib', x: 4800, y: 300, type: 'important', title: '📦 Библиотека', description: 'Использование готовой библиотеки', details: '➕ Простота ➖ Зависимость', children: [] },
+
+            // 6. Rich Text (критерий 6)
+            { id: 'q6', x: 500, y: 600, type: 'question', title: '❓ Rich Text?', description: 'Markdown-подобный + сущности', details: 'Варианты: Markdown | WYSIWYG', children: ['markdown-rich', 'wysiwyg-rich'] },
+            { id: 'markdown-rich', x: 200, y: 800, type: 'critical', title: '📝 Markdown+', description: 'Markdown + ссылки/блоки', details: '➕ Простота, читаемость ➖ Кривая обучения', children: [] },
+            { id: 'wysiwyg-rich', x: 800, y: 800, type: 'important', title: '✏️ WYSIWYG', description: 'Визуальный редактор', details: '➕ Удобство ➖ Сложность реализации', children: [] },
+
+            // 7. Refs (критерий 7)
+            { id: 'q7', x: 1500, y: 600, type: 'question', title: '❓ Refs по UUID?', description: 'Любой блок ссылается на любой', details: 'Варианты: По UUID | По алиасу', children: ['refs-uuid', 'refs-alias'] },
+            { id: 'refs-uuid', x: 1200, y: 800, type: 'critical', title: '✅ По UUID', description: 'Прямые ссылки по уникальному ID', details: '➕ Надёжность ➖ Нечитаемость', children: [] },
+            { id: 'refs-alias', x: 1800, y: 800, type: 'important', title: '🏷️ По алиасу', description: 'Человекочитаемые ссылки', details: '➕ Удобство ➖ Конфликты имён', children: [] },
+
+            // 8. Backlinks (критерий 8)
+            { id: 'q8', x: 2500, y: 600, type: 'question', title: '❓ Backlinks?', description: 'Мгновенный доступ к обратным ссылкам', details: 'Варианты: Автоматические | Ручные', children: ['backlinks-auto', 'backlinks-manual'] },
+            { id: 'backlinks-auto', x: 2200, y: 800, type: 'critical', title: '✅ Автоматические', description: 'Автоматическое обновление', details: '➕ Магия двусторонних связей ➖ Производительность', children: [] },
+            { id: 'backlinks-manual', x: 2800, y: 800, type: 'rejected', title: '❌ Ручные', description: 'Пользователь создаёт сам', details: '➕ Полный контроль ➖ Мёртвые ссылки', children: [] },
+
+            // 9. Локальные данные (критерий 9)
+            { id: 'q9', x: 3500, y: 600, type: 'question', title: '❓ Локальные данные?', description: 'Открытый читаемый формат', details: 'Варианты: JSON | SQLite | Гибрид', children: ['json-storage', 'sqlite-storage', 'hybrid-storage'] },
+            { id: 'json-storage', x: 3000, y: 800, type: 'critical', title: '✅ JSON', description: 'Человекочитаемые файлы', details: '➕ Прозрачность, скрипты ➖ Медленные запросы', children: [] },
+            { id: 'sqlite-storage', x: 3500, y: 800, type: 'important', title: '⚡ SQLite', description: 'Реляционная БД', details: '➕ Быстрые запросы ➖ Нечитаемый формат', children: [] },
+            { id: 'hybrid-storage', x: 4000, y: 800, type: 'flexible', title: '🔄 Гибрид', description: 'JSON + SQLite индексы', details: '➕ Лучшее из двух миров ➖ Сложность', children: [] },
+
+            // 10. Оффлайн (критерий 10)
+            { id: 'q10', x: 4500, y: 600, type: 'question', title: '❓ Оффлайн работа?', description: 'Полная оффлайн-работа', details: 'Варианты: Полная | Частичная', children: ['offline-full', 'offline-partial'] },
+            { id: 'offline-full', x: 4200, y: 800, type: 'critical', title: '✅ Полная', description: 'Все функции без сети', details: '➕ Must-have для PKM ➖ Сложность синхронизации', children: [] },
+            { id: 'offline-partial', x: 4800, y: 800, type: 'important', title: '⚡ Частичная', description: 'Основные функции оффлайн', details: '➕ Простота ➖ Ограниченная аудитория', children: [] },
+
+            // 11. Декларативный UI (критерий 11)
+            { id: 'q11', x: 500, y: 1100, type: 'question', title: '❓ Декларативный UI?', description: '100% декларативный рендер', details: 'Варианты: Декларативный | Императивный', children: ['declarative-ui', 'imperative-ui'] },
+            { id: 'declarative-ui', x: 200, y: 1300, type: 'critical', title: '✅ Декларативный', description: 'JSON-структуры, чистые функции', details: '➕ Предсказуемость, отладка ➖ Сложность', children: [] },
+            { id: 'imperative-ui', x: 800, y: 1300, type: 'rejected', title: '❌ Императивный', description: 'Обычный код с мутациями', details: '➕ Простота ➖ Необъяснимые баги', children: [] },
+
+            // 12. Zero runtime logic (критерий 12)
+            { id: 'q12', x: 1500, y: 1100, type: 'question', title: '❓ Zero runtime logic?', description: 'Чистая функция рендера', details: 'Варианты: Чистые функции | Stateful', children: ['zero-runtime', 'stateful-runtime'] },
+            { id: 'zero-runtime', x: 1200, y: 1300, type: 'critical', title: '✅ Чистые функции', description: 'Никакой runtime логики в рендере', details: '➕ Нет race conditions ➖ Сложность реализации', children: [] },
+            { id: 'stateful-runtime', x: 1800, y: 1300, type: 'rejected', title: '❌ Stateful', description: 'Логика в рендере', details: '➕ Простота ➖ Глюки через 30-40 плагинов', children: [] },
+
+            // 13. CRDT (критерий 13)
+            { id: 'q13', x: 2500, y: 1100, type: 'question', title: '❓ Какую CRDT?', description: 'Single source of truth', details: 'Варианты: Yjs | Automerge', children: ['yjs-crdt', 'automerge-crdt'] },
+            { id: 'yjs-crdt', x: 2200, y: 1300, type: 'critical', title: '✅ Yjs', description: 'Быстрая, популярная CRDT', details: '➕ Производительность, WebRTC ➖ Сложность API', children: [] },
+            { id: 'automerge-crdt', x: 2800, y: 1300, type: 'important', title: '⚡ Automerge', description: 'Функциональная CRDT', details: '➕ Простота API ➖ Медленнее Yjs', children: [] },
+
+            // 14. Event Sourcing (критерий 14)
+            { id: 'q14', x: 3500, y: 1100, type: 'question', title: '❓ Event Sourcing?', description: 'Immutable ops log с первого дня', details: 'Варианты: Отдельный лог | В CRDT', children: ['event-sourcing-separate', 'event-sourcing-crdt'] },
+            { id: 'event-sourcing-separate', x: 3200, y: 1300, type: 'critical', title: '✅ Отдельный лог', description: 'Операции в отдельном файле', details: '➕ Полный аудит, versioning ➖ Дублирование', children: [] },
+            { id: 'event-sourcing-crdt', x: 3800, y: 1300, type: 'important', title: '🔄 В CRDT', description: 'Лог как часть CRDT', details: '➕ Нет дублирования ➖ Сложность реплея', children: [] },
+
+            // 15. Schema-first (критерий 15)
+            { id: 'q15', x: 4500, y: 1100, type: 'question', title: '❓ Schema-first?', description: 'Runtime валидация схем', details: 'Варианты: JSON Schema | TypeScript | Zod', children: ['json-schema', 'typescript-schema', 'zod-schema'] },
+            { id: 'json-schema', x: 4000, y: 1300, type: 'critical', title: '✅ JSON Schema', description: 'Стандартная валидация', details: '➕ Стандарт, языконезависимость ➖ Ограниченная выразительность', children: [] },
+            { id: 'typescript-schema', x: 4500, y: 1300, type: 'important', title: '🔷 TypeScript', description: 'Типы как схемы', details: '➕ Интеграция с кодом ➖ Нет runtime валидации', children: [] },
+            { id: 'zod-schema', x: 5000, y: 1300, type: 'flexible', title: '⚙️ Zod', description: 'TypeScript-first валидация', details: '➕ Runtime + compile-time ➖ Дополнительная зависимость', children: [] },
+
+            // 16. CRDT операции (критерий 16)
+            { id: 'q16', x: 500, y: 1600, type: 'question', title: '❓ Все через CRDT?', description: 'Все изменения только через CRDT-операции', details: 'Варианты: Только CRDT | Гибрид', children: ['crdt-only', 'crdt-hybrid'] },
+            { id: 'crdt-only', x: 200, y: 1800, type: 'critical', title: '✅ Только CRDT', description: 'Все изменения через CRDT', details: '➕ Будущая коллаборация ➖ Сложность API', children: [] },
+            { id: 'crdt-hybrid', x: 800, y: 1800, type: 'important', title: '🔄 Гибрид', description: 'CRDT + прямые изменения', details: '➕ Простота ➖ Полный рефакторинг потом', children: [] },
+
+            // 17. Атомарные транзакции (критерий 17)
+            { id: 'q17', x: 1500, y: 1600, type: 'question', title: '❓ Атомарные транзакции?', description: 'Целостность данных, undo/redo', details: 'Варианты: Атомарные | Простые', children: ['atomic-transactions', 'simple-ops'] },
+            { id: 'atomic-transactions', x: 1200, y: 1800, type: 'critical', title: '✅ Атомарные', description: 'Все или ничего', details: '➕ Нормальный undo/redo ➖ Сложность реализации', children: [] },
+            { id: 'simple-ops', x: 1800, y: 1800, type: 'rejected', title: '❌ Простые', description: 'Одна операция = одно действие', details: '➕ Простота ➖ Полублоки после undo', children: [] },
+
+            // 18. Refs в CRDT (критерий 18)
+            { id: 'q18', x: 2500, y: 1600, type: 'question', title: '❓ Refs в CRDT?', description: 'References и backlinks first-class в CRDT', details: 'Варианты: First-class | Вторичные', children: ['refs-crdt-first', 'refs-crdt-secondary'] },
+            { id: 'refs-crdt-first', x: 2200, y: 1800, type: 'critical', title: '✅ First-class', description: 'Ссылки как основные объекты CRDT', details: '➕ Быстрые запросы, транслюзия ➖ Сложность', children: [] },
+            { id: 'refs-crdt-secondary', x: 2800, y: 1800, type: 'important', title: '🔄 Вторичные', description: 'Ссылки хранятся в тексте', details: '➕ Простота ➖ Медленные ссылки', children: [] },
+
+            // 19. Плоский граф (критерий 19)
+            { id: 'q19', x: 3500, y: 1600, type: 'question', title: '❓ Плоский граф?', description: 'Блоки ≠ страницы', details: 'Варианты: Плоский граф | Иерархия страниц', children: ['flat-graph', 'page-hierarchy'] },
+            { id: 'flat-graph', x: 3200, y: 1800, type: 'critical', title: '✅ Плоский граф', description: 'Все блоки равноправны', details: '➕ Гибкие transclusion и queries ➖ Сложность навигации', children: [] },
+            { id: 'page-hierarchy', x: 3800, y: 1800, type: 'rejected', title: '❌ Иерархия страниц', description: 'Блоки принадлежат страницам', details: '➕ Простая навигация ➖ Невозможно транслюзию', children: [] },
+
+            // 20. Без глобального состояния (критерий 20)
+            { id: 'q20', x: 4500, y: 1600, type: 'question', title: '❓ Глобальное состояние?', description: 'Отсутствие глобального mutable состояния', details: 'Варианты: Локальное | Глобальное', children: ['no-global-state', 'global-state'] },
+            { id: 'no-global-state', x: 4200, y: 1800, type: 'critical', title: '✅ Локальное', description: 'Никакого глобального mutable состояния', details: '➕ Предсказуемость, отладка ➖ Сложность', children: [] },
+            { id: 'global-state', x: 4800, y: 1800, type: 'rejected', title: '❌ Глобальное', description: 'Общее mutable состояние', details: '➕ Простота ➖ Race conditions, баги', children: [] },
+
+            // 21. Virtual scrolling (критерий 21)
+            { id: 'q21', x: 500, y: 2100, type: 'question', title: '❓ Virtual scrolling?', description: 'Работа с 100к+ блоков', details: 'Варианты: Virtual scrolling | Lazy loading', children: ['virtual-scrolling', 'lazy-loading'] },
+            { id: 'virtual-scrolling', x: 200, y: 2300, type: 'critical', title: '✅ Virtual scrolling', description: 'Рендер только видимых элементов', details: '➕ 100к+ блоков без тормозов ➖ Сложность', children: [] },
+            { id: 'lazy-loading', x: 800, y: 2300, type: 'important', title: '⚡ Lazy loading', description: 'Ленивая загрузка по требованию', details: '➕ Простота ➖ Привычка «всё в DOM»', children: [] },
+
+            // 22. Web Workers (критерий 22)
+            { id: 'q22', x: 1500, y: 2100, type: 'question', title: '❓ Web Workers?', description: 'Тяжёлые операции в отдельном потоке', details: 'Варианты: Все операции | Только поиск', children: ['web-workers-all', 'web-workers-search'] },
+            { id: 'web-workers-all', x: 1200, y: 2300, type: 'critical', title: '✅ Все операции', description: 'Поиск, индексация, CRDT', details: '➕ UI остаётся отзывчивым ➖ Сложность API', children: [] },
+            { id: 'web-workers-search', x: 1800, y: 2300, type: 'important', title: '🔍 Только поиск', description: 'Поиск и индексация в Workers', details: '➕ Простота ➖ UI будет зависать', children: [] },
+
+            // 23. Circular Detection (критерий 23)
+            { id: 'q23', x: 2500, y: 2100, type: 'question', title: '❓ Обнаружение циклов?', description: 'Circular Reference Detection', details: 'Варианты: При рендере | При создании', children: ['circular-render', 'circular-creation'] },
+            { id: 'circular-render', x: 2200, y: 2300, type: 'critical', title: '✅ При рендере', description: 'Проверка при отображении', details: '➕ Надёжность ➖ Накладные расходы', children: [] },
+            { id: 'circular-creation', x: 2800, y: 2300, type: 'important', title: '⚙️ При создании', description: 'Предотвращение циклов', details: '➕ Проактивность ➖ Ограничения UX', children: [] },
+
+            // 24. E2EE готовность (критерий 24)
+            { id: 'q24', x: 3500, y: 2100, type: 'question', title: '❓ E2EE готовность?', description: 'Формат хранения готов к шифрованию', details: 'Варианты: С первого дня | Потом', children: ['e2ee-ready', 'e2ee-later'] },
+            { id: 'e2ee-ready', x: 3200, y: 2300, type: 'critical', title: '✅ С первого дня', description: 'Архитектура готова к E2EE', details: '➕ Никаких breaking changes ➖ Усложнение', children: [] },
+            { id: 'e2ee-later', x: 3800, y: 2300, type: 'important', title: '⏳ Потом', description: 'Добавим позже', details: '➕ Простота старта ➖ Невозможная миграция', children: [] },
+
+            // 25. Конфликт-менеджмент (критерий 25)
+            { id: 'q25', x: 4500, y: 2100, type: 'question', title: '❓ Конфликт-менеджмент?', description: 'При синхронизации', details: 'Варианты: CRDT merge | Ручное', children: ['crdt-merge', 'manual-merge'] },
+            { id: 'crdt-merge', x: 4200, y: 2300, type: 'critical', title: '✅ CRDT merge', description: 'Автоматическое слияние', details: '➕ Оффлайн-first без потери ➖ Не все конфликты разрешимы', children: [] },
+            { id: 'manual-merge', x: 4800, y: 2300, type: 'rejected', title: '❌ Ручное', description: 'Пользователь разрешает конфликты', details: '➕ Полный контроль ➖ Потеря данных', children: [] },
+
+            // 26. Плагинная система (критерий 26)
+            { id: 'q26', x: 500, y: 2600, type: 'question', title: '❓ Плагинная система?', description: 'Все пользовательские блоки как плагины', details: 'Варианты: Единая система | Разные API', children: ['plugin-unified', 'plugin-mixed'] },
+            { id: 'plugin-unified', x: 200, y: 2800, type: 'critical', title: '✅ Единая система', description: 'Единый механизм для всех блоков', details: '➕ Предсказуемость, безопасность ➖ Ограничения', children: [] },
+            { id: 'plugin-mixed', x: 800, y: 2800, type: 'rejected', title: '❌ Разные API', description: 'Разные способы подключения', details: '➕ Гибкость ➖ Хаос, несовместимость', children: [] },
+
+            // 27. Композитные блоки (критерий 27)
+            { id: 'q27', x: 1500, y: 2600, type: 'question', title: '❓ Композитные блоки?', description: 'Кастомные блоки, содержащие другие', details: 'Варианты: Поддержка | Только простые', children: ['composite-blocks', 'simple-blocks'] },
+            { id: 'composite-blocks', x: 1200, y: 2800, type: 'critical', title: '✅ Поддержка', description: 'Сложные структуры (карточки, дашборды)', details: '➕ Мощные возможности ➖ Сложность реализации', children: [] },
+            { id: 'simple-blocks', x: 1800, y: 2800, type: 'important', title: '📝 Только простые', description: 'Обычные блоки без вложенности', details: '➕ Простота ➖ Ограниченные возможности', children: [] },
+
+            // 28. Состояние блоков (критерий 28)
+            { id: 'q28', x: 2500, y: 2600, type: 'question', title: '❓ Состояние блоков?', description: 'Каждый блок может сохранять состояние', details: 'Варианты: JSON состояние | Простое', children: ['block-state-json', 'block-state-simple'] },
+            { id: 'block-state-json', x: 2200, y: 2800, type: 'critical', title: '✅ JSON состояние', description: 'Плагины сохраняют настройки', details: '➕ Виджеты работают корректно ➖ Усложнение модели', children: [] },
+            { id: 'block-state-simple', x: 2800, y: 2800, type: 'important', title: '📝 Простое', description: 'Минимальное состояние', details: '➕ Простота модели ➖ Ограниченные плагины', children: [] },
+
+            // 29. Модульность кода (критерий 29)
+            { id: 'q29', x: 3500, y: 2600, type: 'question', title: '❓ Модульность кода?', description: 'Файлы ≤500 строк, функции ≤50', details: 'Варианты: Модульный | Монолитный', children: ['modular-code', 'monolith-code'] },
+            { id: 'modular-code', x: 3200, y: 2800, type: 'critical', title: '✅ Модульный', description: 'Максимальная модульность', details: '➕ Читаемость, AI-friendly ➖ Много файлов', children: [] },
+            { id: 'monolith-code', x: 3800, y: 2800, type: 'rejected', title: '❌ Монолитный', description: 'Большие файлы и функции', details: '➕ Меньше файлов ➖ Невозможность рефакторинга', children: [] }
+        ];
+
+        let scale = 0.2;
+        let translateX = 100;
+        let translateY = 50;
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        function createNode(node) {
+            const div = document.createElement('div');
+            div.className = `node ${node.type}`;
+            div.style.left = node.x + 'px';
+            div.style.top = node.y + 'px';
+            
+            const badge = node.type === 'critical' ? 'КРИТИЧНО' : 
+                         node.type === 'important' ? 'ВАЖНО' : 
+                         node.type === 'flexible' ? 'ГИБКО' :
+                         node.type === 'question' ? 'ВОПРОС' : 'ОТКЛОНЕНО';
+            
+            div.innerHTML = `
+                <div class="badge ${node.type}">${badge}</div>
+                <h3>${node.title}</h3>
+                <p>${node.description}</p>
+                <div class="details">${node.details}</div>
+            `;
+            
+            return div;
+        }
+
+        function createConnection(from, to, type) {
+            const line = document.createElement('div');
+            line.className = `connection ${type}`;
+            
+            const dx = to.x - from.x;
+            const dy = to.y - from.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            line.style.left = (from.x + 160) + 'px';
+            line.style.top = (from.y + 60) + 'px';
+            line.style.width = length + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            return line;
+        }
+
+        function createCompatibilityLine(node1, node2, compatibility) {
+            const line = document.createElement('div');
+            line.className = 'compatibility-line';
+            line.style.position = 'absolute';
+            line.style.height = '2px';
+            line.style.background = compatibility === 'объединить' ? '#3fb950' : 
+                                   compatibility === 'переключать' ? '#f79009' : '#f85149';
+            line.style.opacity = '0.6';
+            line.style.zIndex = '-2';
+            
+            const startX = Math.min(node1.x, node2.x) + 160;
+            const endX = Math.max(node1.x, node2.x) + 160;
+            const y = node1.y + 60;
+            
+            line.style.left = startX + 'px';
+            line.style.top = y + 'px';
+            line.style.width = (endX - startX) + 'px';
+            
+            const label = document.createElement('div');
+            label.style.position = 'absolute';
+            label.style.left = ((endX - startX) / 2 - 30) + 'px';
+            label.style.top = '-20px';
+            label.style.fontSize = '10px';
+            label.style.color = '#8b949e';
+            label.style.background = '#0d1117';
+            label.style.padding = '2px 6px';
+            label.style.borderRadius = '4px';
+            label.style.whiteSpace = 'nowrap';
+            label.textContent = compatibility;
+            
+            line.appendChild(label);
+            return line;
+        }
+
+        function initCanvas() {
+            const canvas = document.getElementById('canvas');
+            const nodeMap = {};
+            
+            nodes.forEach(node => {
+                const nodeEl = createNode(node);
+                canvas.appendChild(nodeEl);
+                nodeMap[node.id] = node;
+            });
+            
+            nodes.forEach(node => {
+                if (node.children) {
+                    node.children.forEach(childId => {
+                        const child = nodeMap[childId];
+                        if (child) {
+                            const connection = createConnection(node, child, node.type);
+                            canvas.appendChild(connection);
+                        }
+                    });
+                }
+            });
+            
+            Object.keys(compatibility).forEach(key => {
+                const [id1, id2] = key.split(',');
+                const node1 = nodeMap[id1];
+                const node2 = nodeMap[id2];
+                
+                if (node1 && node2) {
+                    const compatLine = createCompatibilityLine(node1, node2, compatibility[key]);
+                    canvas.appendChild(compatLine);
+                }
+            });
+            
+            document.getElementById('nodeCount').textContent = nodes.length;
+        }
+
+        function updateTransform() {
+            const canvas = document.getElementById('canvas');
+            canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
+        }
+
+        function resetView() {
+            scale = 0.2;
+            translateX = 100;
+            translateY = 50;
+            updateTransform();
+        }
+
+        function centerView() {
+            translateX = 100;
+            translateY = 50;
+            updateTransform();
+        }
+
+        const viewport = document.getElementById('viewport');
+
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            
+            const rect = viewport.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const newScale = Math.max(0.1, Math.min(3, scale * delta));
+            
+            const canvasX = (mouseX - translateX) / scale;
+            const canvasY = (mouseY - translateY) / scale;
+            
+            scale = newScale;
+            
+            translateX = mouseX - canvasX * scale;
+            translateY = mouseY - canvasY * scale;
+            
+            updateTransform();
+        });
+
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                isDragging = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                viewport.classList.add('dragging');
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - lastMouseX;
+                const deltaY = e.clientY - lastMouseY;
+                translateX += deltaX;
+                translateY += deltaY;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                updateTransform();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            viewport.classList.remove('dragging');
+        });
+
+        initCanvas();
+        updateTransform();
+    </script>
+</body>
+</html>

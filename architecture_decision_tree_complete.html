@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromAi PKM - Полное дерево архитектурных решений</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117; color: #c9d1d9; overflow: hidden;
+        }
+        #canvas { 
+            width: 8000px; height: 6000px; position: relative; 
+            background: radial-gradient(circle at 50% 50%, #161b22 0%, #0d1117 100%);
+            transform-origin: 0 0;
+        }
+        #viewport { 
+            width: 100vw; height: 100vh; overflow: hidden; position: relative;
+            cursor: grab; background: #0d1117;
+        }
+        #viewport.dragging { cursor: grabbing; }
+        
+        .node {
+            position: absolute; background: #21262d; border: 2px solid #30363d;
+            border-radius: 12px; padding: 16px; min-width: 280px; max-width: 320px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease;
+        }
+        .node:hover { transform: scale(1.05); box-shadow: 0 12px 48px rgba(0,0,0,0.6); }
+        
+        .critical { border-color: #f85149; background: linear-gradient(135deg, #21262d 0%, #2d1b1f 100%); }
+        .important { border-color: #f79009; background: linear-gradient(135deg, #21262d 0%, #2d2419 100%); }
+        .flexible { border-color: #3fb950; background: linear-gradient(135deg, #21262d 0%, #1b2d1f 100%); }
+        .question { border-color: #58a6ff; background: linear-gradient(135deg, #21262d 0%, #1b2332 100%); }
+        .rejected { border-color: #8b949e; background: linear-gradient(135deg, #21262d 0%, #2d2d2d 100%); opacity: 0.7; }
+        
+        .badge {
+            display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px;
+            font-weight: bold; margin-bottom: 8px;
+        }
+        .badge.critical { background: #f85149; color: #fff; }
+        .badge.important { background: #f79009; color: #fff; }
+        .badge.flexible { background: #3fb950; color: #fff; }
+        .badge.question { background: #58a6ff; color: #fff; }
+        .badge.rejected { background: #8b949e; color: #fff; }
+        
+        .node h3 { font-size: 14px; margin-bottom: 8px; color: #f0f6fc; }
+        .node p { font-size: 12px; line-height: 1.4; margin-bottom: 8px; color: #8b949e; }
+        .details { font-size: 11px; color: #6e7681; }
+        
+        .connection {
+            position: absolute; background: #30363d; height: 2px; transform-origin: left center;
+            z-index: -1;
+        }
+        .connection.critical { background: #f85149; }
+        .connection.important { background: #f79009; }
+        .connection.flexible { background: #3fb950; }
+        .connection.question { background: #58a6ff; }
+        .connection.rejected { background: #8b949e; }
+        
+        .compatibility-line {
+            transition: opacity 0.3s ease;
+        }
+        .compatibility-line:hover {
+            opacity: 1 !important;
+        }
+        
+        .controls {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 12px; border-radius: 8px;
+            border: 1px solid #30363d;
+        }
+        .controls button {
+            background: #238636; color: #fff; border: none; padding: 8px 12px;
+            border-radius: 6px; margin-right: 8px; cursor: pointer; font-size: 12px;
+        }
+        .controls button:hover { background: #2ea043; }
+        
+        .zoom-info {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 8px 12px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="resetView()">Сброс</button>
+        <button onclick="centerView()">Центр</button>
+        <span style="color: #8b949e; margin-left: 12px;">Колесо мыши - зум | ЛКМ - перетаскивание</span>
+    </div>
+    
+    <div class="zoom-info">
+        Зум: <span id="zoomLevel">100%</span>
+    </div>
+    
+    <div id="viewport">
+        <div id="canvas"></div>
+    </div>
+
+    <script>
+        const compatibility = {
+            'modular-arch,monolith-arch': 'невозможно',
+            'all-blocks,mixed-model': 'невозможно',
+            'uuid-v4,uuid-v7': 'переключать',
+            'flat-graph,hierarchical': 'невозможно',
+            'yjs-crdt,automerge-crdt': 'переключать',
+            'json-storage,sqlite-storage': 'переключать',
+            'json-storage,hybrid-storage': 'объединить',
+            'sqlite-storage,hybrid-storage': 'объединить',
+            'markdown-rich,wysiwyg-rich': 'объединить',
+            'crdt-refs,hybrid-refs': 'объединить',
+            'declarative-ui,imperative-ui': 'невозможно',
+            'virtual-scroll,lazy-load': 'объединить',
+            'all-workers,search-workers': 'объединить',
+            'separate-log,crdt-log': 'невозможно',
+            'json-schema,typescript-schema': 'объединить',
+            'json-schema,zod-schema': 'объединить',
+            'typescript-schema,zod-schema': 'объединить',
+            'e2ee-ready,e2ee-later': 'невозможно',
+            'render-detection,creation-detection': 'объединить',
+            'webworker-plugins,iframe-plugins': 'переключать',
+            'webworker-plugins,capability-plugins': 'объединить',
+            'iframe-plugins,capability-plugins': 'объединить'
+        };
+
+        const nodes = [
+            {
+                id: 'arch-question', x: 1000, y: 100, type: 'question',
+                title: '❓ Какую архитектуру выбрать?',
+                description: 'Модульность движка - ядро отделено от UI',
+                details: 'Варианты: Модульная | Монолитная',
+                children: ['modular-arch', 'monolith-arch']
+            },
+            {
+                id: 'modular-arch', x: 700, y: 300, type: 'critical',
+                title: '✅ Модульная архитектура',
+                description: 'Ядро легко отделяется от UI и плагинов',
+                details: '➕ Легкое тестирование ➖ Сложность',
+                children: []
+            },
+            {
+                id: 'monolith-arch', x: 1300, y: 300, type: 'rejected',
+                title: '❌ Монолитная',
+                description: 'Всё в одном модуле',
+                details: '➕ Быстрый старт ➖ Спагетти-код',
+                children: []
+            }

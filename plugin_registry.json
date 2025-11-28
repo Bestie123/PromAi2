@@ -1,0 +1,164 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2024-12-19T12:00:00Z",
+  "plugins": {
+    "PLUGIN_CoreBlocks_VER_1": {
+      "id": "PLUGIN_CoreBlocks_VER_1",
+      "name": "Core Block Types",
+      "version": "1.0.0",
+      "description": "Built-in block types (text, image, code, link)",
+      "author": "PromAi Team",
+      "path": "./src/plugins/core-blocks/",
+      "manifest": {
+        "capabilities": {
+          "dom_access": true,
+          "crdt_write": true,
+          "network_access": false,
+          "file_access": false,
+          "modal_create": false
+        },
+        "blockTypes": ["text", "image", "code", "link", "embed"],
+        "dependencies": ["MODULE_Core_VER_1", "MODULE_UI_VER_1"],
+        "permissions": ["block.create", "block.update", "block.render"]
+      },
+      "status": "built-in",
+      "enabled": true,
+      "loadOrder": 1
+    },
+    "PLUGIN_RichText_VER_1": {
+      "id": "PLUGIN_RichText_VER_1", 
+      "name": "Rich Text Editor",
+      "version": "1.0.0",
+      "description": "Advanced text editing with formatting",
+      "author": "PromAi Team",
+      "path": "./src/plugins/rich-text/",
+      "manifest": {
+        "capabilities": {
+          "dom_access": true,
+          "crdt_write": true,
+          "network_access": false,
+          "file_access": false,
+          "modal_create": true
+        },
+        "blockTypes": ["rich-text"],
+        "dependencies": ["MODULE_Core_VER_1", "MODULE_UI_VER_1"],
+        "permissions": ["block.create", "block.update", "block.render", "ui.modal"]
+      },
+      "status": "built-in",
+      "enabled": true,
+      "loadOrder": 2
+    },
+    "PLUGIN_Search_VER_1": {
+      "id": "PLUGIN_Search_VER_1",
+      "name": "Search Interface",
+      "version": "1.0.0", 
+      "description": "Search UI and result rendering",
+      "author": "PromAi Team",
+      "path": "./src/plugins/search/",
+      "manifest": {
+        "capabilities": {
+          "dom_access": true,
+          "crdt_write": false,
+          "network_access": false,
+          "file_access": false,
+          "modal_create": true
+        },
+        "blockTypes": [],
+        "dependencies": ["MODULE_Search_VER_1", "MODULE_UI_VER_1"],
+        "permissions": ["search.query", "ui.modal", "ui.highlight"]
+      },
+      "status": "built-in",
+      "enabled": true,
+      "loadOrder": 3
+    }
+  },
+  "capabilities": {
+    "dom_access": {
+      "description": "Can modify DOM elements",
+      "risk": "medium",
+      "default": false
+    },
+    "crdt_write": {
+      "description": "Can create/modify blocks via CRDT operations",
+      "risk": "high", 
+      "default": false
+    },
+    "network_access": {
+      "description": "Can make HTTP requests",
+      "risk": "high",
+      "default": false
+    },
+    "file_access": {
+      "description": "Can access local file system",
+      "risk": "critical",
+      "default": false
+    },
+    "modal_create": {
+      "description": "Can create modal dialogs",
+      "risk": "low",
+      "default": true
+    }
+  },
+  "permissions": {
+    "block.create": "Create new blocks",
+    "block.update": "Modify existing blocks", 
+    "block.delete": "Delete blocks",
+    "block.render": "Custom block rendering",
+    "search.query": "Execute search queries",
+    "ui.modal": "Create modal dialogs",
+    "ui.highlight": "Highlight content",
+    "ui.notification": "Show notifications"
+  },
+  "sandbox": {
+    "enabled": true,
+    "isolateErrors": true,
+    "timeoutMs": 5000,
+    "memoryLimitMB": 50,
+    "domSandbox": true
+  },
+  "loadOrder": {
+    "description": "Plugin loading sequence (lower numbers load first)",
+    "rules": [
+      "Core plugins load before user plugins",
+      "Dependencies must load before dependents", 
+      "UI plugins load after data plugins"
+    ]
+  },
+  "api": {
+    "version": "1.0.0",
+    "endpoints": {
+      "blocks": {
+        "create": "createBlock(type, content, parent?)",
+        "update": "updateBlock(id, changes)",
+        "delete": "deleteBlock(id)",
+        "get": "getBlock(id)",
+        "search": "searchBlocks(query)"
+      },
+      "refs": {
+        "add": "addReference(fromId, toId, type?)",
+        "remove": "removeReference(fromId, toId)",
+        "list": "getReferences(blockId)",
+        "backlinks": "getBacklinks(blockId)"
+      },
+      "ui": {
+        "render": "renderBlock(block, container)",
+        "modal": "showModal(content, options?)",
+        "notify": "showNotification(message, type?)",
+        "highlight": "highlightText(blockId, ranges)"
+      },
+      "events": {
+        "subscribe": "onBlockChange(callback)",
+        "unsubscribe": "offBlockChange(callback)",
+        "emit": "emitEvent(type, data)"
+      }
+    }
+  },
+  "metrics": {
+    "totalPlugins": 3,
+    "enabledPlugins": 3,
+    "builtInPlugins": 3,
+    "userPlugins": 0,
+    "averageLoadTime": 0,
+    "errorRate": 0
+  }
+}

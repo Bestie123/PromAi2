@@ -1,0 +1,186 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2024-12-19T12:00:00Z",
+  "categories": {
+    "critical": {
+      "description": "Must be implemented for MVP",
+      "priority": 1,
+      "tasks": [
+        {
+          "id": "TASK_001",
+          "title": "Implement core Block interface",
+          "description": "Create Block type with UUID, content, children, refs",
+          "module": "MODULE_Core_VER_1",
+          "estimateHours": 8,
+          "dependencies": [],
+          "status": "todo"
+        },
+        {
+          "id": "TASK_002", 
+          "title": "Implement CRDT operations",
+          "description": "Create, update, delete, move, ref operations with conflict resolution",
+          "module": "MODULE_CRDT_VER_1",
+          "estimateHours": 16,
+          "dependencies": ["TASK_001"],
+          "status": "todo"
+        },
+        {
+          "id": "TASK_003",
+          "title": "Implement local storage layer",
+          "description": "JSON/SQLite storage with event sourcing and snapshots",
+          "module": "MODULE_Storage_VER_1", 
+          "estimateHours": 12,
+          "dependencies": ["TASK_002"],
+          "status": "todo"
+        },
+        {
+          "id": "TASK_004",
+          "title": "Implement declarative UI renderer",
+          "description": "Pure function renderer with zero runtime logic",
+          "module": "MODULE_UI_VER_1",
+          "estimateHours": 20,
+          "dependencies": ["TASK_001"],
+          "status": "todo"
+        },
+        {
+          "id": "TASK_005",
+          "title": "Implement virtual scrolling",
+          "description": "Handle 100k+ blocks with smooth scrolling",
+          "module": "MODULE_UI_VER_1",
+          "estimateHours": 16,
+          "dependencies": ["TASK_004"],
+          "status": "todo"
+        }
+      ]
+    },
+    "important": {
+      "description": "Required for full functionality",
+      "priority": 2,
+      "tasks": [
+        {
+          "id": "TASK_006",
+          "title": "Implement plugin system",
+          "description": "Plugin loading, sandboxing, and API",
+          "module": "MODULE_Plugin_VER_1",
+          "estimateHours": 24,
+          "dependencies": ["TASK_001", "TASK_004"],
+          "status": "todo"
+        },
+        {
+          "id": "TASK_007",
+          "title": "Implement search indexing",
+          "description": "Full-text search in Web Workers",
+          "module": "MODULE_Search_VER_1", 
+          "estimateHours": 16,
+          "dependencies": ["TASK_001"],
+          "status": "todo"
+        },
+        {
+          "id": "TASK_008",
+          "title": "Implement drag & drop",
+          "description": "Block reordering with modifiers (copy, reference)",
+          "module": "MODULE_UI_VER_1",
+          "estimateHours": 12,
+          "dependencies": ["TASK_005"],
+          "status": "todo"
+        },
+        {
+          "id": "TASK_009",
+          "title": "Implement circular reference detection",
+          "description": "Prevent infinite loops in block traversal",
+          "module": "MODULE_Core_VER_1",
+          "estimateHours": 8,
+          "dependencies": ["TASK_001"],
+          "status": "todo"
+        }
+      ]
+    },
+    "flexible": {
+      "description": "Nice to have features",
+      "priority": 3,
+      "tasks": [
+        {
+          "id": "TASK_010",
+          "title": "Implement cross-tab sync",
+          "description": "Synchronize CRDT operations between browser tabs",
+          "module": "MODULE_CRDT_VER_1",
+          "estimateHours": 12,
+          "dependencies": ["TASK_002"],
+          "status": "todo"
+        },
+        {
+          "id": "TASK_011",
+          "title": "Implement export/import",
+          "description": "Full database export and import functionality",
+          "module": "MODULE_Storage_VER_1",
+          "estimateHours": 8,
+          "dependencies": ["TASK_003"],
+          "status": "todo"
+        },
+        {
+          "id": "TASK_012",
+          "title": "Implement performance monitoring",
+          "description": "Track metrics and performance bottlenecks",
+          "module": "MODULE_Core_VER_1",
+          "estimateHours": 6,
+          "dependencies": ["TASK_001"],
+          "status": "todo"
+        }
+      ]
+    }
+  },
+  "milestones": {
+    "MVP": {
+      "description": "Minimum Viable Product",
+      "targetDate": "2024-02-01",
+      "requiredTasks": ["TASK_001", "TASK_002", "TASK_003", "TASK_004", "TASK_005"],
+      "status": "planned"
+    },
+    "BETA": {
+      "description": "Feature-complete beta",
+      "targetDate": "2024-03-01", 
+      "requiredTasks": ["TASK_006", "TASK_007", "TASK_008", "TASK_009"],
+      "status": "planned"
+    },
+    "V1": {
+      "description": "Production ready v1.0",
+      "targetDate": "2024-04-01",
+      "requiredTasks": ["TASK_010", "TASK_011", "TASK_012"],
+      "status": "planned"
+    }
+  },
+  "constraints": {
+    "fileSize": "≤500 lines per file (max 1000)",
+    "functionSize": "≤50 lines per function (max 100)",
+    "parameters": "≤3 parameters per function (max 5)",
+    "dependencies": "No circular dependencies between modules"
+  },
+  "risks": {
+    "performance": {
+      "description": "Virtual scrolling complexity for 100k+ blocks",
+      "impact": "high",
+      "probability": "medium",
+      "mitigation": "Prototype early, benchmark continuously"
+    },
+    "crdt_complexity": {
+      "description": "CRDT conflict resolution edge cases",
+      "impact": "high", 
+      "probability": "medium",
+      "mitigation": "Extensive testing, simple conflict resolution rules"
+    },
+    "plugin_security": {
+      "description": "Plugin sandbox escape vulnerabilities",
+      "impact": "critical",
+      "probability": "low",
+      "mitigation": "Capability-based permissions, error boundaries"
+    }
+  },
+  "metrics": {
+    "totalTasks": 12,
+    "completedTasks": 0,
+    "inProgressTasks": 0,
+    "blockedTasks": 0,
+    "estimatedHours": 158,
+    "completionPercentage": 0
+  }
+}

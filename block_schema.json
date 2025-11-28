@@ -1,0 +1,131 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2024-12-19T12:00:00Z",
+  "blockSchema": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUID v4/v7 - immutable block identifier",
+      "required": true
+    },
+    "type": {
+      "type": "string",
+      "enum": ["text", "image", "code", "link", "embed", "plugin-custom"],
+      "description": "Block type determines rendering and behavior",
+      "required": true
+    },
+    "content": {
+      "type": "any",
+      "description": "Rich content - format depends on block type",
+      "required": true
+    },
+    "children": {
+      "type": "array",
+      "items": {"type": "string", "format": "uuid"},
+      "description": "Ordered list of child block UUIDs",
+      "default": []
+    },
+    "parent": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Parent block UUID (null for root blocks)",
+      "required": false
+    },
+    "refs": {
+      "type": "array", 
+      "items": {"type": "string", "format": "uuid"},
+      "description": "References to other blocks",
+      "default": []
+    },
+    "backlinks": {
+      "type": "array",
+      "items": {"type": "string", "format": "uuid"}, 
+      "description": "Auto-generated reverse references",
+      "default": []
+    },
+    "properties": {
+      "type": "object",
+      "description": "Custom block state and metadata",
+      "default": {}
+    },
+    "created": {
+      "type": "number",
+      "description": "Creation timestamp (Unix milliseconds)",
+      "required": true
+    },
+    "modified": {
+      "type": "number", 
+      "description": "Last modification timestamp",
+      "required": true
+    }
+  },
+  "contentSchemas": {
+    "text": {
+      "text": {"type": "string", "description": "Markdown-like rich text"},
+      "formatting": {"type": "object", "description": "Text formatting metadata"}
+    },
+    "image": {
+      "src": {"type": "string", "description": "Image source URL or data URI"},
+      "alt": {"type": "string", "description": "Alternative text"},
+      "dimensions": {"type": "object", "properties": {"width": "number", "height": "number"}}
+    },
+    "code": {
+      "language": {"type": "string", "description": "Programming language"},
+      "code": {"type": "string", "description": "Source code content"},
+      "executable": {"type": "boolean", "default": false}
+    },
+    "link": {
+      "url": {"type": "string", "format": "uri"},
+      "title": {"type": "string"},
+      "description": {"type": "string"}
+    },
+    "embed": {
+      "type": {"type": "string", "enum": ["youtube", "twitter", "github", "custom"]},
+      "url": {"type": "string", "format": "uri"},
+      "metadata": {"type": "object"}
+    }
+  },
+  "operations": {
+    "create": {
+      "description": "Create new block",
+      "requiredFields": ["id", "type", "content", "created", "modified"]
+    },
+    "update": {
+      "description": "Update existing block",
+      "requiredFields": ["id", "modified"],
+      "allowedFields": ["content", "properties", "type"]
+    },
+    "delete": {
+      "description": "Mark block as deleted",
+      "requiredFields": ["id", "modified"]
+    },
+    "move": {
+      "description": "Change block parent/position",
+      "requiredFields": ["id", "parent", "position", "modified"]
+    },
+    "ref_add": {
+      "description": "Add reference to another block", 
+      "requiredFields": ["id", "targetId", "modified"]
+    },
+    "ref_remove": {
+      "description": "Remove reference to another block",
+      "requiredFields": ["id", "targetId", "modified"]
+    }
+  },
+  "validation": {
+    "uuidFormat": "v4|v7",
+    "maxContentSize": 1048576,
+    "maxChildrenCount": 10000,
+    "maxRefsCount": 1000,
+    "circularRefDetection": true,
+    "requiredTimestamps": true
+  },
+  "indices": {
+    "primary": "id",
+    "parent": "parent",
+    "refs": "refs",
+    "backlinks": "backlinks", 
+    "content": "content.text",
+    "modified": "modified"
+  }
+}

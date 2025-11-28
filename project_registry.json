@@ -1,0 +1,80 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2024-12-19T12:00:00Z",
+  "modules": {
+    "MODULE_Core_VER_1": {
+      "path": "./src/core/",
+      "description": "Core block system and CRDT operations",
+      "dependencies": [],
+      "exports": [
+        "FUNC_createBlock_1",
+        "FUNC_updateBlock_1", 
+        "FUNC_deleteBlock_1",
+        "FUNC_addReference_1",
+        "FUNC_removeReference_1"
+      ],
+      "status": "planned"
+    },
+    "MODULE_CRDT_VER_1": {
+      "path": "./src/crdt/",
+      "description": "CRDT implementation and conflict resolution",
+      "dependencies": [],
+      "exports": [
+        "FUNC_applyOperation_1",
+        "FUNC_mergeOperations_1",
+        "FUNC_resolveConflict_1"
+      ],
+      "status": "planned"
+    },
+    "MODULE_Storage_VER_1": {
+      "path": "./src/storage/",
+      "description": "Local storage and event sourcing",
+      "dependencies": ["MODULE_CRDT_VER_1"],
+      "exports": [
+        "FUNC_saveBlock_1",
+        "FUNC_loadBlocks_1",
+        "FUNC_createSnapshot_1"
+      ],
+      "status": "planned"
+    },
+    "MODULE_UI_VER_1": {
+      "path": "./src/ui/",
+      "description": "Declarative UI renderer and virtual scrolling",
+      "dependencies": ["MODULE_Core_VER_1"],
+      "exports": [
+        "FUNC_renderBlock_1",
+        "FUNC_virtualScroll_1",
+        "FUNC_handleDragDrop_1"
+      ],
+      "status": "planned"
+    },
+    "MODULE_Plugin_VER_1": {
+      "path": "./src/plugins/",
+      "description": "Plugin system and sandbox",
+      "dependencies": ["MODULE_Core_VER_1", "MODULE_UI_VER_1"],
+      "exports": [
+        "FUNC_loadPlugin_1",
+        "FUNC_executePlugin_1",
+        "FUNC_sandboxPlugin_1"
+      ],
+      "status": "planned"
+    },
+    "MODULE_Search_VER_1": {
+      "path": "./src/search/",
+      "description": "Full-text search and indexing in Web Workers",
+      "dependencies": ["MODULE_Core_VER_1"],
+      "exports": [
+        "FUNC_indexBlock_1",
+        "FUNC_searchBlocks_1",
+        "FUNC_updateIndex_1"
+      ],
+      "status": "planned"
+    }
+  },
+  "constraints": {
+    "maxFileLines": 500,
+    "maxFunctionLines": 50,
+    "maxParameters": 3,
+    "circularDependencies": "forbidden"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "promai2-pkm",
+  "version": "0.1.0",
+  "description": "PromAi PKM - Personal Knowledge Management System",
+  "scripts": {
+    "docs:init": "docsify init ./docs",
+    "docs:serve": "docsify serve docs",
+    "docs:build": "echo 'Docsify serves static files directly'"
+  },
+  "devDependencies": {
+    "docsify-cli": "^4.4.4"
+  }
+}
