@@ -8,8 +8,8 @@ const minimal = {
   nodes: {},
   dependencies: {},
   layout: {
-    columnWidth: 400,
-    rowHeight: 300,
+    columnWidth: 600,
+    rowHeight: 500,
     startX: 100,
     startY: 100
   }
