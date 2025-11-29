@@ -1,0 +1,314 @@
+{
+  "nodes": {
+    "modular-arch": {
+      "phase": "foundation",
+      "criteriaId": 1,
+      "title": "✅ Модульная",
+      "type": "critical"
+    },
+    "all-blocks": {
+      "phase": "foundation",
+      "criteriaId": 2,
+      "title": "✅ Всё - блоки",
+      "type": "critical"
+    },
+    "uuid-v4": {
+      "phase": "foundation",
+      "criteriaId": 3,
+      "title": "🎲 UUID v4",
+      "type": "critical"
+    },
+    "uuid-v7": {
+      "phase": "other",
+      "criteriaId": 3,
+      "title": "⏰ UUID v7",
+      "type": "important"
+    },
+    "nested-blocks": {
+      "phase": "core",
+      "criteriaId": 4,
+      "title": "✅ Вложенные",
+      "type": "critical"
+    },
+    "drag-drop-native": {
+      "phase": "features",
+      "criteriaId": 5,
+      "title": "✅ Нативный",
+      "type": "critical"
+    },
+    "drag-drop-lib": {
+      "phase": "other",
+      "criteriaId": 5,
+      "title": "📦 Библиотека",
+      "type": "important"
+    },
+    "markdown-rich": {
+      "phase": "features",
+      "criteriaId": 6,
+      "title": "📝 Markdown+",
+      "type": "critical"
+    },
+    "wysiwyg-rich": {
+      "phase": "other",
+      "criteriaId": 6,
+      "title": "✏️ WYSIWYG",
+      "type": "important"
+    },
+    "refs-uuid": {
+      "phase": "core",
+      "criteriaId": 7,
+      "title": "✅ По UUID",
+      "type": "critical"
+    },
+    "refs-alias": {
+      "phase": "other",
+      "criteriaId": 7,
+      "title": "🏷️ По алиасу",
+      "type": "important"
+    },
+    "backlinks-auto": {
+      "phase": "core",
+      "criteriaId": 8,
+      "title": "✅ Автоматические",
+      "type": "critical"
+    },
+    "json-storage": {
+      "phase": "features",
+      "criteriaId": 9,
+      "title": "✅ JSON",
+      "type": "critical"
+    },
+    "sqlite-storage": {
+      "phase": "other",
+      "criteriaId": 9,
+      "title": "⚡ SQLite",
+      "type": "important"
+    },
+    "offline-full": {
+      "phase": "features",
+      "criteriaId": 10,
+      "title": "✅ Полная",
+      "type": "critical"
+    },
+    "offline-partial": {
+      "phase": "other",
+      "criteriaId": 10,
+      "title": "⚡ Частичная",
+      "type": "important"
+    },
+    "declarative-ui": {
+      "phase": "core",
+      "criteriaId": 11,
+      "title": "✅ Декларативный",
+      "type": "critical"
+    },
+    "zero-runtime": {
+      "phase": "core",
+      "criteriaId": 12,
+      "title": "✅ Чистые функции",
+      "type": "critical"
+    },
+    "yjs-crdt": {
+      "phase": "foundation",
+      "criteriaId": 13,
+      "title": "✅ Yjs",
+      "type": "critical"
+    },
+    "automerge-crdt": {
+      "phase": "other",
+      "criteriaId": 13,
+      "title": "⚡ Automerge",
+      "type": "important"
+    },
+    "event-sourcing-separate": {
+      "phase": "polish",
+      "criteriaId": 14,
+      "title": "✅ Отдельный лог",
+      "type": "critical"
+    },
+    "event-sourcing-crdt": {
+      "phase": "other",
+      "criteriaId": 14,
+      "title": "🔄 В CRDT",
+      "type": "important"
+    },
+    "json-schema": {
+      "phase": "polish",
+      "criteriaId": 15,
+      "title": "✅ JSON Schema",
+      "type": "critical"
+    },
+    "typescript-schema": {
+      "phase": "other",
+      "criteriaId": 15,
+      "title": "🔷 TypeScript",
+      "type": "important"
+    },
+    "crdt-only": {
+      "phase": "features",
+      "criteriaId": 16,
+      "title": "✅ Только CRDT",
+      "type": "critical"
+    },
+    "crdt-hybrid": {
+      "phase": "other",
+      "criteriaId": 16,
+      "title": "🔄 Гибрид",
+      "type": "important"
+    },
+    "atomic-transactions": {
+      "phase": "polish",
+      "criteriaId": 17,
+      "title": "✅ Атомарные",
+      "type": "critical"
+    },
+    "refs-crdt-first": {
+      "phase": "polish",
+      "criteriaId": 18,
+      "title": "✅ First-class",
+      "type": "critical"
+    },
+    "refs-crdt-secondary": {
+      "phase": "other",
+      "criteriaId": 18,
+      "title": "🔄 Вторичные",
+      "type": "important"
+    },
+    "flat-graph": {
+      "phase": "polish",
+      "criteriaId": 19,
+      "title": "✅ Плоский граф",
+      "type": "critical"
+    },
+    "no-global-state": {
+      "phase": "polish",
+      "criteriaId": 20,
+      "title": "✅ Локальное",
+      "type": "critical"
+    },
+    "virtual-scrolling": {
+      "phase": "features",
+      "criteriaId": 21,
+      "title": "✅ Virtual scrolling",
+      "type": "critical"
+    },
+    "lazy-loading": {
+      "phase": "other",
+      "criteriaId": 21,
+      "title": "⚡ Lazy loading",
+      "type": "important"
+    },
+    "web-workers-all": {
+      "phase": "polish",
+      "criteriaId": 22,
+      "title": "✅ Все операции",
+      "type": "critical"
+    },
+    "web-workers-search": {
+      "phase": "other",
+      "criteriaId": 22,
+      "title": "🔍 Только поиск",
+      "type": "important"
+    },
+    "circular-render": {
+      "phase": "polish",
+      "criteriaId": 23,
+      "title": "✅ При рендере",
+      "type": "critical"
+    },
+    "circular-creation": {
+      "phase": "other",
+      "criteriaId": 23,
+      "title": "⚙️ При создании",
+      "type": "important"
+    },
+    "e2ee-ready": {
+      "phase": "polish",
+      "criteriaId": 24,
+      "title": "✅ С первого дня",
+      "type": "critical"
+    },
+    "e2ee-later": {
+      "phase": "other",
+      "criteriaId": 24,
+      "title": "⏳ Потом",
+      "type": "important"
+    },
+    "crdt-merge": {
+      "phase": "polish",
+      "criteriaId": 25,
+      "title": "✅ CRDT merge",
+      "type": "critical"
+    },
+    "plugin-unified": {
+      "phase": "features",
+      "criteriaId": 26,
+      "title": "✅ Единая система",
+      "type": "critical"
+    },
+    "composite-blocks": {
+      "phase": "polish",
+      "criteriaId": 27,
+      "title": "✅ Поддержка",
+      "type": "critical"
+    },
+    "simple-blocks": {
+      "phase": "other",
+      "criteriaId": 27,
+      "title": "📝 Только простые",
+      "type": "important"
+    },
+    "block-state-json": {
+      "phase": "polish",
+      "criteriaId": 28,
+      "title": "✅ JSON состояние",
+      "type": "critical"
+    },
+    "block-state-simple": {
+      "phase": "other",
+      "criteriaId": 28,
+      "title": "📝 Простое",
+      "type": "important"
+    },
+    "modular-code": {
+      "phase": "polish",
+      "criteriaId": 29,
+      "title": "✅ Модульный",
+      "type": "critical"
+    }
+  },
+  "dependencies": {
+    "modular-arch": [
+      "declarative-ui",
+      "plugin-unified"
+    ],
+    "all-blocks": [
+      "nested-blocks",
+      "refs-uuid",
+      "crdt-only"
+    ],
+    "uuid-v4": [
+      "refs-uuid",
+      "backlinks-auto"
+    ],
+    "yjs-crdt": [
+      "crdt-only"
+    ],
+    "declarative-ui": [
+      "zero-runtime",
+      "virtual-scrolling"
+    ],
+    "virtual-scrolling": [
+      "web-workers-all"
+    ],
+    "plugin-unified": [
+      "composite-blocks"
+    ]
+  },
+  "layout": {
+    "columnWidth": 400,
+    "rowHeight": 300,
+    "startX": 100,
+    "startY": 100
+  }
+}
