@@ -119,16 +119,27 @@
         let lastMouseY = 0;
 
         // Load nodes from external JSON
+        console.log('Loading nodes.json...');
         fetch('./nodes.json')
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Loaded data:', data);
+                console.log('Nodes count:', Object.keys(data.nodes).length);
                 nodes = Object.values(data.nodes);
                 compatibility = data.compatibility;
+                console.log('Final nodes array:', nodes.length);
                 initCanvas();
                 updateTransform();
             })
             .catch(error => {
                 console.error('Failed to load nodes:', error);
+                alert('JSON не загрузился: ' + error.message);
                 // Fallback to minimal nodes
                 nodes = [
                     { id: 'q1', x: 500, y: 100, type: 'question', title: '❓ Модульность движка?', description: 'Ядро отделено от UI и плагинов', details: 'Варианты: Модульная | Монолитная', children: ['modular-arch', 'monolith-arch'] },
