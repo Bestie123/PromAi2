@@ -21,10 +21,10 @@ monolith-arch | mixed-model | flat-only | backlinks-manual | imperative-ui | sta
 ## Node Count Validation
 - Questions: 29 ✅
 - Critical: 29 ✅  
-- Important: 16 ✅
-- Flexible: 3 ✅
-- Rejected: 13 ✅
-- **Total: 90 nodes** (29Q + 61O)
+- Important: 17 ✅
+- Flexible: 2 ✅
+- Rejected: 12 ✅
+- **Total: 89 nodes** (29Q + 60O)
 
 ## Context Loading Shortcuts
 **Critical Path:** modular-arch→all-blocks→uuid-v4→yjs-crdt→declarative-ui→zero-runtime→virtual-scrolling→plugin-unified
