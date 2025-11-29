@@ -109,50 +109,21 @@
     </div>
 
     <script>
-        const compatibility = {
-            'modular-arch,monolith-arch': 'невозможно',
-            'all-blocks,mixed-model': 'невозможно',
-            'uuid-v4,uuid-v7': 'переключать',
-            'nested-blocks,flat-only': 'невозможно',
-            'drag-drop-native,drag-drop-lib': 'объединить',
-            'markdown-rich,wysiwyg-rich': 'объединить',
-            'refs-uuid,refs-alias': 'объединить',
-            'backlinks-auto,backlinks-manual': 'объединить',
-            'json-storage,sqlite-storage': 'переключать',
-            'json-storage,hybrid-storage': 'объединить',
-            'sqlite-storage,hybrid-storage': 'объединить',
-            'offline-full,offline-partial': 'объединить',
-            'declarative-ui,imperative-ui': 'невозможно',
-            'zero-runtime,stateful-runtime': 'невозможно',
-            'yjs-crdt,automerge-crdt': 'переключать',
-            'event-sourcing-separate,event-sourcing-crdt': 'невозможно',
-            'json-schema,typescript-schema': 'объединить',
-            'json-schema,zod-schema': 'объединить',
-            'typescript-schema,zod-schema': 'объединить',
-            'crdt-only,crdt-hybrid': 'объединить',
-            'atomic-transactions,simple-ops': 'объединить',
-            'refs-crdt-first,refs-crdt-secondary': 'объединить',
-            'flat-graph,page-hierarchy': 'невозможно',
-            'no-global-state,global-state': 'невозможно',
-            'virtual-scrolling,lazy-loading': 'объединить',
-            'web-workers-all,web-workers-search': 'объединить',
-            'circular-render,circular-creation': 'объединить',
-            'e2ee-ready,e2ee-later': 'невозможно',
-            'crdt-merge,manual-merge': 'невозможно',
-            'plugin-unified,plugin-mixed': 'невозможно',
-            'composite-blocks,simple-blocks': 'объединить',
-            'block-state-json,block-state-simple': 'объединить',
-            'modular-code,monolith-code': 'невозможно'
-        };
-
         let nodes = [];
-        
+        let compatibility = {};
+        let scale = 0.2;
+        let translateX = 100;
+        let translateY = 50;
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
         // Load nodes from external JSON
         fetch('./nodes.json')
             .then(response => response.json())
             .then(data => {
                 nodes = Object.values(data.nodes);
-                Object.assign(compatibility, data.compatibility);
+                compatibility = data.compatibility;
                 initCanvas();
                 updateTransform();
             })
@@ -165,137 +136,7 @@
                 ];
                 initCanvas();
                 updateTransform();
-            });ren: [] },
-
-            // 6. Rich Text (критерий 6)
-            { id: 'q6', x: 500, y: 600, type: 'question', title: '❓ Rich Text?', description: 'Markdown-подобный + сущности', details: 'Варианты: Markdown | WYSIWYG', children: ['markdown-rich', 'wysiwyg-rich'] },
-            { id: 'markdown-rich', x: 200, y: 800, type: 'critical', title: '📝 Markdown+', description: 'Markdown + ссылки/блоки', details: '➕ Простота, читаемость ➖ Кривая обучения', children: [] },
-            { id: 'wysiwyg-rich', x: 800, y: 800, type: 'important', title: '✏️ WYSIWYG', description: 'Визуальный редактор', details: '➕ Удобство ➖ Сложность реализации', children: [] },
-
-            // 7. Refs (критерий 7)
-            { id: 'q7', x: 1500, y: 600, type: 'question', title: '❓ Refs по UUID?', description: 'Любой блок ссылается на любой', details: 'Варианты: По UUID | По алиасу', children: ['refs-uuid', 'refs-alias'] },
-            { id: 'refs-uuid', x: 1200, y: 800, type: 'critical', title: '✅ По UUID', description: 'Прямые ссылки по уникальному ID', details: '➕ Надёжность ➖ Нечитаемость', children: [] },
-            { id: 'refs-alias', x: 1800, y: 800, type: 'important', title: '🏷️ По алиасу', description: 'Человекочитаемые ссылки', details: '➕ Удобство ➖ Конфликты имён', children: [] },
-
-            // 8. Backlinks (критерий 8)
-            { id: 'q8', x: 2500, y: 600, type: 'question', title: '❓ Backlinks?', description: 'Мгновенный доступ к обратным ссылкам', details: 'Варианты: Автоматические | Ручные', children: ['backlinks-auto', 'backlinks-manual'] },
-            { id: 'backlinks-auto', x: 2200, y: 800, type: 'critical', title: '✅ Автоматические', description: 'Автоматическое обновление', details: '➕ Магия двусторонних связей ➖ Производительность', children: [] },
-            { id: 'backlinks-manual', x: 2800, y: 800, type: 'rejected', title: '❌ Ручные', description: 'Пользователь создаёт сам', details: '➕ Полный контроль ➖ Мёртвые ссылки', children: [] },
-
-            // 9. Локальные данные (критерий 9)
-            { id: 'q9', x: 3500, y: 600, type: 'question', title: '❓ Локальные данные?', description: 'Открытый читаемый формат', details: 'Варианты: JSON | SQLite | Гибрид', children: ['json-storage', 'sqlite-storage', 'hybrid-storage'] },
-            { id: 'json-storage', x: 3000, y: 800, type: 'critical', title: '✅ JSON', description: 'Человекочитаемые файлы', details: '➕ Прозрачность, скрипты ➖ Медленные запросы', children: [] },
-            { id: 'sqlite-storage', x: 3500, y: 800, type: 'important', title: '⚡ SQLite', description: 'Реляционная БД', details: '➕ Быстрые запросы ➖ Нечитаемый формат', children: [] },
-            { id: 'hybrid-storage', x: 4000, y: 800, type: 'flexible', title: '🔄 Гибрид', description: 'JSON + SQLite индексы', details: '➕ Лучшее из двух миров ➖ Сложность', children: [] },
-
-            // 10. Оффлайн (критерий 10)
-            { id: 'q10', x: 4500, y: 600, type: 'question', title: '❓ Оффлайн работа?', description: 'Полная оффлайн-работа', details: 'Варианты: Полная | Частичная', children: ['offline-full', 'offline-partial'] },
-            { id: 'offline-full', x: 4200, y: 800, type: 'critical', title: '✅ Полная', description: 'Все функции без сети', details: '➕ Must-have для PKM ➖ Сложность синхронизации', children: [] },
-            { id: 'offline-partial', x: 4800, y: 800, type: 'important', title: '⚡ Частичная', description: 'Основные функции оффлайн', details: '➕ Простота ➖ Ограниченная аудитория', children: [] },
-
-            // 11. Декларативный UI (критерий 11)
-            { id: 'q11', x: 500, y: 1100, type: 'question', title: '❓ Декларативный UI?', description: '100% декларативный рендер', details: 'Варианты: Декларативный | Императивный', children: ['declarative-ui', 'imperative-ui'] },
-            { id: 'declarative-ui', x: 200, y: 1300, type: 'critical', title: '✅ Декларативный', description: 'JSON-структуры, чистые функции', details: '➕ Предсказуемость, отладка ➖ Сложность', children: [] },
-            { id: 'imperative-ui', x: 800, y: 1300, type: 'rejected', title: '❌ Императивный', description: 'Обычный код с мутациями', details: '➕ Простота ➖ Необъяснимые баги', children: [] },
-
-            // 12. Zero runtime logic (критерий 12)
-            { id: 'q12', x: 1500, y: 1100, type: 'question', title: '❓ Zero runtime logic?', description: 'Чистая функция рендера', details: 'Варианты: Чистые функции | Stateful', children: ['zero-runtime', 'stateful-runtime'] },
-            { id: 'zero-runtime', x: 1200, y: 1300, type: 'critical', title: '✅ Чистые функции', description: 'Никакой runtime логики в рендере', details: '➕ Нет race conditions ➖ Сложность реализации', children: [] },
-            { id: 'stateful-runtime', x: 1800, y: 1300, type: 'rejected', title: '❌ Stateful', description: 'Логика в рендере', details: '➕ Простота ➖ Глюки через 30-40 плагинов', children: [] },
-
-            // 13. CRDT (критерий 13)
-            { id: 'q13', x: 2500, y: 1100, type: 'question', title: '❓ Какую CRDT?', description: 'Single source of truth', details: 'Варианты: Yjs | Automerge', children: ['yjs-crdt', 'automerge-crdt'] },
-            { id: 'yjs-crdt', x: 2200, y: 1300, type: 'critical', title: '✅ Yjs', description: 'Быстрая, популярная CRDT', details: '➕ Производительность, WebRTC ➖ Сложность API', children: [] },
-            { id: 'automerge-crdt', x: 2800, y: 1300, type: 'important', title: '⚡ Automerge', description: 'Функциональная CRDT', details: '➕ Простота API ➖ Медленнее Yjs', children: [] },
-
-            // 14. Event Sourcing (критерий 14)
-            { id: 'q14', x: 3500, y: 1100, type: 'question', title: '❓ Event Sourcing?', description: 'Immutable ops log с первого дня', details: 'Варианты: Отдельный лог | В CRDT', children: ['event-sourcing-separate', 'event-sourcing-crdt'] },
-            { id: 'event-sourcing-separate', x: 3200, y: 1300, type: 'critical', title: '✅ Отдельный лог', description: 'Операции в отдельном файле', details: '➕ Полный аудит, versioning ➖ Дублирование', children: [] },
-            { id: 'event-sourcing-crdt', x: 3800, y: 1300, type: 'important', title: '🔄 В CRDT', description: 'Лог как часть CRDT', details: '➕ Нет дублирования ➖ Сложность реплея', children: [] },
-
-            // 15. Schema-first (критерий 15)
-            { id: 'q15', x: 4500, y: 1100, type: 'question', title: '❓ Schema-first?', description: 'Runtime валидация схем', details: 'Варианты: JSON Schema | TypeScript | Zod', children: ['json-schema', 'typescript-schema', 'zod-schema'] },
-            { id: 'json-schema', x: 4000, y: 1300, type: 'critical', title: '✅ JSON Schema', description: 'Стандартная валидация', details: '➕ Стандарт, языконезависимость ➖ Ограниченная выразительность', children: [] },
-            { id: 'typescript-schema', x: 4500, y: 1300, type: 'important', title: '🔷 TypeScript', description: 'Типы как схемы', details: '➕ Интеграция с кодом ➖ Нет runtime валидации', children: [] },
-            { id: 'zod-schema', x: 5000, y: 1300, type: 'flexible', title: '⚙️ Zod', description: 'TypeScript-first валидация', details: '➕ Runtime + compile-time ➖ Дополнительная зависимость', children: [] },
-
-            // 16. CRDT операции (критерий 16)
-            { id: 'q16', x: 500, y: 1600, type: 'question', title: '❓ Все через CRDT?', description: 'Все изменения только через CRDT-операции', details: 'Варианты: Только CRDT | Гибрид', children: ['crdt-only', 'crdt-hybrid'] },
-            { id: 'crdt-only', x: 200, y: 1800, type: 'critical', title: '✅ Только CRDT', description: 'Все изменения через CRDT', details: '➕ Будущая коллаборация ➖ Сложность API', children: [] },
-            { id: 'crdt-hybrid', x: 800, y: 1800, type: 'important', title: '🔄 Гибрид', description: 'CRDT + прямые изменения', details: '➕ Простота ➖ Полный рефакторинг потом', children: [] },
-
-            // 17. Атомарные транзакции (критерий 17)
-            { id: 'q17', x: 1500, y: 1600, type: 'question', title: '❓ Атомарные транзакции?', description: 'Целостность данных, undo/redo', details: 'Варианты: Атомарные | Простые', children: ['atomic-transactions', 'simple-ops'] },
-            { id: 'atomic-transactions', x: 1200, y: 1800, type: 'critical', title: '✅ Атомарные', description: 'Все или ничего', details: '➕ Нормальный undo/redo ➖ Сложность реализации', children: [] },
-            { id: 'simple-ops', x: 1800, y: 1800, type: 'rejected', title: '❌ Простые', description: 'Одна операция = одно действие', details: '➕ Простота ➖ Полублоки после undo', children: [] },
-
-            // 18. Refs в CRDT (критерий 18)
-            { id: 'q18', x: 2500, y: 1600, type: 'question', title: '❓ Refs в CRDT?', description: 'References и backlinks first-class в CRDT', details: 'Варианты: First-class | Вторичные', children: ['refs-crdt-first', 'refs-crdt-secondary'] },
-            { id: 'refs-crdt-first', x: 2200, y: 1800, type: 'critical', title: '✅ First-class', description: 'Ссылки как основные объекты CRDT', details: '➕ Быстрые запросы, транслюзия ➖ Сложность', children: [] },
-            { id: 'refs-crdt-secondary', x: 2800, y: 1800, type: 'important', title: '🔄 Вторичные', description: 'Ссылки хранятся в тексте', details: '➕ Простота ➖ Медленные ссылки', children: [] },
-
-            // 19. Плоский граф (критерий 19)
-            { id: 'q19', x: 3500, y: 1600, type: 'question', title: '❓ Плоский граф?', description: 'Блоки ≠ страницы', details: 'Варианты: Плоский граф | Иерархия страниц', children: ['flat-graph', 'page-hierarchy'] },
-            { id: 'flat-graph', x: 3200, y: 1800, type: 'critical', title: '✅ Плоский граф', description: 'Все блоки равноправны', details: '➕ Гибкие transclusion и queries ➖ Сложность навигации', children: [] },
-            { id: 'page-hierarchy', x: 3800, y: 1800, type: 'rejected', title: '❌ Иерархия страниц', description: 'Блоки принадлежат страницам', details: '➕ Простая навигация ➖ Невозможно транслюзию', children: [] },
-
-            // 20. Без глобального состояния (критерий 20)
-            { id: 'q20', x: 4500, y: 1600, type: 'question', title: '❓ Глобальное состояние?', description: 'Отсутствие глобального mutable состояния', details: 'Варианты: Локальное | Глобальное', children: ['no-global-state', 'global-state'] },
-            { id: 'no-global-state', x: 4200, y: 1800, type: 'critical', title: '✅ Локальное', description: 'Никакого глобального mutable состояния', details: '➕ Предсказуемость, отладка ➖ Сложность', children: [] },
-            { id: 'global-state', x: 4800, y: 1800, type: 'rejected', title: '❌ Глобальное', description: 'Общее mutable состояние', details: '➕ Простота ➖ Race conditions, баги', children: [] },
-
-            // 21. Virtual scrolling (критерий 21)
-            { id: 'q21', x: 500, y: 2100, type: 'question', title: '❓ Virtual scrolling?', description: 'Работа с 100к+ блоков', details: 'Варианты: Virtual scrolling | Lazy loading', children: ['virtual-scrolling', 'lazy-loading'] },
-            { id: 'virtual-scrolling', x: 200, y: 2300, type: 'critical', title: '✅ Virtual scrolling', description: 'Рендер только видимых элементов', details: '➕ 100к+ блоков без тормозов ➖ Сложность', children: [] },
-            { id: 'lazy-loading', x: 800, y: 2300, type: 'important', title: '⚡ Lazy loading', description: 'Ленивая загрузка по требованию', details: '➕ Простота ➖ Привычка «всё в DOM»', children: [] },
-
-            // 22. Web Workers (критерий 22)
-            { id: 'q22', x: 1500, y: 2100, type: 'question', title: '❓ Web Workers?', description: 'Тяжёлые операции в отдельном потоке', details: 'Варианты: Все операции | Только поиск', children: ['web-workers-all', 'web-workers-search'] },
-            { id: 'web-workers-all', x: 1200, y: 2300, type: 'critical', title: '✅ Все операции', description: 'Поиск, индексация, CRDT', details: '➕ UI остаётся отзывчивым ➖ Сложность API', children: [] },
-            { id: 'web-workers-search', x: 1800, y: 2300, type: 'important', title: '🔍 Только поиск', description: 'Поиск и индексация в Workers', details: '➕ Простота ➖ UI будет зависать', children: [] },
-
-            // 23. Circular Detection (критерий 23)
-            { id: 'q23', x: 2500, y: 2100, type: 'question', title: '❓ Обнаружение циклов?', description: 'Circular Reference Detection', details: 'Варианты: При рендере | При создании', children: ['circular-render', 'circular-creation'] },
-            { id: 'circular-render', x: 2200, y: 2300, type: 'critical', title: '✅ При рендере', description: 'Проверка при отображении', details: '➕ Надёжность ➖ Накладные расходы', children: [] },
-            { id: 'circular-creation', x: 2800, y: 2300, type: 'important', title: '⚙️ При создании', description: 'Предотвращение циклов', details: '➕ Проактивность ➖ Ограничения UX', children: [] },
-
-            // 24. E2EE готовность (критерий 24)
-            { id: 'q24', x: 3500, y: 2100, type: 'question', title: '❓ E2EE готовность?', description: 'Формат хранения готов к шифрованию', details: 'Варианты: С первого дня | Потом', children: ['e2ee-ready', 'e2ee-later'] },
-            { id: 'e2ee-ready', x: 3200, y: 2300, type: 'critical', title: '✅ С первого дня', description: 'Архитектура готова к E2EE', details: '➕ Никаких breaking changes ➖ Усложнение', children: [] },
-            { id: 'e2ee-later', x: 3800, y: 2300, type: 'important', title: '⏳ Потом', description: 'Добавим позже', details: '➕ Простота старта ➖ Невозможная миграция', children: [] },
-
-            // 25. Конфликт-менеджмент (критерий 25)
-            { id: 'q25', x: 4500, y: 2100, type: 'question', title: '❓ Конфликт-менеджмент?', description: 'При синхронизации', details: 'Варианты: CRDT merge | Ручное', children: ['crdt-merge', 'manual-merge'] },
-            { id: 'crdt-merge', x: 4200, y: 2300, type: 'critical', title: '✅ CRDT merge', description: 'Автоматическое слияние', details: '➕ Оффлайн-first без потери ➖ Не все конфликты разрешимы', children: [] },
-            { id: 'manual-merge', x: 4800, y: 2300, type: 'rejected', title: '❌ Ручное', description: 'Пользователь разрешает конфликты', details: '➕ Полный контроль ➖ Потеря данных', children: [] },
-
-            // 26. Плагинная система (критерий 26)
-            { id: 'q26', x: 500, y: 2600, type: 'question', title: '❓ Плагинная система?', description: 'Все пользовательские блоки как плагины', details: 'Варианты: Единая система | Разные API', children: ['plugin-unified', 'plugin-mixed'] },
-            { id: 'plugin-unified', x: 200, y: 2800, type: 'critical', title: '✅ Единая система', description: 'Единый механизм для всех блоков', details: '➕ Предсказуемость, безопасность ➖ Ограничения', children: [] },
-            { id: 'plugin-mixed', x: 800, y: 2800, type: 'rejected', title: '❌ Разные API', description: 'Разные способы подключения', details: '➕ Гибкость ➖ Хаос, несовместимость', children: [] },
-
-            // 27. Композитные блоки (критерий 27)
-            { id: 'q27', x: 1500, y: 2600, type: 'question', title: '❓ Композитные блоки?', description: 'Кастомные блоки, содержащие другие', details: 'Варианты: Поддержка | Только простые', children: ['composite-blocks', 'simple-blocks'] },
-            { id: 'composite-blocks', x: 1200, y: 2800, type: 'critical', title: '✅ Поддержка', description: 'Сложные структуры (карточки, дашборды)', details: '➕ Мощные возможности ➖ Сложность реализации', children: [] },
-            { id: 'simple-blocks', x: 1800, y: 2800, type: 'important', title: '📝 Только простые', description: 'Обычные блоки без вложенности', details: '➕ Простота ➖ Ограниченные возможности', children: [] },
-
-            // 28. Состояние блоков (критерий 28)
-            { id: 'q28', x: 2500, y: 2600, type: 'question', title: '❓ Состояние блоков?', description: 'Каждый блок может сохранять состояние', details: 'Варианты: JSON состояние | Простое', children: ['block-state-json', 'block-state-simple'] },
-            { id: 'block-state-json', x: 2200, y: 2800, type: 'critical', title: '✅ JSON состояние', description: 'Плагины сохраняют настройки', details: '➕ Виджеты работают корректно ➖ Усложнение модели', children: [] },
-            { id: 'block-state-simple', x: 2800, y: 2800, type: 'important', title: '📝 Простое', description: 'Минимальное состояние', details: '➕ Простота модели ➖ Ограниченные плагины', children: [] },
-
-            // 29. Модульность кода (критерий 29)
-            { id: 'q29', x: 3500, y: 2600, type: 'question', title: '❓ Модульность кода?', description: 'Файлы ≤500 строк, функции ≤50', details: 'Варианты: Модульный | Монолитный', children: ['modular-code', 'monolith-code'] },
-            { id: 'modular-code', x: 3200, y: 2800, type: 'critical', title: '✅ Модульный', description: 'Максимальная модульность', details: '➕ Читаемость, AI-friendly ➖ Много файлов', children: [] },
-            { id: 'monolith-code', x: 3800, y: 2800, type: 'rejected', title: '❌ Монолитный', description: 'Большие файлы и функции', details: '➕ Меньше файлов ➖ Невозможность рефакторинга', children: [] }
-        ];
-
-        let scale = 0.2;
-        let translateX = 100;
-        let translateY = 50;
-        let isDragging = false;
-        let lastMouseX = 0;
-        let lastMouseY = 0;
+            });
 
         function createNode(node) {
             const div = document.createElement('div');
@@ -371,6 +212,7 @@
 
         function initCanvas() {
             const canvas = document.getElementById('canvas');
+            canvas.innerHTML = ''; // Clear canvas
             const nodeMap = {};
             
             nodes.forEach(node => {
@@ -472,8 +314,6 @@
             isDragging = false;
             viewport.classList.remove('dragging');
         });
-
-        // Canvas initialization moved to fetch callback
     </script>
 </body>
 </html>
