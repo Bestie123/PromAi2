@@ -1,0 +1,68 @@
+{
+  "nodes": {
+    "q1": { 
+      "id": "q1", "x": 500, "y": 100, "type": "question", 
+      "title": "❓ Модульность движка?", 
+      "description": "Ядро отделено от UI и плагинов", 
+      "children": ["modular-arch", "monolith-arch"], 
+      "criteriaId": 1,
+      "dependencies": {
+        "enables": [11, 12, 26, 29],
+        "blocking": true,
+        "phase": 1
+      }
+    },
+    "modular-arch": { 
+      "id": "modular-arch", "x": 200, "y": 300, "type": "critical", 
+      "title": "✅ Модульная", 
+      "description": "Ядро легко отделяется", 
+      "criteriaId": 1,
+      "dependencies": {
+        "weight": 10,
+        "risk": "low",
+        "enables": [11, 12, 26, 29],
+        "development_order": 1
+      }
+    },
+    "q13": { 
+      "id": "q13", "x": 2500, "y": 1100, "type": "question", 
+      "title": "❓ Какую CRDT?", 
+      "description": "Single source of truth", 
+      "children": ["yjs-crdt", "automerge-crdt"], 
+      "criteriaId": 13,
+      "dependencies": {
+        "enables": [14, 16, 18, 25],
+        "blocking": true,
+        "phase": 1
+      }
+    },
+    "yjs-crdt": { 
+      "id": "yjs-crdt", "x": 2200, "y": 1300, "type": "critical", 
+      "title": "✅ Yjs", 
+      "description": "Быстрая, популярная CRDT", 
+      "criteriaId": 13,
+      "dependencies": {
+        "weight": 9,
+        "risk": "high",
+        "enables": [14, 16, 18, 25],
+        "development_order": 4
+      }
+    }
+  },
+  "dependency_graph": {
+    "edges": [
+      {"from": 1, "to": 11, "type": "enables", "strength": "strong"},
+      {"from": 1, "to": 12, "type": "enables", "strength": "strong"},
+      {"from": 13, "to": 16, "type": "enables", "strength": "strong"}
+    ],
+    "phases": {
+      "phase1": [1, 2, 3, 13],
+      "phase2": [11, 12, 4, 7, 8],
+      "phase3": [16, 21, 26]
+    }
+  },
+  "compatibility": {
+    "modular-arch,monolith-arch": "невозможно",
+    "yjs-crdt,automerge-crdt": "переключать"
+  }
+}

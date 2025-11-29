@@ -1,0 +1,75 @@
+{
+  "nodes": {
+    "q1": { 
+      "id": "q1", "x": 500, "y": 100, "type": "question", 
+      "title": "❓ Модульность движка?", 
+      "children": ["modular-arch", "monolith-arch"], 
+      "criteriaId": 1,
+      "graph": {
+        "weight": 10,
+        "centrality": 0.9,
+        "risk": "low"
+      }
+    },
+    "modular-arch": { 
+      "id": "modular-arch", "x": 200, "y": 300, "type": "critical", 
+      "title": "✅ Модульная", 
+      "criteriaId": 1,
+      "graph": {
+        "weight": 10,
+        "out_degree": 4,
+        "critical_path": true,
+        "bottleneck": false
+      }
+    },
+    "q13": { 
+      "id": "q13", "x": 2500, "y": 1100, "type": "question", 
+      "title": "❓ Какую CRDT?", 
+      "children": ["yjs-crdt", "automerge-crdt"], 
+      "criteriaId": 13,
+      "graph": {
+        "weight": 9,
+        "centrality": 0.8,
+        "risk": "high"
+      }
+    },
+    "yjs-crdt": { 
+      "id": "yjs-crdt", "x": 2200, "y": 1300, "type": "critical", 
+      "title": "✅ Yjs", 
+      "criteriaId": 13,
+      "graph": {
+        "weight": 9,
+        "out_degree": 4,
+        "critical_path": true,
+        "bottleneck": true
+      }
+    }
+  },
+  "edges": [
+    {
+      "from": "modular-arch",
+      "to": "declarative-ui", 
+      "type": "enables",
+      "strength": "strong",
+      "delay_weeks": 0
+    },
+    {
+      "from": "yjs-crdt",
+      "to": "crdt-only",
+      "type": "enables", 
+      "strength": "strong",
+      "delay_weeks": 1
+    }
+  ],
+  "graph_metrics": {
+    "critical_path": ["modular-arch", "yjs-crdt", "declarative-ui", "virtual-scrolling"],
+    "bottlenecks": ["yjs-crdt", "virtual-scrolling"],
+    "parallel_tracks": {
+      "foundation": ["modular-arch", "all-blocks", "uuid-v4"],
+      "data": ["yjs-crdt", "json-storage", "crdt-only"]
+    }
+  },
+  "compatibility": {
+    "modular-arch,monolith-arch": "невозможно"
+  }
+}

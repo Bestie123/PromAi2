@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Graph Dependencies Viewer</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .graph-container { display: flex; gap: 20px; }
+        .nodes-panel { flex: 1; }
+        .metrics-panel { flex: 1; }
+        .node { border: 2px solid #ccc; border-radius: 8px; padding: 10px; margin: 5px; position: relative; }
+        .critical-path { border-color: #FF5722; background: #FFF3E0; }
+        .bottleneck { box-shadow: 0 0 10px red; }
+        .weight-indicator { position: absolute; top: -5px; right: -5px; background: #2196F3; color: white; border-radius: 50%; width: 20px; height: 20px; text-align: center; font-size: 12px; }
+        .edge { margin: 5px 0; padding: 5px; background: #f5f5f5; border-radius: 4px; }
+        .strong { border-left: 4px solid #4CAF50; }
+        .medium { border-left: 4px solid #FF9800; }
+        .weak { border-left: 4px solid #9E9E9E; }
+        .track { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Graph Dependencies Viewer</h1>
+    
+    <div class="graph-container">
+        <div class="nodes-panel">
+            <h3>Nodes</h3>
+            <div id="nodes-container"></div>
+        </div>
+        
+        <div class="metrics-panel">
+            <h3>Graph Metrics</h3>
+            <div id="metrics-container"></div>
+            
+            <h3>Edges</h3>
+            <div id="edges-container"></div>
+            
+            <h3>Parallel Tracks</h3>
+            <div id="tracks-container"></div>
+        </div>
+    </div>
+
+    <script>
+        let nodesData = null;
+
+        async function loadData() {
+            try {
+                const response = await fetch('nodes_v3_graph.json');
+                nodesData = await response.json();
+                renderNodes();
+                renderMetrics();
+                renderEdges();
+                renderTracks();
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function renderNodes() {
+            const container = document.getElementById('nodes-container');
+            container.innerHTML = '';
+
+            Object.values(nodesData.nodes).forEach(node => {
+                if (node.type !== 'critical') return;
+
+                const nodeEl = document.createElement('div');
+                nodeEl.className = 'node';
+                
+                if (node.graph) {
+                    if (node.graph.critical_path) nodeEl.classList.add('critical-path');
+                    if (node.graph.bottleneck) nodeEl.classList.add('bottleneck');
+                }
+
+                nodeEl.innerHTML = `
+                    <div><strong>${node.title}</strong></div>
+                    ${node.graph ? `
+                        <div class="weight-indicator">${node.graph.weight}</div>
+                        <div style="font-size: 12px; color: #666;">
+                            Out-degree: ${node.graph.out_degree || 0} |
+                            ${node.graph.critical_path ? 'Critical Path' : ''} |
+                            ${node.graph.bottleneck ? 'Bottleneck' : ''}
+                        </div>
+                    ` : ''}
+                `;
+
+                container.appendChild(nodeEl);
+            });
+        }
+
+        function renderMetrics() {
+            const container = document.getElementById('metrics-container');
+            if (!nodesData.graph_metrics) return;
+
+            const metrics = nodesData.graph_metrics;
+            container.innerHTML = `
+                <div><strong>Critical Path:</strong> ${metrics.critical_path ? metrics.critical_path.join(' → ') : 'N/A'}</div>
+                <div><strong>Bottlenecks:</strong> ${metrics.bottlenecks ? metrics.bottlenecks.join(', ') : 'N/A'}</div>
+            `;
+        }
+
+        function renderEdges() {
+            const container = document.getElementById('edges-container');
+            if (!nodesData.edges) return;
+
+            container.innerHTML = '';
+            nodesData.edges.forEach(edge => {
+                const edgeEl = document.createElement('div');
+                edgeEl.className = `edge ${edge.strength}`;
+                edgeEl.innerHTML = `
+                    <strong>${edge.from}</strong> → <strong>${edge.to}</strong><br>
+                    Type: ${edge.type} | Strength: ${edge.strength} | Delay: ${edge.delay_weeks}w
+                `;
+                container.appendChild(edgeEl);
+            });
+        }
+
+        function renderTracks() {
+            const container = document.getElementById('tracks-container');
+            if (!nodesData.graph_metrics || !nodesData.graph_metrics.parallel_tracks) return;
+
+            container.innerHTML = '';
+            Object.entries(nodesData.graph_metrics.parallel_tracks).forEach(([trackName, nodes]) => {
+                const trackEl = document.createElement('div');
+                trackEl.className = 'track';
+                trackEl.innerHTML = `
+                    <strong>${trackName}:</strong> ${nodes.join(', ')}
+                `;
+                container.appendChild(trackEl);
+            });
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
