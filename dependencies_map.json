@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "lastCheck": "2024-12-19T12:00:00Z",
+  "version": "2.0.0",
+  "lastCheck": "2024-12-19T15:00:00Z",
   "graph": {
     "MODULE_Core_VER_1": [],
     "MODULE_CRDT_VER_1": [],
@@ -14,17 +14,86 @@
     "1": ["MODULE_Storage_VER_1", "MODULE_UI_VER_1", "MODULE_Search_VER_1"],
     "2": ["MODULE_Plugin_VER_1"]
   },
+  "criticalPath": {
+    "description": "Критический путь разработки - 22 недели",
+    "phases": [
+      {
+        "phase": 1,
+        "name": "Foundation",
+        "weeks": 10,
+        "parallel": false,
+        "criteria": [1, 2, 3, 13],
+        "modules": ["MODULE_Core_VER_1", "MODULE_CRDT_VER_1"]
+      },
+      {
+        "phase": 2,
+        "name": "Core",
+        "weeks": 6,
+        "parallel": true,
+        "criteria": [11, 12, 4, 7, 8],
+        "modules": ["MODULE_UI_VER_1"]
+      },
+      {
+        "phase": 3,
+        "name": "Features",
+        "weeks": 8,
+        "parallel": true,
+        "criteria": [16, 21, 26, 9, 10],
+        "modules": ["MODULE_Storage_VER_1", "MODULE_Plugin_VER_1"]
+      },
+      {
+        "phase": 4,
+        "name": "Polish",
+        "weeks": 10,
+        "parallel": true,
+        "criteria": [14, 15, 17, 18, 19, 20, 22, 23, 24, 25, 27, 28, 29],
+        "modules": ["MODULE_Search_VER_1"]
+      }
+    ]
+  },
+  "architecturalDependencies": {
+    "hard": {
+      "1": { "enables": [11, 12, 26, 29], "description": "Модульность enables UI, плагины, код" },
+      "2": { "enables": [4, 7, 8, 16, 18, 19], "description": "Блоки enable структуру и ссылки" },
+      "3": { "enables": [7, 8, 18], "description": "UUID enables ссылки" },
+      "13": { "enables": [14, 16, 18, 25], "description": "CRDT enables операции и синхронизацию" },
+      "11": { "enables": [12, 20, 21], "description": "Декларативный UI enables рендер" },
+      "26": { "enables": [27, 28], "description": "Плагины enable композиты и состояние" }
+    },
+    "soft": {
+      "21": { "enhances": [22], "description": "Virtual scrolling + Web Workers" },
+      "5": { "enhances": [6], "description": "Drag&Drop + Rich Text UX" }
+    }
+  },
+  "riskAssessment": {
+    "high": {
+      "criteria": [13, 21, 26],
+      "reason": "Сложная реализация, критично для производительности",
+      "mitigation": "Прототипы в первую неделю"
+    },
+    "medium": {
+      "criteria": [11, 12, 16],
+      "reason": "Архитектурная сложность"
+    },
+    "low": {
+      "criteria": [3, 5, 6, 9, 10],
+      "reason": "Стандартные решения"
+    }
+  },
   "circular": [],
   "violations": [],
   "metrics": {
     "totalModules": 6,
     "maxDepth": 2,
     "avgDependencies": 1.0,
-    "isolatedModules": 2
+    "isolatedModules": 2,
+    "criticalPathWeeks": 22,
+    "parallelizationFactor": 0.6
   },
   "validation": {
     "acyclic": true,
     "wellFormed": true,
-    "lastValidated": "2024-12-19T12:00:00Z"
+    "dependenciesTracked": true,
+    "lastValidated": "2024-12-19T15:00:00Z"
   }
 }
