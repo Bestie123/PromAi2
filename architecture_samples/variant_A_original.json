@@ -1,0 +1,877 @@
+{
+  "nodes": {
+    "q1": {
+      "x": 500,
+      "y": 100,
+      "criteriaId": 1,
+      "title": "❓ Модульность движка?",
+      "type": "question",
+      "phase": "other"
+    },
+    "modular-arch": {
+      "x": 200,
+      "y": 300,
+      "criteriaId": 1,
+      "title": "✅ Модульная",
+      "type": "critical",
+      "phase": "other"
+    },
+    "monolith-arch": {
+      "x": 800,
+      "y": 300,
+      "criteriaId": 1,
+      "title": "❌ Монолитная",
+      "type": "rejected",
+      "phase": "other"
+    },
+    "q2": {
+      "x": 1500,
+      "y": 100,
+      "criteriaId": 2,
+      "title": "❓ Блочность элементов?",
+      "type": "question",
+      "phase": "other"
+    },
+    "all-blocks": {
+      "x": 1200,
+      "y": 300,
+      "criteriaId": 2,
+      "title": "✅ Всё - блоки",
+      "type": "critical",
+      "phase": "other"
+    },
+    "mixed-model": {
+      "x": 1800,
+      "y": 300,
+      "criteriaId": 2,
+      "title": "❌ Смешанная",
+      "type": "rejected",
+      "phase": "other"
+    },
+    "q3": {
+      "x": 2500,
+      "y": 100,
+      "criteriaId": 3,
+      "title": "❓ UUID для блоков?",
+      "type": "question",
+      "phase": "other"
+    },
+    "uuid-v4": {
+      "x": 2200,
+      "y": 300,
+      "criteriaId": 3,
+      "title": "🎲 UUID v4",
+      "type": "critical",
+      "phase": "other"
+    },
+    "uuid-v7": {
+      "x": 2800,
+      "y": 300,
+      "criteriaId": 3,
+      "title": "⏰ UUID v7",
+      "type": "important",
+      "phase": "other"
+    },
+    "q4": {
+      "x": 3500,
+      "y": 100,
+      "criteriaId": 4,
+      "title": "❓ Вложенные блоки?",
+      "type": "question",
+      "phase": "other"
+    },
+    "nested-blocks": {
+      "x": 3200,
+      "y": 300,
+      "criteriaId": 4,
+      "title": "✅ Вложенные",
+      "type": "critical",
+      "phase": "other"
+    },
+    "flat-only": {
+      "x": 3800,
+      "y": 300,
+      "criteriaId": 4,
+      "title": "❌ Только плоские",
+      "type": "rejected",
+      "phase": "other"
+    },
+    "q5": {
+      "x": 4500,
+      "y": 100,
+      "criteriaId": 5,
+      "title": "❓ Drag & Drop порядка?",
+      "type": "question",
+      "phase": "other"
+    },
+    "drag-drop-native": {
+      "x": 4200,
+      "y": 300,
+      "criteriaId": 5,
+      "title": "✅ Нативный",
+      "type": "critical",
+      "phase": "other"
+    },
+    "drag-drop-lib": {
+      "x": 4800,
+      "y": 300,
+      "criteriaId": 5,
+      "title": "📦 Библиотека",
+      "type": "important",
+      "phase": "other"
+    },
+    "q6": {
+      "x": 500,
+      "y": 600,
+      "criteriaId": 6,
+      "title": "❓ Rich Text?",
+      "type": "question",
+      "phase": "other"
+    },
+    "markdown-rich": {
+      "x": 200,
+      "y": 800,
+      "criteriaId": 6,
+      "title": "📝 Markdown+",
+      "type": "critical",
+      "phase": "other"
+    },
+    "wysiwyg-rich": {
+      "x": 800,
+      "y": 800,
+      "criteriaId": 6,
+      "title": "✏️ WYSIWYG",
+      "type": "important",
+      "phase": "other"
+    },
+    "q7": {
+      "x": 1500,
+      "y": 600,
+      "criteriaId": 7,
+      "title": "❓ Refs по UUID?",
+      "type": "question",
+      "phase": "other"
+    },
+    "refs-uuid": {
+      "x": 1200,
+      "y": 800,
+      "criteriaId": 7,
+      "title": "✅ По UUID",
+      "type": "critical",
+      "phase": "other"
+    },
+    "refs-alias": {
+      "x": 1800,
+      "y": 800,
+      "criteriaId": 7,
+      "title": "🏷️ По алиасу",
+      "type": "important",
+      "phase": "other"
+    },
+    "q8": {
+      "x": 2500,
+      "y": 600,
+      "criteriaId": 8,
+      "title": "❓ Backlinks?",
+      "type": "question",
+      "phase": "other"
+    },
+    "backlinks-auto": {
+      "x": 2200,
+      "y": 800,
+      "criteriaId": 8,
+      "title": "✅ Автоматические",
+      "type": "critical",
+      "phase": "other"
+    },
+    "backlinks-manual": {
+      "x": 2800,
+      "y": 800,
+      "criteriaId": 8,
+      "title": "❌ Ручные",
+      "type": "rejected",
+      "phase": "other"
+    },
+    "q9": {
+      "x": 3500,
+      "y": 600,
+      "criteriaId": 9,
+      "title": "❓ Локальные данные?",
+      "type": "question",
+      "phase": "other"
+    },
+    "json-storage": {
+      "x": 3000,
+      "y": 800,
+      "criteriaId": 9,
+      "title": "✅ JSON",
+      "type": "critical",
+      "phase": "other"
+    },
+    "sqlite-storage": {
+      "x": 3500,
+      "y": 800,
+      "criteriaId": 9,
+      "title": "⚡ SQLite",
+      "type": "important",
+      "phase": "other"
+    },
+    "hybrid-storage": {
+      "x": 4000,
+      "y": 800,
+      "criteriaId": 9,
+      "title": "🔄 Гибрид",
+      "type": "flexible",
+      "phase": "other"
+    },
+    "q10": {
+      "x": 4500,
+      "y": 600,
+      "criteriaId": 10,
+      "title": "❓ Оффлайн работа?",
+      "type": "question",
+      "phase": "other"
+    },
+    "offline-full": {
+      "x": 4200,
+      "y": 800,
+      "criteriaId": 10,
+      "title": "✅ Полная",
+      "type": "critical",
+      "phase": "other"
+    },
+    "offline-partial": {
+      "x": 4800,
+      "y": 800,
+      "criteriaId": 10,
+      "title": "⚡ Частичная",
+      "type": "important",
+      "phase": "other"
+    },
+    "q11": {
+      "x": 500,
+      "y": 1100,
+      "criteriaId": 11,
+      "title": "❓ Декларативный UI?",
+      "type": "question",
+      "phase": "other"
+    },
+    "declarative-ui": {
+      "x": 200,
+      "y": 1300,
+      "criteriaId": 11,
+      "title": "✅ Декларативный",
+      "type": "critical",
+      "phase": "other"
+    },
+    "imperative-ui": {
+      "x": 800,
+      "y": 1300,
+      "criteriaId": 11,
+      "title": "❌ Императивный",
+      "type": "rejected",
+      "phase": "other"
+    },
+    "q12": {
+      "x": 1500,
+      "y": 1100,
+      "criteriaId": 12,
+      "title": "❓ Zero runtime logic?",
+      "type": "question",
+      "phase": "other"
+    },
+    "zero-runtime": {
+      "x": 1200,
+      "y": 1300,
+      "criteriaId": 12,
+      "title": "✅ Чистые функции",
+      "type": "critical",
+      "phase": "other"
+    },
+    "stateful-runtime": {
+      "x": 1800,
+      "y": 1300,
+      "criteriaId": 12,
+      "title": "❌ Stateful",
+      "type": "rejected",
+      "phase": "other"
+    },
+    "q13": {
+      "x": 2500,
+      "y": 1100,
+      "criteriaId": 13,
+      "title": "❓ Какую CRDT?",
+      "type": "question",
+      "phase": "other"
+    },
+    "yjs-crdt": {
+      "x": 2200,
+      "y": 1300,
+      "criteriaId": 13,
+      "title": "✅ Yjs",
+      "type": "critical",
+      "phase": "other"
+    },
+    "automerge-crdt": {
+      "x": 2800,
+      "y": 1300,
+      "criteriaId": 13,
+      "title": "⚡ Automerge",
+      "type": "important",
+      "phase": "other"
+    },
+    "q14": {
+      "x": 3500,
+      "y": 1100,
+      "criteriaId": 14,
+      "title": "❓ Event Sourcing?",
+      "type": "question",
+      "phase": "other"
+    },
+    "event-sourcing-separate": {
+      "x": 3200,
+      "y": 1300,
+      "criteriaId": 14,
+      "title": "✅ Отдельный лог",
+      "type": "critical",
+      "phase": "other"
+    },
+    "event-sourcing-crdt": {
+      "x": 3800,
+      "y": 1300,
+      "criteriaId": 14,
+      "title": "🔄 В CRDT",
+      "type": "important",
+      "phase": "other"
+    },
+    "q15": {
+      "x": 4500,
+      "y": 1100,
+      "criteriaId": 15,
+      "title": "❓ Schema-first?",
+      "type": "question",
+      "phase": "other"
+    },
+    "json-schema": {
+      "x": 4000,
+      "y": 1300,
+      "criteriaId": 15,
+      "title": "✅ JSON Schema",
+      "type": "critical",
+      "phase": "other"
+    },
+    "typescript-schema": {
+      "x": 4500,
+      "y": 1300,
+      "criteriaId": 15,
+      "title": "🔷 TypeScript",
+      "type": "important",
+      "phase": "other"
+    },
+    "zod-schema": {
+      "x": 5000,
+      "y": 1300,
+      "criteriaId": 15,
+      "title": "⚙️ Zod",
+      "type": "flexible",
+      "phase": "other"
+    },
+    "q16": {
+      "x": 500,
+      "y": 1600,
+      "criteriaId": 16,
+      "title": "❓ Все через CRDT?",
+      "type": "question",
+      "phase": "other"
+    },
+    "crdt-only": {
+      "x": 200,
+      "y": 1800,
+      "criteriaId": 16,
+      "title": "✅ Только CRDT",
+      "type": "critical",
+      "phase": "other"
+    },
+    "crdt-hybrid": {
+      "x": 800,
+      "y": 1800,
+      "criteriaId": 16,
+      "title": "🔄 Гибрид",
+      "type": "important",
+      "phase": "other"
+    },
+    "q17": {
+      "x": 1500,
+      "y": 1600,
+      "criteriaId": 17,
+      "title": "❓ Атомарные транзакции?",
+      "type": "question",
+      "phase": "other"
+    },
+    "atomic-transactions": {
+      "x": 1200,
+      "y": 1800,
+      "criteriaId": 17,
+      "title": "✅ Атомарные",
+      "type": "critical",
+      "phase": "other"
+    },
+    "simple-ops": {
+      "x": 1800,
+      "y": 1800,
+      "criteriaId": 17,
+      "title": "❌ Простые",
+      "type": "rejected",
+      "phase": "other"
+    },
+    "q18": {
+      "x": 2500,
+      "y": 1600,
+      "criteriaId": 18,
+      "title": "❓ Refs в CRDT?",
+      "type": "question",
+      "phase": "other"
+    },
+    "refs-crdt-first": {
+      "x": 2200,
+      "y": 1800,
+      "criteriaId": 18,
+      "title": "✅ First-class",
+      "type": "critical",
+      "phase": "other"
+    },
+    "refs-crdt-secondary": {
+      "x": 2800,
+      "y": 1800,
+      "criteriaId": 18,
+      "title": "🔄 Вторичные",
+      "type": "important",
+      "phase": "other"
+    },
+    "q19": {
+      "x": 3500,
+      "y": 1600,
+      "criteriaId": 19,
+      "title": "❓ Плоский граф?",
+      "type": "question",
+      "phase": "other"
+    },
+    "flat-graph": {
+      "x": 3200,
+      "y": 1800,
+      "criteriaId": 19,
+      "title": "✅ Плоский граф",
+      "type": "critical",
+      "phase": "other"
+    },
+    "page-hierarchy": {
+      "x": 3800,
+      "y": 1800,
+      "criteriaId": 19,
+      "title": "❌ Иерархия страниц",
+      "type": "rejected",
+      "phase": "other"
+    },
+    "q20": {
+      "x": 4500,
+      "y": 1600,
+      "criteriaId": 20,
+      "title": "❓ Глобальное состояние?",
+      "type": "question",
+      "phase": "other"
+    },
+    "no-global-state": {
+      "x": 4200,
+      "y": 1800,
+      "criteriaId": 20,
+      "title": "✅ Локальное",
+      "type": "critical",
+      "phase": "other"
+    },
+    "global-state": {
+      "x": 4800,
+      "y": 1800,
+      "criteriaId": 20,
+      "title": "❌ Глобальное",
+      "type": "rejected",
+      "phase": "other"
+    },
+    "q21": {
+      "x": 500,
+      "y": 2100,
+      "criteriaId": 21,
+      "title": "❓ Virtual scrolling?",
+      "type": "question",
+      "phase": "other"
+    },
+    "virtual-scrolling": {
+      "x": 200,
+      "y": 2300,
+      "criteriaId": 21,
+      "title": "✅ Virtual scrolling",
+      "type": "critical",
+      "phase": "other"
+    },
+    "lazy-loading": {
+      "x": 800,
+      "y": 2300,
+      "criteriaId": 21,
+      "title": "⚡ Lazy loading",
+      "type": "important",
+      "phase": "other"
+    },
+    "q22": {
+      "x": 1500,
+      "y": 2100,
+      "criteriaId": 22,
+      "title": "❓ Web Workers?",
+      "type": "question",
+      "phase": "other"
+    },
+    "web-workers-all": {
+      "x": 1200,
+      "y": 2300,
+      "criteriaId": 22,
+      "title": "✅ Все операции",
+      "type": "critical",
+      "phase": "other"
+    },
+    "web-workers-search": {
+      "x": 1800,
+      "y": 2300,
+      "criteriaId": 22,
+      "title": "🔍 Только поиск",
+      "type": "important",
+      "phase": "other"
+    },
+    "q23": {
+      "x": 2500,
+      "y": 2100,
+      "criteriaId": 23,
+      "title": "❓ Обнаружение циклов?",
+      "type": "question",
+      "phase": "other"
+    },
+    "circular-render": {
+      "x": 2200,
+      "y": 2300,
+      "criteriaId": 23,
+      "title": "✅ При рендере",
+      "type": "critical",
+      "phase": "other"
+    },
+    "circular-creation": {
+      "x": 2800,
+      "y": 2300,
+      "criteriaId": 23,
+      "title": "⚙️ При создании",
+      "type": "important",
+      "phase": "other"
+    },
+    "q24": {
+      "x": 3500,
+      "y": 2100,
+      "criteriaId": 24,
+      "title": "❓ E2EE готовность?",
+      "type": "question",
+      "phase": "other"
+    },
+    "e2ee-ready": {
+      "x": 3200,
+      "y": 2300,
+      "criteriaId": 24,
+      "title": "✅ С первого дня",
+      "type": "critical",
+      "phase": "other"
+    },
+    "e2ee-later": {
+      "x": 3800,
+      "y": 2300,
+      "criteriaId": 24,
+      "title": "⏳ Потом",
+      "type": "important",
+      "phase": "other"
+    },
+    "q25": {
+      "x": 4500,
+      "y": 2100,
+      "criteriaId": 25,
+      "title": "❓ Конфликт-менеджмент?",
+      "type": "question",
+      "phase": "other"
+    },
+    "crdt-merge": {
+      "x": 4200,
+      "y": 2300,
+      "criteriaId": 25,
+      "title": "✅ CRDT merge",
+      "type": "critical",
+      "phase": "other"
+    },
+    "manual-merge": {
+      "x": 4800,
+      "y": 2300,
+      "criteriaId": 25,
+      "title": "❌ Ручное",
+      "type": "rejected",
+      "phase": "other"
+    },
+    "q26": {
+      "x": 500,
+      "y": 2600,
+      "criteriaId": 26,
+      "title": "❓ Плагинная система?",
+      "type": "question",
+      "phase": "other"
+    },
+    "plugin-unified": {
+      "x": 200,
+      "y": 2800,
+      "criteriaId": 26,
+      "title": "✅ Единая система",
+      "type": "critical",
+      "phase": "other"
+    },
+    "plugin-mixed": {
+      "x": 800,
+      "y": 2800,
+      "criteriaId": 26,
+      "title": "❌ Разные API",
+      "type": "rejected",
+      "phase": "other"
+    },
+    "q27": {
+      "x": 1500,
+      "y": 2600,
+      "criteriaId": 27,
+      "title": "❓ Композитные блоки?",
+      "type": "question",
+      "phase": "other"
+    },
+    "composite-blocks": {
+      "x": 1200,
+      "y": 2800,
+      "criteriaId": 27,
+      "title": "✅ Поддержка",
+      "type": "critical",
+      "phase": "other"
+    },
+    "simple-blocks": {
+      "x": 1800,
+      "y": 2800,
+      "criteriaId": 27,
+      "title": "📝 Только простые",
+      "type": "important",
+      "phase": "other"
+    },
+    "q28": {
+      "x": 2500,
+      "y": 2600,
+      "criteriaId": 28,
+      "title": "❓ Состояние блоков?",
+      "type": "question",
+      "phase": "other"
+    },
+    "block-state-json": {
+      "x": 2200,
+      "y": 2800,
+      "criteriaId": 28,
+      "title": "✅ JSON состояние",
+      "type": "critical",
+      "phase": "other"
+    },
+    "block-state-simple": {
+      "x": 2800,
+      "y": 2800,
+      "criteriaId": 28,
+      "title": "📝 Простое",
+      "type": "important",
+      "phase": "other"
+    },
+    "q29": {
+      "x": 3500,
+      "y": 2600,
+      "criteriaId": 29,
+      "title": "❓ Модульность кода?",
+      "type": "question",
+      "phase": "other"
+    },
+    "modular-code": {
+      "x": 3200,
+      "y": 2800,
+      "criteriaId": 29,
+      "title": "✅ Модульный",
+      "type": "critical",
+      "phase": "other"
+    },
+    "monolith-code": {
+      "x": 3800,
+      "y": 2800,
+      "criteriaId": 29,
+      "title": "❌ Монолитный",
+      "type": "rejected",
+      "phase": "other"
+    }
+  },
+  "dependencies": {
+    "q1": [
+      "modular-arch",
+      "monolith-arch"
+    ],
+    "q2": [
+      "all-blocks",
+      "mixed-model"
+    ],
+    "q3": [
+      "uuid-v4",
+      "uuid-v7"
+    ],
+    "q4": [
+      "nested-blocks",
+      "flat-only"
+    ],
+    "q5": [
+      "drag-drop-native",
+      "drag-drop-lib"
+    ],
+    "q6": [
+      "markdown-rich",
+      "wysiwyg-rich"
+    ],
+    "q7": [
+      "refs-uuid",
+      "refs-alias"
+    ],
+    "q8": [
+      "backlinks-auto",
+      "backlinks-manual"
+    ],
+    "q9": [
+      "json-storage",
+      "sqlite-storage",
+      "hybrid-storage"
+    ],
+    "q10": [
+      "offline-full",
+      "offline-partial"
+    ],
+    "q11": [
+      "declarative-ui",
+      "imperative-ui"
+    ],
+    "q12": [
+      "zero-runtime",
+      "stateful-runtime"
+    ],
+    "q13": [
+      "yjs-crdt",
+      "automerge-crdt"
+    ],
+    "q14": [
+      "event-sourcing-separate",
+      "event-sourcing-crdt"
+    ],
+    "q15": [
+      "json-schema",
+      "typescript-schema",
+      "zod-schema"
+    ],
+    "q16": [
+      "crdt-only",
+      "crdt-hybrid"
+    ],
+    "q17": [
+      "atomic-transactions",
+      "simple-ops"
+    ],
+    "q18": [
+      "refs-crdt-first",
+      "refs-crdt-secondary"
+    ],
+    "q19": [
+      "flat-graph",
+      "page-hierarchy"
+    ],
+    "q20": [
+      "no-global-state",
+      "global-state"
+    ],
+    "q21": [
+      "virtual-scrolling",
+      "lazy-loading"
+    ],
+    "q22": [
+      "web-workers-all",
+      "web-workers-search"
+    ],
+    "q23": [
+      "circular-render",
+      "circular-creation"
+    ],
+    "q24": [
+      "e2ee-ready",
+      "e2ee-later"
+    ],
+    "q25": [
+      "crdt-merge",
+      "manual-merge"
+    ],
+    "q26": [
+      "plugin-unified",
+      "plugin-mixed"
+    ],
+    "q27": [
+      "composite-blocks",
+      "simple-blocks"
+    ],
+    "q28": [
+      "block-state-json",
+      "block-state-simple"
+    ],
+    "q29": [
+      "modular-code",
+      "monolith-code"
+    ]
+  },
+  "phaseDependencies": {
+    "blocking": [
+      {
+        "from": "modular-arch",
+        "to": "declarative-ui"
+      },
+      {
+        "from": "all-blocks",
+        "to": "nested-blocks"
+      },
+      {
+        "from": "uuid-v4",
+        "to": "refs-uuid"
+      },
+      {
+        "from": "yjs-crdt",
+        "to": "crdt-only"
+      }
+    ],
+    "hard": [
+      {
+        "from": "declarative-ui",
+        "to": "zero-runtime"
+      },
+      {
+        "from": "declarative-ui",
+        "to": "virtual-scrolling"
+      }
+    ],
+    "soft": [
+      {
+        "from": "virtual-scrolling",
+        "to": "web-workers-all"
+      },
+      {
+        "from": "plugin-unified",
+        "to": "composite-blocks"
+      }
+    ]
+  },
+  "useOriginalPositions": true
+}
