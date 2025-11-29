@@ -1,0 +1,694 @@
+{
+  "nodes": [
+    {
+      "id": "q1",
+      "type": "question",
+      "title": "❓ Модульность движка?",
+      "description": "Ядро отделено от UI и плагинов",
+      "details": "Критерий 1 | Уровень 0 | Неделя 1",
+      "children": ["modular-arch"],
+      "criteriaId": 1,
+      "level": 0,
+      "week": 1,
+      "dependencies": []
+    },
+    {
+      "id": "modular-arch",
+      "type": "critical",
+      "title": "✅ Модульная архитектура",
+      "description": "Структура папок, Module loader",
+      "details": "➕ Тестирование ➖ Сложность | Блокирует: q2,q29",
+      "children": [],
+      "criteriaId": 1,
+      "blocks": ["q2", "q29"]
+    },
+    {
+      "id": "q29",
+      "type": "question",
+      "title": "❓ Модульность кода?",
+      "description": "Файлы ≤500 строк, функции ≤50",
+      "details": "Критерий 29 | Уровень 0 | Неделя 1",
+      "children": ["modular-code"],
+      "criteriaId": 29,
+      "level": 0,
+      "week": 1,
+      "dependencies": ["modular-arch"]
+    },
+    {
+      "id": "modular-code",
+      "type": "critical",
+      "title": "✅ Модульный код",
+      "description": "Максимальная модульность",
+      "details": "➕ AI-friendly ➖ Много файлов | Блокирует: q2",
+      "children": [],
+      "criteriaId": 29,
+      "blocks": ["q2"]
+    },
+    {
+      "id": "q2",
+      "type": "question",
+      "title": "❓ Блочность элементов?",
+      "description": "Всё является блоками",
+      "details": "Критерий 2 | Уровень 0 | Неделя 1",
+      "children": ["all-blocks"],
+      "criteriaId": 2,
+      "level": 0,
+      "week": 1,
+      "dependencies": ["modular-arch", "modular-code"]
+    },
+    {
+      "id": "all-blocks",
+      "type": "critical",
+      "title": "✅ Всё - блоки",
+      "description": "Единая модель данных",
+      "details": "➕ Единые операции ➖ Сложность | Блокирует: q3,q4",
+      "children": [],
+      "criteriaId": 2,
+      "blocks": ["q3", "q4"]
+    },
+    {
+      "id": "q3",
+      "type": "question",
+      "title": "❓ UUID для блоков?",
+      "description": "Уникальные глобальные ID",
+      "details": "Критерий 3 | Уровень 0 | Неделя 1",
+      "children": ["uuid-v4"],
+      "criteriaId": 3,
+      "level": 0,
+      "week": 1,
+      "dependencies": ["all-blocks"]
+    },
+    {
+      "id": "uuid-v4",
+      "type": "critical",
+      "title": "✅ UUID v4",
+      "description": "Случайные UUID",
+      "details": "➕ Проверенные ➖ Нет сортировки | Блокирует: q4,q7",
+      "children": [],
+      "criteriaId": 3,
+      "blocks": ["q4", "q7"]
+    },
+    {
+      "id": "q4",
+      "type": "question",
+      "title": "❓ Вложенные блоки?",
+      "description": "Иерархия любой глубины",
+      "details": "Критерий 4 | Уровень 0 | Неделя 1",
+      "children": ["nested-blocks"],
+      "criteriaId": 4,
+      "level": 0,
+      "week": 1,
+      "dependencies": ["all-blocks", "uuid-v4"]
+    },
+    {
+      "id": "nested-blocks",
+      "type": "critical",
+      "title": "✅ Вложенные блоки",
+      "description": "Tree structure",
+      "details": "➕ Естественная структура ➖ Сложность | Блокирует: q13",
+      "children": [],
+      "criteriaId": 4,
+      "blocks": ["q13"]
+    },
+    {
+      "id": "q13",
+      "type": "question",
+      "title": "❓ Какую CRDT?",
+      "description": "Single source of truth",
+      "details": "Критерий 13 | Уровень 0 | Неделя 2",
+      "children": ["yjs-crdt"],
+      "criteriaId": 13,
+      "level": 0,
+      "week": 2,
+      "dependencies": ["nested-blocks"]
+    },
+    {
+      "id": "yjs-crdt",
+      "type": "critical",
+      "title": "✅ Yjs CRDT",
+      "description": "Быстрая, популярная",
+      "details": "➕ Производительность ➖ Сложность API | Блокирует: q14,q16,q17",
+      "children": [],
+      "criteriaId": 13,
+      "blocks": ["q14", "q16", "q17"]
+    },
+    {
+      "id": "q14",
+      "type": "question",
+      "title": "❓ Event Sourcing?",
+      "description": "Immutable ops log",
+      "details": "Критерий 14 | Уровень 0 | Неделя 2",
+      "children": ["event-sourcing-separate"],
+      "criteriaId": 14,
+      "level": 0,
+      "week": 2,
+      "dependencies": ["yjs-crdt"]
+    },
+    {
+      "id": "event-sourcing-separate",
+      "type": "critical",
+      "title": "✅ Отдельный лог",
+      "description": "Operations log",
+      "details": "➕ Полный аудит ➖ Дублирование | Блокирует: q16",
+      "children": [],
+      "criteriaId": 14,
+      "blocks": ["q16"]
+    },
+    {
+      "id": "q16",
+      "type": "question",
+      "title": "❓ Все через CRDT?",
+      "description": "Все изменения через CRDT",
+      "details": "Критерий 16 | Уровень 0 | Неделя 2",
+      "children": ["crdt-only"],
+      "criteriaId": 16,
+      "level": 0,
+      "week": 2,
+      "dependencies": ["yjs-crdt", "event-sourcing-separate"]
+    },
+    {
+      "id": "crdt-only",
+      "type": "critical",
+      "title": "✅ Только CRDT",
+      "description": "Все изменения через CRDT",
+      "details": "➕ Будущая коллаборация ➖ Сложность | Блокирует: q17",
+      "children": [],
+      "criteriaId": 16,
+      "blocks": ["q17"]
+    },
+    {
+      "id": "q17",
+      "type": "question",
+      "title": "❓ Атомарные транзакции?",
+      "description": "Целостность данных",
+      "details": "Критерий 17 | Уровень 0 | Неделя 2",
+      "children": ["atomic-transactions"],
+      "criteriaId": 17,
+      "level": 0,
+      "week": 2,
+      "dependencies": ["crdt-only"]
+    },
+    {
+      "id": "atomic-transactions",
+      "type": "critical",
+      "title": "✅ Атомарные транзакции",
+      "description": "Transaction manager",
+      "details": "➕ Нормальный undo/redo ➖ Сложность | Блокирует: q9",
+      "children": [],
+      "criteriaId": 17,
+      "blocks": ["q9"]
+    },
+    {
+      "id": "q9",
+      "type": "question",
+      "title": "❓ Локальные данные?",
+      "description": "Открытый читаемый формат",
+      "details": "Критерий 9 | Уровень 0 | Неделя 3",
+      "children": ["json-storage"],
+      "criteriaId": 9,
+      "level": 0,
+      "week": 3,
+      "dependencies": ["atomic-transactions"]
+    },
+    {
+      "id": "json-storage",
+      "type": "critical",
+      "title": "✅ JSON Storage",
+      "description": "Человекочитаемые файлы",
+      "details": "➕ Прозрачность ➖ Медленные запросы | Блокирует: q10,q24",
+      "children": [],
+      "criteriaId": 9,
+      "blocks": ["q10", "q24"]
+    },
+    {
+      "id": "q10",
+      "type": "question",
+      "title": "❓ Оффлайн работа?",
+      "description": "Полная оффлайн-работа",
+      "details": "Критерий 10 | Уровень 0 | Неделя 3",
+      "children": ["offline-full"],
+      "criteriaId": 10,
+      "level": 0,
+      "week": 3,
+      "dependencies": ["json-storage"]
+    },
+    {
+      "id": "offline-full",
+      "type": "critical",
+      "title": "✅ Полная оффлайн",
+      "description": "Все функции без сети",
+      "details": "➕ Must-have для PKM ➖ Сложность | Блокирует: q24",
+      "children": [],
+      "criteriaId": 10,
+      "blocks": ["q24"]
+    },
+    {
+      "id": "q24",
+      "type": "question",
+      "title": "❓ E2EE готовность?",
+      "description": "Формат готов к шифрованию",
+      "details": "Критерий 24 | Уровень 0 | Неделя 3",
+      "children": ["e2ee-ready"],
+      "criteriaId": 24,
+      "level": 0,
+      "week": 3,
+      "dependencies": ["json-storage", "offline-full"]
+    },
+    {
+      "id": "e2ee-ready",
+      "type": "critical",
+      "title": "✅ E2EE готовность",
+      "description": "Encryption layer",
+      "details": "➕ Никаких breaking changes ➖ Усложнение | Блокирует: q7",
+      "children": [],
+      "criteriaId": 24,
+      "blocks": ["q7"]
+    },
+    {
+      "id": "q7",
+      "type": "question",
+      "title": "❓ Refs по UUID?",
+      "description": "Ссылки на другие блоки",
+      "details": "Критерий 7 | Уровень 0 | Неделя 4",
+      "children": ["refs-uuid"],
+      "criteriaId": 7,
+      "level": 0,
+      "week": 4,
+      "dependencies": ["uuid-v4", "e2ee-ready"]
+    },
+    {
+      "id": "refs-uuid",
+      "type": "critical",
+      "title": "✅ Refs по UUID",
+      "description": "Прямые ссылки",
+      "details": "➕ Надёжность ➖ Нечитаемость | Блокирует: q8,q18",
+      "children": [],
+      "criteriaId": 7,
+      "blocks": ["q8", "q18"]
+    },
+    {
+      "id": "q8",
+      "type": "question",
+      "title": "❓ Backlinks?",
+      "description": "Обратные ссылки",
+      "details": "Критерий 8 | Уровень 0 | Неделя 4",
+      "children": ["backlinks-auto"],
+      "criteriaId": 8,
+      "level": 0,
+      "week": 4,
+      "dependencies": ["refs-uuid"]
+    },
+    {
+      "id": "backlinks-auto",
+      "type": "critical",
+      "title": "✅ Автоматические backlinks",
+      "description": "Автообновление",
+      "details": "➕ Магия двусторонних связей ➖ Производительность | Блокирует: q18",
+      "children": [],
+      "criteriaId": 8,
+      "blocks": ["q18"]
+    },
+    {
+      "id": "q18",
+      "type": "question",
+      "title": "❓ Refs в CRDT?",
+      "description": "First-class в CRDT",
+      "details": "Критерий 18 | Уровень 0 | Неделя 4",
+      "children": ["refs-crdt-first"],
+      "criteriaId": 18,
+      "level": 0,
+      "week": 4,
+      "dependencies": ["refs-uuid", "backlinks-auto"]
+    },
+    {
+      "id": "refs-crdt-first",
+      "type": "critical",
+      "title": "✅ First-class refs",
+      "description": "Ссылки как основные объекты",
+      "details": "➕ Быстрые запросы ➖ Сложность | Блокирует: q19",
+      "children": [],
+      "criteriaId": 18,
+      "blocks": ["q19"]
+    },
+    {
+      "id": "q19",
+      "type": "question",
+      "title": "❓ Плоский граф?",
+      "description": "Блоки ≠ страницы",
+      "details": "Критерий 19 | Уровень 0 | Неделя 5",
+      "children": ["flat-graph"],
+      "criteriaId": 19,
+      "level": 0,
+      "week": 5,
+      "dependencies": ["refs-crdt-first"]
+    },
+    {
+      "id": "flat-graph",
+      "type": "critical",
+      "title": "✅ Плоский граф",
+      "description": "Все блоки равноправны",
+      "details": "➕ Гибкие transclusion ➖ Сложность навигации | Блокирует: q23",
+      "children": [],
+      "criteriaId": 19,
+      "blocks": ["q23"]
+    },
+    {
+      "id": "q23",
+      "type": "question",
+      "title": "❓ Обнаружение циклов?",
+      "description": "Circular Reference Detection",
+      "details": "Критерий 23 | Уровень 0 | Неделя 5",
+      "children": ["circular-render"],
+      "criteriaId": 23,
+      "level": 0,
+      "week": 5,
+      "dependencies": ["flat-graph"]
+    },
+    {
+      "id": "circular-render",
+      "type": "critical",
+      "title": "✅ При рендере",
+      "description": "Проверка при отображении",
+      "details": "➕ Надёжность ➖ Накладные расходы | Блокирует: q15",
+      "children": [],
+      "criteriaId": 23,
+      "blocks": ["q15"]
+    },
+    {
+      "id": "q15",
+      "type": "question",
+      "title": "❓ Schema-first?",
+      "description": "Runtime валидация",
+      "details": "Критерий 15 | Уровень 0 | Неделя 5",
+      "children": ["json-schema"],
+      "criteriaId": 15,
+      "level": 0,
+      "week": 5,
+      "dependencies": ["circular-render"]
+    },
+    {
+      "id": "json-schema",
+      "type": "critical",
+      "title": "✅ JSON Schema",
+      "description": "Стандартная валидация",
+      "details": "➕ Стандарт ➖ Ограниченная выразительность | Блокирует: q11",
+      "children": [],
+      "criteriaId": 15,
+      "blocks": ["q11"]
+    },
+    {
+      "id": "q11",
+      "type": "question",
+      "title": "❓ Декларативный UI?",
+      "description": "100% декларативный",
+      "details": "Критерий 11 | Уровень 0 | Неделя 6",
+      "children": ["declarative-ui"],
+      "criteriaId": 11,
+      "level": 0,
+      "week": 6,
+      "dependencies": ["json-schema"]
+    },
+    {
+      "id": "declarative-ui",
+      "type": "critical",
+      "title": "✅ Декларативный UI",
+      "description": "JSON-структуры",
+      "details": "➕ Предсказуемость ➖ Сложность | Блокирует: q12,q20",
+      "children": [],
+      "criteriaId": 11,
+      "blocks": ["q12", "q20"]
+    },
+    {
+      "id": "q12",
+      "type": "question",
+      "title": "❓ Zero runtime logic?",
+      "description": "Чистая функция рендера",
+      "details": "Критерий 12 | Уровень 0 | Неделя 6",
+      "children": ["zero-runtime"],
+      "criteriaId": 12,
+      "level": 0,
+      "week": 6,
+      "dependencies": ["declarative-ui"]
+    },
+    {
+      "id": "zero-runtime",
+      "type": "critical",
+      "title": "✅ Чистые функции",
+      "description": "Никакой runtime логики",
+      "details": "➕ Нет race conditions ➖ Сложность | Блокирует: q20",
+      "children": [],
+      "criteriaId": 12,
+      "blocks": ["q20"]
+    },
+    {
+      "id": "q20",
+      "type": "question",
+      "title": "❓ Глобальное состояние?",
+      "description": "Отсутствие mutable состояния",
+      "details": "Критерий 20 | Уровень 0 | Неделя 6",
+      "children": ["no-global-state"],
+      "criteriaId": 20,
+      "level": 0,
+      "week": 6,
+      "dependencies": ["declarative-ui", "zero-runtime"]
+    },
+    {
+      "id": "no-global-state",
+      "type": "critical",
+      "title": "✅ Локальное состояние",
+      "description": "Никакого глобального mutable",
+      "details": "➕ Предсказуемость ➖ Сложность | Блокирует: q21",
+      "children": [],
+      "criteriaId": 20,
+      "blocks": ["q21"]
+    },
+    {
+      "id": "q21",
+      "type": "question",
+      "title": "❓ Virtual scrolling?",
+      "description": "100k+ блоков",
+      "details": "Критерий 21 | Уровень 0 | Неделя 7",
+      "children": ["virtual-scrolling"],
+      "criteriaId": 21,
+      "level": 0,
+      "week": 7,
+      "dependencies": ["no-global-state"]
+    },
+    {
+      "id": "virtual-scrolling",
+      "type": "critical",
+      "title": "✅ Virtual scrolling",
+      "description": "Рендер только видимых",
+      "details": "➕ 100к+ без тормозов ➖ Сложность | Блокирует: q22",
+      "children": [],
+      "criteriaId": 21,
+      "blocks": ["q22"]
+    },
+    {
+      "id": "q22",
+      "type": "question",
+      "title": "❓ Web Workers?",
+      "description": "Тяжёлые операции в потоке",
+      "details": "Критерий 22 | Уровень 0 | Неделя 7",
+      "children": ["web-workers-all"],
+      "criteriaId": 22,
+      "level": 0,
+      "week": 7,
+      "dependencies": ["virtual-scrolling"]
+    },
+    {
+      "id": "web-workers-all",
+      "type": "critical",
+      "title": "✅ Все операции",
+      "description": "Поиск, индексация, CRDT",
+      "details": "➕ UI отзывчивый ➖ Сложность API | Блокирует: q6",
+      "children": [],
+      "criteriaId": 22,
+      "blocks": ["q6"]
+    },
+    {
+      "id": "q6",
+      "type": "question",
+      "title": "❓ Rich Text?",
+      "description": "Markdown + сущности",
+      "details": "Критерий 6 | Уровень 1 | Неделя 8",
+      "children": ["markdown-rich"],
+      "criteriaId": 6,
+      "level": 1,
+      "week": 8,
+      "dependencies": ["web-workers-all"]
+    },
+    {
+      "id": "markdown-rich",
+      "type": "critical",
+      "title": "✅ Markdown+",
+      "description": "Markdown + ссылки/блоки",
+      "details": "➕ Простота ➖ Кривая обучения | Блокирует: q5",
+      "children": [],
+      "criteriaId": 6,
+      "blocks": ["q5"]
+    },
+    {
+      "id": "q5",
+      "type": "question",
+      "title": "❓ Drag & Drop?",
+      "description": "Порядок блоков",
+      "details": "Критерий 5 | Уровень 1 | Неделя 8",
+      "children": ["drag-drop-native"],
+      "criteriaId": 5,
+      "level": 1,
+      "week": 8,
+      "dependencies": ["markdown-rich"]
+    },
+    {
+      "id": "drag-drop-native",
+      "type": "critical",
+      "title": "✅ Нативный DnD",
+      "description": "HTML5 DnD API",
+      "details": "➕ Производительность ➖ Сложность | Блокирует: q26",
+      "children": [],
+      "criteriaId": 5,
+      "blocks": ["q26"]
+    },
+    {
+      "id": "q26",
+      "type": "question",
+      "title": "❓ Плагинная система?",
+      "description": "Единый механизм",
+      "details": "Критерий 26 | Уровень 0 | Неделя 9",
+      "children": ["plugin-unified"],
+      "criteriaId": 26,
+      "level": 0,
+      "week": 9,
+      "dependencies": ["drag-drop-native"]
+    },
+    {
+      "id": "plugin-unified",
+      "type": "critical",
+      "title": "✅ Единая система",
+      "description": "Единый механизм для всех",
+      "details": "➕ Предсказуемость ➖ Ограничения | Блокирует: q27,q28",
+      "children": [],
+      "criteriaId": 26,
+      "blocks": ["q27", "q28"]
+    },
+    {
+      "id": "q27",
+      "type": "question",
+      "title": "❓ Композитные блоки?",
+      "description": "Блоки содержащие другие",
+      "details": "Критерий 27 | Уровень 0 | Неделя 9",
+      "children": ["composite-blocks"],
+      "criteriaId": 27,
+      "level": 0,
+      "week": 9,
+      "dependencies": ["plugin-unified"]
+    },
+    {
+      "id": "composite-blocks",
+      "type": "critical",
+      "title": "✅ Поддержка",
+      "description": "Сложные структуры",
+      "details": "➕ Мощные возможности ➖ Сложность | Блокирует: q28",
+      "children": [],
+      "criteriaId": 27,
+      "blocks": ["q28"]
+    },
+    {
+      "id": "q28",
+      "type": "question",
+      "title": "❓ Состояние блоков?",
+      "description": "Сохраняемое состояние",
+      "details": "Критерий 28 | Уровень 0 | Неделя 9",
+      "children": ["block-state-json"],
+      "criteriaId": 28,
+      "level": 0,
+      "week": 9,
+      "dependencies": ["composite-blocks"]
+    },
+    {
+      "id": "block-state-json",
+      "type": "critical",
+      "title": "✅ JSON состояние",
+      "description": "Плагины сохраняют настройки",
+      "details": "➕ Виджеты работают ➖ Усложнение | Блокирует: q25",
+      "children": [],
+      "criteriaId": 28,
+      "blocks": ["q25"]
+    },
+    {
+      "id": "q25",
+      "type": "question",
+      "title": "❓ Конфликт-менеджмент?",
+      "description": "При синхронизации",
+      "details": "Критерий 25 | Уровень 0 | Неделя 10",
+      "children": ["crdt-merge"],
+      "criteriaId": 25,
+      "level": 0,
+      "week": 10,
+      "dependencies": ["block-state-json"]
+    },
+    {
+      "id": "crdt-merge",
+      "type": "critical",
+      "title": "✅ CRDT merge",
+      "description": "Автоматическое слияние",
+      "details": "➕ Оффлайн-first ➖ Не все конфликты разрешимы",
+      "children": [],
+      "criteriaId": 25
+    }
+  ],
+  "compatibility": {},
+  "sequentialPlan": {
+    "week1": {
+      "criteria": [1, 29, 2, 3, 4],
+      "nodes": ["q1", "modular-arch", "q29", "modular-code", "q2", "all-blocks", "q3", "uuid-v4", "q4", "nested-blocks"],
+      "milestone": "Модульная архитектура + Блочная система"
+    },
+    "week2": {
+      "criteria": [13, 14, 16, 17],
+      "nodes": ["q13", "yjs-crdt", "q14", "event-sourcing-separate", "q16", "crdt-only", "q17", "atomic-transactions"],
+      "milestone": "CRDT Foundation"
+    },
+    "week3": {
+      "criteria": [9, 10, 24],
+      "nodes": ["q9", "json-storage", "q10", "offline-full", "q24", "e2ee-ready"],
+      "milestone": "Storage + Offline + E2EE"
+    },
+    "week4": {
+      "criteria": [7, 8, 18],
+      "nodes": ["q7", "refs-uuid", "q8", "backlinks-auto", "q18", "refs-crdt-first"],
+      "milestone": "References System"
+    },
+    "week5": {
+      "criteria": [19, 23, 15],
+      "nodes": ["q19", "flat-graph", "q23", "circular-render", "q15", "json-schema"],
+      "milestone": "Graph + Validation"
+    },
+    "week6": {
+      "criteria": [11, 12, 20],
+      "nodes": ["q11", "declarative-ui", "q12", "zero-runtime", "q20", "no-global-state"],
+      "milestone": "Declarative UI Core"
+    },
+    "week7": {
+      "criteria": [21, 22],
+      "nodes": ["q21", "virtual-scrolling", "q22", "web-workers-all"],
+      "milestone": "Performance (Virtual Scroll + Workers)"
+    },
+    "week8": {
+      "criteria": [6, 5],
+      "nodes": ["q6", "markdown-rich", "q5", "drag-drop-native"],
+      "milestone": "Content Editing"
+    },
+    "week9": {
+      "criteria": [26, 27, 28],
+      "nodes": ["q26", "plugin-unified", "q27", "composite-blocks", "q28", "block-state-json"],
+      "milestone": "Plugin System"
+    },
+    "week10": {
+      "criteria": [25],
+      "nodes": ["q25", "crdt-merge"],
+      "milestone": "Collaboration"
+    }
+  }
+}
