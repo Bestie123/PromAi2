@@ -147,22 +147,23 @@
         function calculatePositions(data) {
             const { columnWidth, rowHeight, startX, startY } = data.layout;
             const positions = {};
-            const phases = { foundation: [], core: [], features: [], polish: [], other: [] };
+            const byCriteria = {};
             
+            // Группируем по criteriaId
             Object.keys(data.nodes).forEach(id => {
-                const phase = data.nodes[id].phase;
-                phases[phase].push(id);
+                const criteriaId = data.nodes[id].criteriaId;
+                if (!byCriteria[criteriaId]) byCriteria[criteriaId] = [];
+                byCriteria[criteriaId].push(id);
             });
             
-            let col = 0;
-            ['foundation', 'core', 'features', 'polish', 'other'].forEach(phase => {
-                phases[phase].forEach((id, row) => {
+            // Позиционируем: колонка = criteriaId, строка = индекс в группе
+            Object.keys(byCriteria).sort((a, b) => a - b).forEach((criteriaId, col) => {
+                byCriteria[criteriaId].forEach((id, row) => {
                     positions[id] = {
                         x: startX + col * columnWidth,
                         y: startY + row * rowHeight
                     };
                 });
-                col++;
             });
             
             return positions;
