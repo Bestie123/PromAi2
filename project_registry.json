@@ -1,6 +1,6 @@
 {
-  "version": "2.0.0",
-  "lastUpdated": "2024-12-19T15:00:00Z",
+  "version": "1.0.0",
+  "lastUpdated": "2024-12-19T12:00:00Z",
   "modules": {
     "MODULE_Core_VER_1": {
       "path": "./src/core/",
@@ -13,13 +13,7 @@
         "FUNC_addReference_1",
         "FUNC_removeReference_1"
       ],
-      "status": "planned",
-      "phase": 1,
-      "priority": "critical",
-      "criteria": [1, 2, 3],
-      "estimatedWeeks": 6,
-      "enables": ["MODULE_UI_VER_1", "MODULE_Plugin_VER_1", "MODULE_Search_VER_1"],
-      "blocks": []
+      "status": "planned"
     },
     "MODULE_CRDT_VER_1": {
       "path": "./src/crdt/",
@@ -30,15 +24,7 @@
         "FUNC_mergeOperations_1",
         "FUNC_resolveConflict_1"
       ],
-      "status": "planned",
-      "phase": 1,
-      "priority": "critical",
-      "criteria": [13],
-      "estimatedWeeks": 4,
-      "enables": ["MODULE_Storage_VER_1"],
-      "blocks": [],
-      "risk": "high",
-      "mitigation": "Прототип CRDT операций в первую неделю"
+      "status": "planned"
     },
     "MODULE_Storage_VER_1": {
       "path": "./src/storage/",
@@ -49,13 +35,7 @@
         "FUNC_loadBlocks_1",
         "FUNC_createSnapshot_1"
       ],
-      "status": "planned",
-      "phase": 3,
-      "priority": "important",
-      "criteria": [9, 10, 16],
-      "estimatedWeeks": 3,
-      "enables": [],
-      "blocks": ["MODULE_CRDT_VER_1"]
+      "status": "planned"
     },
     "MODULE_UI_VER_1": {
       "path": "./src/ui/",
@@ -66,15 +46,7 @@
         "FUNC_virtualScroll_1",
         "FUNC_handleDragDrop_1"
       ],
-      "status": "planned",
-      "phase": 2,
-      "priority": "critical",
-      "criteria": [11, 12, 21],
-      "estimatedWeeks": 5,
-      "enables": ["MODULE_Plugin_VER_1"],
-      "blocks": ["MODULE_Core_VER_1"],
-      "risk": "high",
-      "mitigation": "Benchmark с 100k блоков"
+      "status": "planned"
     },
     "MODULE_Plugin_VER_1": {
       "path": "./src/plugins/",
@@ -85,15 +57,7 @@
         "FUNC_executePlugin_1",
         "FUNC_sandboxPlugin_1"
       ],
-      "status": "planned",
-      "phase": 3,
-      "priority": "critical",
-      "criteria": [26, 27, 28],
-      "estimatedWeeks": 5,
-      "enables": [],
-      "blocks": ["MODULE_Core_VER_1", "MODULE_UI_VER_1"],
-      "risk": "high",
-      "mitigation": "Sandbox прототип"
+      "status": "planned"
     },
     "MODULE_Search_VER_1": {
       "path": "./src/search/",
@@ -104,13 +68,7 @@
         "FUNC_searchBlocks_1",
         "FUNC_updateIndex_1"
       ],
-      "status": "planned",
-      "phase": 4,
-      "priority": "important",
-      "criteria": [22],
-      "estimatedWeeks": 3,
-      "enables": [],
-      "blocks": ["MODULE_Core_VER_1"]
+      "status": "planned"
     }
   },
   "constraints": {
@@ -118,50 +76,5 @@
     "maxFunctionLines": 50,
     "maxParameters": 3,
     "circularDependencies": "forbidden"
-  },
-  "developmentPhases": {
-    "phase1_foundation": {
-      "order": 1,
-      "name": "Foundation",
-      "description": "Несущие стены архитектуры",
-      "weeks": 10,
-      "parallel": false,
-      "modules": ["MODULE_Core_VER_1", "MODULE_CRDT_VER_1"],
-      "criteria": [1, 2, 3, 13],
-      "deliverables": ["Block schema", "CRDT operations", "UUID system", "Modular structure"]
-    },
-    "phase2_core": {
-      "order": 2,
-      "name": "Core",
-      "description": "Основная функциональность",
-      "weeks": 6,
-      "parallel": true,
-      "modules": ["MODULE_UI_VER_1"],
-      "criteria": [11, 12, 4, 7, 8],
-      "dependsOn": ["phase1_foundation"],
-      "deliverables": ["Declarative UI", "Render system", "Refs system"]
-    },
-    "phase3_features": {
-      "order": 3,
-      "name": "Features",
-      "description": "Ключевые возможности",
-      "weeks": 8,
-      "parallel": true,
-      "modules": ["MODULE_Storage_VER_1", "MODULE_Plugin_VER_1"],
-      "criteria": [16, 21, 26, 9, 10],
-      "dependsOn": ["phase2_core"],
-      "deliverables": ["Virtual scrolling", "Plugin system", "Storage system"]
-    },
-    "phase4_polish": {
-      "order": 4,
-      "name": "Polish",
-      "description": "Доводка и оптимизация",
-      "weeks": 10,
-      "parallel": true,
-      "modules": ["MODULE_Search_VER_1"],
-      "criteria": [14, 15, 17, 18, 19, 20, 22, 23, 24, 25, 27, 28, 29],
-      "dependsOn": ["phase3_features"],
-      "deliverables": ["Event sourcing", "Schema validation", "E2EE ready", "Production ready"]
-    }
   }
 }
