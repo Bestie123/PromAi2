@@ -32,8 +32,15 @@
         
         .dependency-line {
             position: absolute; height: 2px; transform-origin: left center; z-index: -1;
+            background: #58a6ff;
+            opacity: 0.4;
+        }
+        
+        .phase-dependency-line {
+            position: absolute; height: 3px; transform-origin: left center; z-index: -1;
             background: linear-gradient(90deg, #f85149, #3fb950);
-            opacity: 0.6;
+            opacity: 0.8;
+            box-shadow: 0 0 6px rgba(248, 81, 73, 0.5);
         }
         
         .controls {
@@ -168,24 +175,39 @@
             });
             
             let depCount = 0;
+            
+            // Рендерим обычные зависимости (вопрос->ответ)
             Object.keys(data.dependencies).forEach(from => {
                 data.dependencies[from].forEach(to => {
                     if (positions[from] && positions[to]) {
-                        const line = createLine(positions[from], positions[to]);
+                        const line = createLine(positions[from], positions[to], 'normal');
                         canvas.appendChild(line);
                         depCount++;
                     }
                 });
             });
             
+            // Рендерим фазовые зависимости
+            if (data.phaseDependencies) {
+                Object.keys(data.phaseDependencies).forEach(from => {
+                    data.phaseDependencies[from].forEach(to => {
+                        if (positions[from] && positions[to]) {
+                            const line = createLine(positions[from], positions[to], 'phase');
+                            canvas.appendChild(line);
+                            depCount++;
+                        }
+                    });
+                });
+            }
+            
             document.getElementById('nodeCount').textContent = Object.keys(data.nodes).length;
             document.getElementById('depCount').textContent = depCount;
             updateTransform();
         }
 
-        function createLine(from, to) {
+        function createLine(from, to, type) {
             const line = document.createElement('div');
-            line.className = 'dependency-line';
+            line.className = type === 'phase' ? 'phase-dependency-line' : 'dependency-line';
             
             const dx = to.x - from.x;
             const dy = to.y - from.y;
