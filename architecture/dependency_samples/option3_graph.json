@@ -1,0 +1,39 @@
+{
+  "name": "Dependency Graph",
+  "description": "Граф зависимостей с весами и типами связей",
+  "nodes": {
+    "1": {"weight": 10, "type": "foundation", "risk": "low"},
+    "2": {"weight": 10, "type": "foundation", "risk": "low"},
+    "3": {"weight": 7, "type": "foundation", "risk": "low"},
+    "13": {"weight": 9, "type": "foundation", "risk": "high"},
+    "11": {"weight": 8, "type": "core", "risk": "medium"},
+    "12": {"weight": 8, "type": "core", "risk": "medium"},
+    "21": {"weight": 7, "type": "feature", "risk": "high"},
+    "26": {"weight": 6, "type": "feature", "risk": "high"}
+  },
+  "edges": [
+    {"from": 1, "to": 11, "type": "enables", "strength": "strong", "delay": 0},
+    {"from": 1, "to": 12, "type": "enables", "strength": "strong", "delay": 0},
+    {"from": 1, "to": 26, "type": "enables", "strength": "medium", "delay": 1},
+    {"from": 2, "to": 4, "type": "requires", "strength": "strong", "delay": 0},
+    {"from": 2, "to": 7, "type": "enables", "strength": "medium", "delay": 1},
+    {"from": 2, "to": 8, "type": "enables", "strength": "medium", "delay": 1},
+    {"from": 13, "to": 16, "type": "enables", "strength": "strong", "delay": 0},
+    {"from": 13, "to": 14, "type": "enables", "strength": "medium", "delay": 2},
+    {"from": 11, "to": 12, "type": "requires", "strength": "strong", "delay": 0},
+    {"from": 11, "to": 21, "type": "enables", "strength": "medium", "delay": 2}
+  ],
+  "critical_path": [1, 2, 13, 11, 12, 21, 26],
+  "parallel_tracks": {
+    "foundation": [1, 2, 3, 13],
+    "ui": [11, 12, 21],
+    "data": [16, 9, 10],
+    "plugins": [26, 27, 28]
+  },
+  "bottlenecks": [13, 21, 26],
+  "risk_matrix": {
+    "high": [13, 21, 26],
+    "medium": [11, 12, 16],
+    "low": [1, 2, 3, 9, 10]
+  }
+}

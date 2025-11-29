@@ -1,0 +1,49 @@
+{
+  "name": "Development Phases",
+  "description": "Фазовая разработка с зависимостями между этапами",
+  "phases": {
+    "phase1_foundation": {
+      "priority": 1,
+      "criteria": [1, 2, 3, 13],
+      "nodes": ["modular-arch", "all-blocks", "uuid-v4", "yjs-crdt"],
+      "description": "Несущие стены",
+      "blocks": [],
+      "enables": ["phase2_core"],
+      "weeks": 4
+    },
+    "phase2_core": {
+      "priority": 2,
+      "criteria": [11, 12, 4, 7, 8],
+      "nodes": ["declarative-ui", "zero-runtime", "nested-blocks", "refs-uuid", "backlinks-auto"],
+      "description": "Основная функциональность",
+      "depends_on": ["phase1_foundation"],
+      "enables": ["phase3_features"],
+      "weeks": 6
+    },
+    "phase3_features": {
+      "priority": 3,
+      "criteria": [16, 21, 26, 9, 10],
+      "nodes": ["crdt-only", "virtual-scrolling", "plugin-unified", "json-storage", "offline-full"],
+      "description": "Ключевые возможности",
+      "depends_on": ["phase2_core"],
+      "enables": ["phase4_polish"],
+      "weeks": 8
+    },
+    "phase4_polish": {
+      "priority": 4,
+      "criteria": [14, 15, 17, 18, 19, 20, 22, 23, 24, 25, 27, 28, 29],
+      "description": "Доводка и оптимизация",
+      "depends_on": ["phase3_features"],
+      "weeks": 10
+    }
+  },
+  "milestones": {
+    "mvp": "phase2_core",
+    "beta": "phase3_features", 
+    "release": "phase4_polish"
+  },
+  "parallel_work": {
+    "phase2": ["UI mockups", "CRDT tests"],
+    "phase3": ["Plugin examples", "Performance tests"]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "name": "Enhanced JSON Dependencies",
+  "description": "Расширенная JSON структура с типами зависимостей",
+  "dependencies": {
+    "hard": {
+      "1": {
+        "enables": [11, 12, 26, 29],
+        "description": "Модульность enables UI/плагины/код",
+        "blocking": true
+      },
+      "2": {
+        "enables": [4, 7, 8, 16, 18, 19],
+        "description": "Блоки enable структуру",
+        "blocking": true
+      },
+      "13": {
+        "enables": [14, 16, 18, 25],
+        "description": "CRDT enables операции",
+        "blocking": true
+      }
+    },
+    "soft": {
+      "11": {
+        "enhances": [12, 20, 21],
+        "description": "UI enhances рендер"
+      },
+      "21": {
+        "enhances": [22],
+        "description": "Virtual scrolling + Workers"
+      },
+      "26": {
+        "enables": [27, 28],
+        "description": "Плагины enable композиты"
+      }
+    },
+    "blocking": {
+      "foundation": [1, 2, 13],
+      "ui": [11, 12],
+      "data": [3, 9, 16]
+    }
+  },
+  "development_order": [1, 2, 3, 13, 11, 12, 4, 7, 8, 16, 21, 26],
+  "validation": {
+    "required_first": [1, 2, 13],
+    "cannot_start_without": {
+      "11": [1],
+      "16": [2, 13],
+      "26": [1, 11]
+    }
+  }
+}
