@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вариант 1: Иерархические зависимости</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117; color: #c9d1d9; overflow: hidden;
+        }
+        #canvas { 
+            width: 8000px; height: 6000px; position: relative; 
+            background: radial-gradient(circle at 50% 50%, #161b22 0%, #0d1117 100%);
+            transform-origin: 0 0;
+        }
+        #viewport { 
+            width: 100vw; height: 100vh; overflow: hidden; position: relative;
+            cursor: grab; background: #0d1117;
+        }
+        #viewport.dragging { cursor: grabbing; }
+        
+        .node {
+            position: absolute; background: #21262d; border: 2px solid #30363d;
+            border-radius: 12px; padding: 16px; min-width: 280px; max-width: 320px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease;
+        }
+        .node:hover { transform: scale(1.05); box-shadow: 0 12px 48px rgba(0,0,0,0.6); }
+        
+        .critical { border-color: #f85149; background: linear-gradient(135deg, #21262d 0%, #2d1b1f 100%); }
+        .important { border-color: #f79009; background: linear-gradient(135deg, #21262d 0%, #2d2419 100%); }
+        .flexible { border-color: #3fb950; background: linear-gradient(135deg, #21262d 0%, #1b2d1f 100%); }
+        .question { border-color: #58a6ff; background: linear-gradient(135deg, #21262d 0%, #1b2332 100%); }
+        .rejected { border-color: #8b949e; background: linear-gradient(135deg, #21262d 0%, #2d2d2d 100%); opacity: 0.7; }
+        
+        .badge {
+            display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px;
+            font-weight: bold; margin-bottom: 8px;
+        }
+        .badge.critical { background: #f85149; color: #fff; }
+        .badge.important { background: #f79009; color: #fff; }
+        .badge.flexible { background: #3fb950; color: #fff; }
+        .badge.question { background: #58a6ff; color: #fff; }
+        .badge.rejected { background: #8b949e; color: #fff; }
+        
+        .node h3 { font-size: 14px; margin-bottom: 8px; color: #f0f6fc; }
+        .node p { font-size: 12px; line-height: 1.4; margin-bottom: 8px; color: #8b949e; }
+        .details { font-size: 11px; color: #6e7681; }
+        
+        .connection {
+            position: absolute; height: 3px; transform-origin: left center; z-index: -1;
+        }
+        .connection.blocking { background: #f85149; box-shadow: 0 0 8px rgba(248, 81, 73, 0.5); }
+        .connection.influencing { background: #f79009; box-shadow: 0 0 6px rgba(247, 144, 9, 0.4); }
+        .connection.compatible { background: #3fb950; box-shadow: 0 0 4px rgba(63, 185, 80, 0.3); }
+        
+        .controls {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 12px; border-radius: 8px;
+            border: 1px solid #30363d;
+        }
+        .controls button {
+            background: #238636; color: #fff; border: none; padding: 8px 12px;
+            border-radius: 6px; margin-right: 8px; cursor: pointer; font-size: 12px;
+        }
+        .controls button:hover { background: #2ea043; }
+        
+        .legend {
+            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 12px; border-radius: 8px;
+            border: 1px solid #30363d; font-size: 12px;
+        }
+        .legend-item {
+            display: flex; align-items: center; margin-bottom: 6px;
+        }
+        .legend-line {
+            width: 20px; height: 3px; margin-right: 8px; border-radius: 2px;
+        }
+        
+        .zoom-info {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 8px 12px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 12px;
+        }
+        
+        .stats {
+            position: fixed; bottom: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 8px 12px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 12px; color: #3fb950;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="resetView()">Сброс</button>
+        <button onclick="centerView()">Центр</button>
+        <span style="color: #8b949e; margin-left: 12px;">Иерархические зависимости по критичности</span>
+    </div>
+    
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-line" style="background: #f85149; box-shadow: 0 0 4px rgba(248, 81, 73, 0.5);"></div>
+            <span>🔴 Блокирующие</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-line" style="background: #f79009; box-shadow: 0 0 4px rgba(247, 144, 9, 0.4);"></div>
+            <span>🟡 Влияющие</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-line" style="background: #3fb950; box-shadow: 0 0 4px rgba(63, 185, 80, 0.3);"></div>
+            <span>🟢 Совместимые</span>
+        </div>
+    </div>
+    
+    <div class="zoom-info">
+        Зум: <span id="zoomLevel">100%</span>
+    </div>
+    
+    <div class="stats">
+        Порядок разработки: Критичные → Важные → Гибкие
+    </div>
+    
+    <div id="viewport">
+        <div id="canvas"></div>
+    </div>
+
+    <script>
+        let scale = 0.3;
+        let translateX = 100;
+        let translateY = 50;
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        // Embedded data
+        const nodes = [
+            { id: 'q1', x: 500, y: 100, type: 'question', title: '❓ Модульность движка?', description: 'Ядро отделено от UI и плагинов', details: 'Варианты: Модульная | Монолитная', children: ['modular-arch', 'monolith-arch'] },
+            { id: 'modular-arch', x: 200, y: 300, type: 'critical', title: '✅ Модульная', description: 'Ядро легко отделяется', details: '➕ Тестирование, замена UI ➖ Сложность', children: ['q2', 'q11'] },
+            { id: 'monolith-arch', x: 800, y: 300, type: 'rejected', title: '❌ Монолитная', description: 'Всё в одном модуле', details: '➕ Быстрый старт ➖ Спагетти-код', children: [] },
+            { id: 'q2', x: 200, y: 500, type: 'question', title: '❓ Блочность элементов?', description: 'Всё является блоками', details: 'Варианты: Всё блоки | Смешанная', children: ['all-blocks', 'mixed-model'] },
+            { id: 'all-blocks', x: 100, y: 700, type: 'critical', title: '✅ Всё - блоки', description: 'Единая модель данных', details: '➕ Единые операции ➖ Сложность', children: ['q3', 'q13'] },
+            { id: 'mixed-model', x: 300, y: 700, type: 'rejected', title: '❌ Смешанная', description: 'Блоки + особые сущности', details: '➕ Простота ➖ Ломаются refs', children: [] },
+            { id: 'q3', x: 100, y: 900, type: 'question', title: '❓ UUID для блоков?', description: 'Уникальные глобальные ID', details: 'Варианты: UUID v4 | UUID v7', children: ['uuid-v4', 'uuid-v7'] },
+            { id: 'uuid-v4', x: 50, y: 1100, type: 'critical', title: '🎲 UUID v4', description: 'Случайные UUID', details: '➕ Проверенные ➖ Нет сортировки', children: ['q7'] },
+            { id: 'uuid-v7', x: 150, y: 1100, type: 'important', title: '⏰ UUID v7', description: 'UUID с timestamp', details: '➕ Сортировка ➖ Новый стандарт', children: ['q7'] },
+            { id: 'q7', x: 100, y: 1300, type: 'question', title: '❓ Refs по UUID?', description: 'Любой блок ссылается на любой', details: 'Варианты: По UUID | По алиасу', children: ['refs-uuid', 'refs-alias'] },
+            { id: 'refs-uuid', x: 50, y: 1500, type: 'critical', title: '✅ По UUID', description: 'Прямые ссылки по уникальному ID', details: '➕ Надёжность ➖ Нечитаемость', children: ['q8'] },
+            { id: 'refs-alias', x: 150, y: 1500, type: 'important', title: '🏷️ По алиасу', description: 'Человекочитаемые ссылки', details: '➕ Удобство ➖ Конфликты имён', children: ['q8'] },
+            { id: 'q8', x: 100, y: 1700, type: 'question', title: '❓ Backlinks?', description: 'Мгновенный доступ к обратным ссылкам', details: 'Варианты: Автоматические | Ручные', children: ['backlinks-auto', 'backlinks-manual'] },
+            { id: 'backlinks-auto', x: 50, y: 1900, type: 'critical', title: '✅ Автоматические', description: 'Автоматическое обновление', details: '➕ Магия двусторонних связей ➖ Производительность', children: [] },
+            { id: 'backlinks-manual', x: 150, y: 1900, type: 'rejected', title: '❌ Ручные', description: 'Пользователь создаёт сам', details: '➕ Полный контроль ➖ Мёртвые ссылки', children: [] },
+            { id: 'q11', x: 500, y: 500, type: 'question', title: '❓ Декларативный UI?', description: '100% декларативный рендер', details: 'Варианты: Декларативный | Императивный', children: ['declarative-ui', 'imperative-ui'] },
+            { id: 'declarative-ui', x: 400, y: 700, type: 'critical', title: '✅ Декларативный', description: 'JSON-структуры, чистые функции', details: '➕ Предсказуемость, отладка ➖ Сложность', children: ['q12', 'q20'] },
+            { id: 'imperative-ui', x: 600, y: 700, type: 'rejected', title: '❌ Императивный', description: 'Обычный код с мутациями', details: '➕ Простота ➖ Необъяснимые баги', children: [] },
+            { id: 'q12', x: 400, y: 900, type: 'question', title: '❓ Zero runtime logic?', description: 'Чистая функция рендера', details: 'Варианты: Чистые функции | Stateful', children: ['zero-runtime', 'stateful-runtime'] },
+            { id: 'zero-runtime', x: 350, y: 1100, type: 'critical', title: '✅ Чистые функции', description: 'Никакой runtime логики в рендере', details: '➕ Нет race conditions ➖ Сложность реализации', children: ['q21'] },
+            { id: 'stateful-runtime', x: 450, y: 1100, type: 'rejected', title: '❌ Stateful', description: 'Логика в рендере', details: '➕ Простота ➖ Глюки через 30-40 плагинов', children: [] },
+            { id: 'q13', x: 300, y: 900, type: 'question', title: '❓ Какую CRDT?', description: 'Single source of truth', details: 'Варианты: Yjs | Automerge', children: ['yjs-crdt', 'automerge-crdt'] },
+            { id: 'yjs-crdt', x: 250, y: 1100, type: 'critical', title: '✅ Yjs', description: 'Быстрая, популярная CRDT', details: '➕ Производительность, WebRTC ➖ Сложность API', children: ['q16'] },
+            { id: 'automerge-crdt', x: 350, y: 1100, type: 'important', title: '⚡ Automerge', description: 'Функциональная CRDT', details: '➕ Простота API ➖ Медленнее Yjs', children: ['q16'] },
+            { id: 'q16', x: 300, y: 1300, type: 'question', title: '❓ Все через CRDT?', description: 'Все изменения только через CRDT-операции', details: 'Варианты: Только CRDT | Гибрид', children: ['crdt-only', 'crdt-hybrid'] },
+            { id: 'crdt-only', x: 250, y: 1500, type: 'critical', title: '✅ Только CRDT', description: 'Все изменения через CRDT', details: '➕ Будущая коллаборация ➖ Сложность API', children: [] },
+            { id: 'crdt-hybrid', x: 350, y: 1500, type: 'important', title: '🔄 Гибрид', description: 'CRDT + прямые изменения', details: '➕ Простота ➖ Полный рефакторинг потом', children: [] },
+            { id: 'q20', x: 500, y: 900, type: 'question', title: '❓ Глобальное состояние?', description: 'Отсутствие глобального mutable состояния', details: 'Варианты: Локальное | Глобальное', children: ['no-global-state', 'global-state'] },
+            { id: 'no-global-state', x: 450, y: 1300, type: 'critical', title: '✅ Локальное', description: 'Никакого глобального mutable состояния', details: '➕ Предсказуемость, отладка ➖ Сложность', children: [] },
+            { id: 'global-state', x: 550, y: 1300, type: 'rejected', title: '❌ Глобальное', description: 'Общее mutable состояние', details: '➕ Простота ➖ Race conditions, баги', children: [] },
+            { id: 'q21', x: 350, y: 1300, type: 'question', title: '❓ Virtual scrolling?', description: 'Работа с 100к+ блоков', details: 'Варианты: Virtual scrolling | Lazy loading', children: ['virtual-scrolling', 'lazy-loading'] },
+            { id: 'virtual-scrolling', x: 300, y: 1500, type: 'critical', title: '✅ Virtual scrolling', description: 'Рендер только видимых элементов', details: '➕ 100к+ блоков без тормозов ➖ Сложность', children: [] },
+            { id: 'lazy-loading', x: 400, y: 1500, type: 'important', title: '⚡ Lazy loading', description: 'Ленивая загрузка по требованию', details: '➕ Простота ➖ Привычка «всё в DOM»', children: [] }
+        ];
+        
+        const dependencies = {
+            blocking: [
+                ['modular-arch', 'all-blocks'],
+                ['all-blocks', 'uuid-v4'],
+                ['uuid-v4', 'refs-uuid'],
+                ['refs-uuid', 'backlinks-auto'],
+                ['declarative-ui', 'zero-runtime'],
+                ['zero-runtime', 'virtual-scrolling'],
+                ['yjs-crdt', 'crdt-only']
+            ],
+            influencing: [
+                ['modular-arch', 'declarative-ui'],
+                ['all-blocks', 'yjs-crdt'],
+                ['declarative-ui', 'no-global-state']
+            ]
+        };
+
+        function createNode(node) {
+            const div = document.createElement('div');
+            div.className = `node ${node.type}`;
+            div.style.left = node.x + 'px';
+            div.style.top = node.y + 'px';
+            
+            const badge = node.type === 'critical' ? 'КРИТИЧНО' : 
+                         node.type === 'important' ? 'ВАЖНО' : 
+                         node.type === 'flexible' ? 'ГИБКО' :
+                         node.type === 'question' ? 'ВОПРОС' : 'ОТКЛОНЕНО';
+            
+            div.innerHTML = `
+                <div class="badge ${node.type}">${badge}</div>
+                <h3>${node.title}</h3>
+                <p>${node.description}</p>
+                <div class="details">${node.details}</div>
+            `;
+            
+            return div;
+        }
+
+        function createConnection(from, to, type) {
+            const line = document.createElement('div');
+            line.className = `connection ${type}`;
+            
+            const dx = to.x - from.x;
+            const dy = to.y - from.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            line.style.left = (from.x + 160) + 'px';
+            line.style.top = (from.y + 60) + 'px';
+            line.style.width = length + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            return line;
+        }
+
+        function initCanvas() {
+            const canvas = document.getElementById('canvas');
+            canvas.innerHTML = '';
+            const nodeMap = {};
+            
+            nodes.forEach(node => {
+                const nodeEl = createNode(node);
+                canvas.appendChild(nodeEl);
+                nodeMap[node.id] = node;
+            });
+            
+            // Draw blocking dependencies
+            dependencies.blocking.forEach(([fromId, toId]) => {
+                const from = nodeMap[fromId];
+                const to = nodeMap[toId];
+                if (from && to) {
+                    const connection = createConnection(from, to, 'blocking');
+                    canvas.appendChild(connection);
+                }
+            });
+            
+            // Draw influencing dependencies
+            dependencies.influencing.forEach(([fromId, toId]) => {
+                const from = nodeMap[fromId];
+                const to = nodeMap[toId];
+                if (from && to) {
+                    const connection = createConnection(from, to, 'influencing');
+                    canvas.appendChild(connection);
+                }
+            });
+            
+            // Draw original children connections as compatible
+            nodes.forEach(node => {
+                if (node.children) {
+                    node.children.forEach(childId => {
+                        const child = nodeMap[childId];
+                        if (child) {
+                            const connection = createConnection(node, child, 'compatible');
+                            canvas.appendChild(connection);
+                        }
+                    });
+                }
+            });
+        }
+
+        function updateTransform() {
+            const canvas = document.getElementById('canvas');
+            canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
+        }
+
+        function resetView() {
+            scale = 0.3;
+            translateX = 100;
+            translateY = 50;
+            updateTransform();
+        }
+
+        function centerView() {
+            translateX = 100;
+            translateY = 50;
+            updateTransform();
+        }
+
+        const viewport = document.getElementById('viewport');
+
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            
+            const rect = viewport.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const newScale = Math.max(0.1, Math.min(3, scale * delta));
+            
+            const canvasX = (mouseX - translateX) / scale;
+            const canvasY = (mouseY - translateY) / scale;
+            
+            scale = newScale;
+            
+            translateX = mouseX - canvasX * scale;
+            translateY = mouseY - canvasY * scale;
+            
+            updateTransform();
+        });
+
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                isDragging = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                viewport.classList.add('dragging');
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - lastMouseX;
+                const deltaY = e.clientY - lastMouseY;
+                translateX += deltaX;
+                translateY += deltaY;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                updateTransform();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            viewport.classList.remove('dragging');
+        });
+
+        // Initialize
+        initCanvas();
+        updateTransform();
+    </script>
+</body>
+</html>
