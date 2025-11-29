@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Тест раскладок</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #0d1117; color: #c9d1d9; }
+        .variant { margin-bottom: 40px; padding: 20px; background: #21262d; border-radius: 8px; }
+        button { background: #238636; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin: 5px; }
+        button:hover { background: #2ea043; }
+        pre { background: #161b22; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Варианты раскладки узлов</h1>
+    
+    <div class="variant">
+        <h2>Вариант A: 3 колонки (компактно)</h2>
+        <pre>columnWidth: 500, rowHeight: 400, maxCols: 3</pre>
+        <button onclick="generate('A', 500, 400, 3)">Сгенерировать A</button>
+    </div>
+    
+    <div class="variant">
+        <h2>Вариант B: 4 колонки (средне)</h2>
+        <pre>columnWidth: 600, rowHeight: 500, maxCols: 4</pre>
+        <button onclick="generate('B', 600, 500, 4)">Сгенерировать B</button>
+    </div>
+    
+    <div class="variant">
+        <h2>Вариант C: 5 колонок (широко)</h2>
+        <pre>columnWidth: 700, rowHeight: 500, maxCols: 5</pre>
+        <button onclick="generate('C', 700, 500, 5)">Сгенерировать C</button>
+    </div>
+
+    <script>
+        function generate(variant, colWidth, rowHeight, maxCols) {
+            const config = {
+                variant: variant,
+                columnWidth: colWidth,
+                rowHeight: rowHeight,
+                maxCols: maxCols
+            };
+            
+            fetch('./variant3_full.json')
+                .then(r => r.json())
+                .then(data => {
+                    data.layout.columnWidth = colWidth;
+                    data.layout.rowHeight = rowHeight;
+                    
+                    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `variant3_${variant}.json`;
+                    a.click();
+                    
+                    alert(`Вариант ${variant} сохранен! Замени variant3_full.json и обновись страницу.`);
+                });
+        }
+    </script>
+</body>
+</html>
