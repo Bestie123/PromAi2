@@ -145,42 +145,39 @@
             });
 
         function calculatePositions(data) {
+            if (data.useOriginalPositions) {
+                // Используем оригинальные координаты
+                const positions = {};
+                Object.keys(data.nodes).forEach(id => {
+                    const node = data.nodes[id];
+                    positions[id] = { x: node.x, y: node.y };
+                });
+                return positions;
+            }
+            
+            // Автогенерация: горизонтальная раскладка как на порту 2000
             const { columnWidth, rowHeight, startX, startY } = data.layout;
             const positions = {};
-            const byCriteria = {};
+            let col = 0;
+            let row = 0;
+            const maxCols = 5; // Максимум колонок в ряду
             
-            // Группируем по criteriaId
-            Object.keys(data.nodes).forEach(id => {
-                const node = data.nodes[id];
-                const criteriaId = node.criteriaId;
-                if (!byCriteria[criteriaId]) byCriteria[criteriaId] = { question: null, answers: [] };
-                
-                if (node.type === 'question') {
-                    byCriteria[criteriaId].question = id;
-                } else {
-                    byCriteria[criteriaId].answers.push(id);
-                }
+            // Сортируем по criteriaId
+            const sortedIds = Object.keys(data.nodes).sort((a, b) => {
+                return data.nodes[a].criteriaId - data.nodes[b].criteriaId;
             });
             
-            // Позиционируем: вопрос сверху, ответы снизу
-            Object.keys(byCriteria).sort((a, b) => a - b).forEach((criteriaId, col) => {
-                const group = byCriteria[criteriaId];
+            sortedIds.forEach(id => {
+                positions[id] = {
+                    x: startX + col * columnWidth,
+                    y: startY + row * rowHeight
+                };
                 
-                // Вопрос в первой строке
-                if (group.question) {
-                    positions[group.question] = {
-                        x: startX + col * columnWidth,
-                        y: startY
-                    };
+                col++;
+                if (col >= maxCols) {
+                    col = 0;
+                    row++;
                 }
-                
-                // Ответы во второй и третьей строках
-                group.answers.forEach((id, idx) => {
-                    positions[id] = {
-                        x: startX + col * columnWidth,
-                        y: startY + (idx + 1) * rowHeight
-                    };
-                });
             });
             
             return positions;
