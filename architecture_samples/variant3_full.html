@@ -36,11 +36,25 @@
             opacity: 0.4;
         }
         
-        .phase-dependency-line {
-            position: absolute; height: 3px; transform-origin: left center; z-index: -1;
-            background: linear-gradient(90deg, #f85149, #3fb950);
+        .blocking-line {
+            position: absolute; height: 4px; transform-origin: left center; z-index: -1;
+            background: #f85149;
             opacity: 0.8;
-            box-shadow: 0 0 6px rgba(248, 81, 73, 0.5);
+            box-shadow: 0 0 8px rgba(248, 81, 73, 0.5);
+        }
+        
+        .hard-line {
+            position: absolute; height: 3px; transform-origin: left center; z-index: -1;
+            background: #f79009;
+            opacity: 0.8;
+            box-shadow: 0 0 6px rgba(247, 144, 9, 0.5);
+        }
+        
+        .soft-line {
+            position: absolute; height: 2px; transform-origin: left center; z-index: -1;
+            background: #3fb950;
+            opacity: 0.8;
+            box-shadow: 0 0 4px rgba(63, 185, 80, 0.5);
         }
         
         .controls {
@@ -189,14 +203,16 @@
             
             // Рендерим фазовые зависимости
             if (data.phaseDependencies) {
-                Object.keys(data.phaseDependencies).forEach(from => {
-                    data.phaseDependencies[from].forEach(to => {
-                        if (positions[from] && positions[to]) {
-                            const line = createLine(positions[from], positions[to], 'phase');
-                            canvas.appendChild(line);
-                            depCount++;
-                        }
-                    });
+                ['blocking', 'hard', 'soft'].forEach(type => {
+                    if (data.phaseDependencies[type]) {
+                        data.phaseDependencies[type].forEach(dep => {
+                            if (positions[dep.from] && positions[dep.to]) {
+                                const line = createLine(positions[dep.from], positions[dep.to], type);
+                                canvas.appendChild(line);
+                                depCount++;
+                            }
+                        });
+                    }
                 });
             }
             
@@ -207,7 +223,13 @@
 
         function createLine(from, to, type) {
             const line = document.createElement('div');
-            line.className = type === 'phase' ? 'phase-dependency-line' : 'dependency-line';
+            const classes = {
+                'normal': 'dependency-line',
+                'blocking': 'blocking-line',
+                'hard': 'hard-line',
+                'soft': 'soft-line'
+            };
+            line.className = classes[type] || 'dependency-line';
             
             const dx = to.x - from.x;
             const dy = to.y - from.y;
