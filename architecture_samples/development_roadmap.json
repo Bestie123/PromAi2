@@ -1,0 +1,188 @@
+{
+  "phases": [
+    {
+      "id": "phase-0",
+      "name": "Foundation (Level 0)",
+      "priority": "critical",
+      "description": "Несущие стены - без компромиссов",
+      "modules": [
+        {
+          "id": "mod-arch",
+          "name": "Модульная архитектура",
+          "criteria": [1, 29],
+          "decisions": ["modular-arch", "modular-code"],
+          "dependencies": [],
+          "deliverables": ["Структура папок", "Module loader", "Dependency injection"]
+        },
+        {
+          "id": "mod-block-core",
+          "name": "Блочная система (Core)",
+          "criteria": [2, 3, 4],
+          "decisions": ["all-blocks", "uuid-v4", "nested-blocks"],
+          "dependencies": ["mod-arch"],
+          "deliverables": ["Block interface", "UUID generator", "Tree structure"]
+        },
+        {
+          "id": "mod-crdt",
+          "name": "CRDT Foundation",
+          "criteria": [13, 14, 16, 17],
+          "decisions": ["yjs-crdt", "event-sourcing-separate", "crdt-only", "atomic-transactions"],
+          "dependencies": ["mod-block-core"],
+          "deliverables": ["Yjs integration", "Operations log", "Transaction manager"]
+        },
+        {
+          "id": "mod-storage",
+          "name": "Local Storage",
+          "criteria": [9, 10, 24],
+          "decisions": ["json-storage", "offline-full", "e2ee-ready"],
+          "dependencies": ["mod-crdt"],
+          "deliverables": ["JSON persistence", "Offline sync", "Encryption layer"]
+        }
+      ]
+    },
+    {
+      "id": "phase-1",
+      "name": "Data Layer",
+      "priority": "critical",
+      "description": "Работа с данными и связями",
+      "modules": [
+        {
+          "id": "mod-refs",
+          "name": "References System",
+          "criteria": [7, 8, 18],
+          "decisions": ["refs-uuid", "backlinks-auto", "refs-crdt-first"],
+          "dependencies": ["mod-crdt"],
+          "deliverables": ["Ref manager", "Backlink index", "CRDT refs"]
+        },
+        {
+          "id": "mod-graph",
+          "name": "Graph Structure",
+          "criteria": [19, 23],
+          "decisions": ["flat-graph", "circular-render"],
+          "dependencies": ["mod-refs"],
+          "deliverables": ["Graph traversal", "Cycle detection", "Query engine"]
+        },
+        {
+          "id": "mod-schema",
+          "name": "Schema Validation",
+          "criteria": [15],
+          "decisions": ["json-schema"],
+          "dependencies": ["mod-block-core"],
+          "deliverables": ["Schema definitions", "Runtime validator", "Migration tools"]
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "UI Foundation",
+      "priority": "critical",
+      "description": "Декларативный рендеринг",
+      "modules": [
+        {
+          "id": "mod-ui-core",
+          "name": "Declarative UI",
+          "criteria": [11, 12, 20],
+          "decisions": ["declarative-ui", "zero-runtime", "no-global-state"],
+          "dependencies": ["mod-block-core"],
+          "deliverables": ["Renderer", "State manager", "Component system"]
+        },
+        {
+          "id": "mod-virtual-scroll",
+          "name": "Virtual Scrolling",
+          "criteria": [21],
+          "decisions": ["virtual-scrolling"],
+          "dependencies": ["mod-ui-core"],
+          "deliverables": ["Virtual scroller", "Item pool", "Viewport manager"]
+        },
+        {
+          "id": "mod-workers",
+          "name": "Web Workers",
+          "criteria": [22],
+          "decisions": ["web-workers-all"],
+          "dependencies": ["mod-crdt", "mod-ui-core"],
+          "deliverables": ["Worker pool", "Message bus", "Search worker", "CRDT worker"]
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Content Editing",
+      "priority": "important",
+      "description": "Редактирование контента",
+      "modules": [
+        {
+          "id": "mod-rich-text",
+          "name": "Rich Text Editor",
+          "criteria": [6],
+          "decisions": ["markdown-rich"],
+          "dependencies": ["mod-ui-core", "mod-refs"],
+          "deliverables": ["Markdown parser", "Entity resolver", "Editor component"]
+        },
+        {
+          "id": "mod-drag-drop",
+          "name": "Drag & Drop",
+          "criteria": [5],
+          "decisions": ["drag-drop-native"],
+          "dependencies": ["mod-ui-core", "mod-crdt"],
+          "deliverables": ["DnD manager", "Drop zones", "Order operations"]
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "Plugin System",
+      "priority": "critical",
+      "description": "Расширяемость через плагины",
+      "modules": [
+        {
+          "id": "mod-plugin-core",
+          "name": "Plugin Infrastructure",
+          "criteria": [26, 27, 28],
+          "decisions": ["plugin-unified", "composite-blocks", "block-state-json"],
+          "dependencies": ["mod-ui-core", "mod-crdt"],
+          "deliverables": ["Plugin API", "Sandbox", "Lifecycle manager", "State persistence"]
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Collaboration",
+      "priority": "important",
+      "description": "Синхронизация и конфликты",
+      "modules": [
+        {
+          "id": "mod-sync",
+          "name": "Sync Engine",
+          "criteria": [25],
+          "decisions": ["crdt-merge"],
+          "dependencies": ["mod-crdt", "mod-storage"],
+          "deliverables": ["Conflict resolver", "Cross-tab sync", "Network sync"]
+        }
+      ]
+    }
+  ],
+  "dependencies": {
+    "mod-arch": [],
+    "mod-block-core": ["mod-arch"],
+    "mod-crdt": ["mod-block-core"],
+    "mod-storage": ["mod-crdt"],
+    "mod-refs": ["mod-crdt"],
+    "mod-graph": ["mod-refs"],
+    "mod-schema": ["mod-block-core"],
+    "mod-ui-core": ["mod-block-core"],
+    "mod-virtual-scroll": ["mod-ui-core"],
+    "mod-workers": ["mod-crdt", "mod-ui-core"],
+    "mod-rich-text": ["mod-ui-core", "mod-refs"],
+    "mod-drag-drop": ["mod-ui-core", "mod-crdt"],
+    "mod-plugin-core": ["mod-ui-core", "mod-crdt"],
+    "mod-sync": ["mod-crdt", "mod-storage"]
+  },
+  "timeline": {
+    "phase-0": { "duration": "4 weeks", "parallel": false },
+    "phase-1": { "duration": "3 weeks", "parallel": true },
+    "phase-2": { "duration": "4 weeks", "parallel": false },
+    "phase-3": { "duration": "2 weeks", "parallel": true },
+    "phase-4": { "duration": "3 weeks", "parallel": false },
+    "phase-5": { "duration": "2 weeks", "parallel": false }
+  }
+}

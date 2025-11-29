@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromAi Development Roadmap</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117; color: #c9d1d9; padding: 20px;
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { margin-bottom: 30px; color: #58a6ff; }
+        
+        .phase {
+            background: #161b22; border: 2px solid #30363d; border-radius: 12px;
+            padding: 20px; margin-bottom: 20px;
+        }
+        
+        .phase-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #30363d;
+        }
+        
+        .phase-title { font-size: 20px; font-weight: bold; }
+        .phase-priority { padding: 4px 12px; border-radius: 6px; font-size: 12px; }
+        .phase-priority.critical { background: #f85149; color: #fff; }
+        .phase-priority.important { background: #f79009; color: #fff; }
+        
+        .modules { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 15px; }
+        
+        .module {
+            background: #21262d; border: 1px solid #30363d; border-radius: 8px;
+            padding: 15px; position: relative;
+        }
+        
+        .module-name { font-weight: bold; margin-bottom: 8px; color: #58a6ff; }
+        .module-criteria { font-size: 11px; color: #8b949e; margin-bottom: 8px; }
+        .module-deps { font-size: 11px; color: #f79009; margin-bottom: 8px; }
+        .module-deliverables { font-size: 12px; }
+        .module-deliverables li { margin-left: 20px; color: #3fb950; }
+        
+        .timeline {
+            background: #161b22; border: 2px solid #30363d; border-radius: 12px;
+            padding: 20px; margin-top: 30px;
+        }
+        
+        .timeline-item {
+            display: flex; justify-content: space-between; padding: 10px;
+            border-bottom: 1px solid #30363d;
+        }
+        
+        .timeline-item:last-child { border-bottom: none; }
+        .timeline-phase { font-weight: bold; }
+        .timeline-duration { color: #3fb950; }
+        .timeline-parallel { color: #f79009; font-size: 11px; }
+        
+        .dependency-graph {
+            background: #161b22; border: 2px solid #30363d; border-radius: 12px;
+            padding: 20px; margin-top: 30px;
+        }
+        
+        .dep-node {
+            display: inline-block; background: #21262d; border: 1px solid #58a6ff;
+            padding: 8px 12px; border-radius: 6px; margin: 5px; font-size: 12px;
+        }
+        
+        .stats {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #161b22; border: 2px solid #30363d; border-radius: 8px;
+            padding: 15px; text-align: center;
+        }
+        
+        .stat-value { font-size: 32px; font-weight: bold; color: #3fb950; }
+        .stat-label { font-size: 12px; color: #8b949e; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ PromAi PKM Development Roadmap</h1>
+        
+        <div class="stats" id="stats"></div>
+        
+        <div id="phases"></div>
+        
+        <div class="timeline">
+            <h2 style="margin-bottom: 15px;">⏱️ Timeline</h2>
+            <div id="timeline"></div>
+        </div>
+        
+        <div class="dependency-graph">
+            <h2 style="margin-bottom: 15px;">🔗 Module Dependencies</h2>
+            <div id="dependencies"></div>
+        </div>
+    </div>
+
+    <script>
+        fetch('./development_roadmap.json')
+            .then(r => r.json())
+            .then(data => {
+                renderStats(data);
+                renderPhases(data);
+                renderTimeline(data);
+                renderDependencies(data);
+            });
+
+        function renderStats(data) {
+            const totalModules = data.phases.reduce((sum, p) => sum + p.modules.length, 0);
+            const totalCriteria = new Set(data.phases.flatMap(p => p.modules.flatMap(m => m.criteria))).size;
+            const totalWeeks = Object.values(data.timeline).reduce((sum, t) => sum + parseInt(t.duration), 0);
+            const criticalPhases = data.phases.filter(p => p.priority === 'critical').length;
+            
+            document.getElementById('stats').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${data.phases.length}</div>
+                    <div class="stat-label">Фаз разработки</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalModules}</div>
+                    <div class="stat-label">Модулей</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalCriteria}</div>
+                    <div class="stat-label">Критериев покрыто</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalWeeks}</div>
+                    <div class="stat-label">Недель (оценка)</div>
+                </div>
+            `;
+        }
+
+        function renderPhases(data) {
+            const phasesHtml = data.phases.map(phase => `
+                <div class="phase">
+                    <div class="phase-header">
+                        <div>
+                            <div class="phase-title">${phase.name}</div>
+                            <div style="font-size: 12px; color: #8b949e; margin-top: 5px;">${phase.description}</div>
+                        </div>
+                        <div class="phase-priority ${phase.priority}">${phase.priority.toUpperCase()}</div>
+                    </div>
+                    <div class="modules">
+                        ${phase.modules.map(mod => `
+                            <div class="module">
+                                <div class="module-name">${mod.name}</div>
+                                <div class="module-criteria">📋 Критерии: ${mod.criteria.join(', ')}</div>
+                                <div class="module-deps">🔗 Зависит от: ${mod.dependencies.length ? mod.dependencies.join(', ') : 'нет'}</div>
+                                <div class="module-deliverables">
+                                    <strong>Deliverables:</strong>
+                                    <ul>
+                                        ${mod.deliverables.map(d => `<li>${d}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('phases').innerHTML = phasesHtml;
+        }
+
+        function renderTimeline(data) {
+            const timelineHtml = data.phases.map(phase => {
+                const timing = data.timeline[phase.id];
+                return `
+                    <div class="timeline-item">
+                        <div class="timeline-phase">${phase.name}</div>
+                        <div>
+                            <span class="timeline-duration">${timing.duration}</span>
+                            ${timing.parallel ? '<span class="timeline-parallel"> (параллельно)</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('timeline').innerHTML = timelineHtml;
+        }
+
+        function renderDependencies(data) {
+            const depsHtml = Object.entries(data.dependencies)
+                .map(([mod, deps]) => `
+                    <div style="margin-bottom: 10px;">
+                        <span class="dep-node">${mod}</span>
+                        ${deps.length ? '→ ' + deps.map(d => `<span class="dep-node">${d}</span>`).join(' ') : '(root)'}
+                    </div>
+                `).join('');
+            
+            document.getElementById('dependencies').innerHTML = depsHtml;
+        }
+    </script>
+</body>
+</html>
