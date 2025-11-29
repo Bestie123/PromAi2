@@ -58,6 +58,12 @@
         .connection.question { background: #58a6ff; }
         .connection.rejected { background: #8b949e; }
         
+        .compatibility-line {
+            position: absolute; height: 2px; z-index: -2; opacity: 0.6;
+            transition: opacity 0.3s ease;
+        }
+        .compatibility-line:hover { opacity: 1 !important; }
+        
         .controls {
             position: fixed; top: 20px; left: 20px; z-index: 1000;
             background: rgba(33, 38, 45, 0.9); padding: 12px; border-radius: 8px;
@@ -212,6 +218,17 @@
                             canvas.appendChild(connection);
                         }
                     });
+                }
+            });
+            
+            Object.keys(compatibility).forEach(key => {
+                const [id1, id2] = key.split(',');
+                const node1 = nodeMap[id1];
+                const node2 = nodeMap[id2];
+                
+                if (node1 && node2) {
+                    const compatLine = createCompatibilityLine(node1, node2, compatibility[key]);
+                    canvas.appendChild(compatLine);
                 }
             });
             
