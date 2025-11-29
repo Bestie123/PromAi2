@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromAi PKM - Варианты визуализации архитектуры</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117; color: #c9d1d9; 
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; padding: 40px;
+        }
+        .container {
+            max-width: 1200px; width: 100%;
+        }
+        h1 {
+            text-align: center; margin-bottom: 20px; color: #58a6ff;
+            font-size: 32px;
+        }
+        .subtitle {
+            text-align: center; margin-bottom: 40px; color: #8b949e;
+            font-size: 16px;
+        }
+        .variants {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .variant {
+            background: #21262d; border: 2px solid #30363d; border-radius: 12px;
+            padding: 24px; transition: all 0.3s ease; cursor: pointer;
+        }
+        .variant:hover {
+            border-color: #58a6ff; transform: translateY(-4px);
+            box-shadow: 0 12px 48px rgba(88, 166, 255, 0.2);
+        }
+        .variant h2 {
+            color: #f0f6fc; margin-bottom: 12px; font-size: 20px;
+        }
+        .variant p {
+            color: #8b949e; line-height: 1.6; margin-bottom: 16px;
+            font-size: 14px;
+        }
+        .variant .features {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;
+        }
+        .feature {
+            background: #30363d; padding: 4px 10px; border-radius: 6px;
+            font-size: 12px; color: #3fb950;
+        }
+        .variant a {
+            display: inline-block; background: #238636; color: #fff;
+            padding: 10px 20px; border-radius: 6px; text-decoration: none;
+            font-weight: bold; font-size: 14px; transition: background 0.3s ease;
+        }
+        .variant a:hover {
+            background: #2ea043;
+        }
+        .footer {
+            text-align: center; margin-top: 40px; color: #6e7681;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 PromAi PKM - Варианты визуализации</h1>
+        <div class="subtitle">
+            Выберите вариант раскладки для просмотра архитектуры (29 критериев)
+        </div>
+        
+        <div class="variants">
+            <div class="variant" onclick="window.location.href='viewer_grid.html'">
+                <h2>📊 Вариант 1: Grid Layout</h2>
+                <p>Сетка 5×6 с равномерным распределением критериев. Идеально для обзора всех решений.</p>
+                <div class="features">
+                    <span class="feature">✓ Компактность</span>
+                    <span class="feature">✓ Читаемость</span>
+                    <span class="feature">✓ Структурность</span>
+                </div>
+                <a href="viewer_grid.html">Открыть →</a>
+            </div>
+            
+            <div class="variant" onclick="window.location.href='viewer_tree.html'">
+                <h2>🌳 Вариант 2: Tree Layout</h2>
+                <p>Иерархическое дерево с группировкой по уровням. Показывает зависимости между решениями.</p>
+                <div class="features">
+                    <span class="feature">✓ Иерархия</span>
+                    <span class="feature">✓ Связи</span>
+                    <span class="feature">✓ Логика</span>
+                </div>
+                <a href="viewer_tree.html">Открыть →</a>
+            </div>
+            
+            <div class="variant" onclick="window.location.href='viewer_circular.html'">
+                <h2>⭕ Вариант 3: Circular Layout</h2>
+                <p>Круговая раскладка с центральным фокусом. Подчеркивает равноправность всех критериев.</p>
+                <div class="features">
+                    <span class="feature">✓ Симметрия</span>
+                    <span class="feature">✓ Эстетика</span>
+                    <span class="feature">✓ Баланс</span>
+                </div>
+                <a href="viewer_circular.html">Открыть →</a>
+            </div>
+            
+            <div class="variant" onclick="window.location.href='viewer_force.html'">
+                <h2>🔮 Вариант 4: Force-Directed</h2>
+                <p>Физическая симуляция с автоматическим размещением. Органичное распределение узлов.</p>
+                <div class="features">
+                    <span class="feature">✓ Органичность</span>
+                    <span class="feature">✓ Динамика</span>
+                    <span class="feature">✓ Естественность</span>
+                </div>
+                <a href="viewer_force.html">Открыть →</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>💡 Все варианты поддерживают зум (колесо мыши) и перетаскивание (ЛКМ)</p>
+            <p style="margin-top: 8px;">📦 Координаты генерируются автоматически через coordinate_generator.js</p>
+        </div>
+    </div>
+</body>
+</html>
