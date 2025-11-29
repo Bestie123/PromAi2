@@ -106,8 +106,7 @@
       { "from": "declarative-ui", "to": "virtual-scrolling", "type": "enables" }
     ],
     "soft": [
-      { "from": "virtual-scrolling", "to": "web-workers-all", "type": "enhances" },
-      { "from": "plugin-unified", "to": "composite-blocks", "type": "enables" }
+      { "from": "drag-drop-native", "to": "markdown-rich", "type": "enhances" }
     ]
   },
   "phases": {
