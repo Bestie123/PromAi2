@@ -169,13 +169,24 @@
                          node.type === 'flexible' ? 'ГИБКО' : 'ОТКЛОНЕНО';
             
             let extraInfo = '';
-            if (node.criteriaId) extraInfo += `<div class="week">Критерий ${node.criteriaId}</div>`;
-            if (node.week) extraInfo += `<div class="week">Week ${node.week}</div>`;
-            if (node.dependencies && node.dependencies.length > 0) {
-                extraInfo += `<div class="requires">📋 Требует: ${node.dependencies.join(', ')}</div>`;
+            if (node.criteriaId) extraInfo += `<div class="week">№${node.criteriaId}</div>`;
+            
+            // Найти зависимости по criteriaId
+            const deps = node.dependencies ? node.dependencies.map(depId => {
+                const depNode = nodes.find(n => n.id === depId);
+                return depNode && depNode.criteriaId ? depNode.criteriaId : depId;
+            }).filter(Boolean) : [];
+            
+            // Найти что блокирует по criteriaId
+            const blockedNodes = nodes.filter(n => 
+                n.dependencies && n.dependencies.includes(node.id)
+            ).map(n => n.criteriaId).filter(Boolean);
+            
+            if (deps.length > 0) {
+                extraInfo += `<div class="requires">📋 Требует: №${deps.join(', №')}</div>`;
             }
-            if (node.blocks && node.blocks.length > 0) {
-                extraInfo += `<div class="blocks">🚫 Блокирует: ${node.blocks.join(', ')}</div>`;
+            if (blockedNodes.length > 0) {
+                extraInfo += `<div class="blocks">🚫 Блокирует: №${blockedNodes.join(', №')}</div>`;
             }
             
             div.innerHTML = `
