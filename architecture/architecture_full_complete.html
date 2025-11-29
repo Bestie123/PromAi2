@@ -152,6 +152,7 @@
             .then(response => response.json())
             .then(data => {
                 nodes = Object.values(data.nodes);
+                Object.assign(compatibility, data.compatibility);
                 initCanvas();
                 updateTransform();
             })
@@ -164,17 +165,7 @@
                 ];
                 initCanvas();
                 updateTransform();
-            });
-
-            // 4. Вложенные блоки (критерий 4)
-            { id: 'q4', x: 3500, y: 100, type: 'question', title: '❓ Вложенные блоки?', description: 'Иерархия любой глубины', details: 'Варианты: Вложенные | Только плоские', children: ['nested-blocks', 'flat-only'] },
-            { id: 'nested-blocks', x: 3200, y: 300, type: 'critical', title: '✅ Вложенные', description: 'Иерархия любой глубины', details: '➕ Естественная структура ➖ Сложность', children: [] },
-            { id: 'flat-only', x: 3800, y: 300, type: 'rejected', title: '❌ Только плоские', description: 'Нет вложенности', details: '➕ Простота ➖ Невозможно документы', children: [] },
-
-            // 5. Drag & Drop (критерий 5)
-            { id: 'q5', x: 4500, y: 100, type: 'question', title: '❓ Drag & Drop порядка?', description: 'Порядок дочерних блоков', details: 'Варианты: Нативный | Библиотека', children: ['drag-drop-native', 'drag-drop-lib'] },
-            { id: 'drag-drop-native', x: 4200, y: 300, type: 'critical', title: '✅ Нативный', description: 'Использование HTML5 DnD API', details: '➕ Производительность ➖ Сложность API', children: [] },
-            { id: 'drag-drop-lib', x: 4800, y: 300, type: 'important', title: '📦 Библиотека', description: 'Использование готовой библиотеки', details: '➕ Простота ➖ Зависимость', children: [] },
+            });ren: [] },
 
             // 6. Rich Text (критерий 6)
             { id: 'q6', x: 500, y: 600, type: 'question', title: '❓ Rich Text?', description: 'Markdown-подобный + сущности', details: 'Варианты: Markdown | WYSIWYG', children: ['markdown-rich', 'wysiwyg-rich'] },
