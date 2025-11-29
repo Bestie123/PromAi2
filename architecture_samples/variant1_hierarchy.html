@@ -135,7 +135,7 @@
         let lastMouseX = 0;
         let lastMouseY = 0;
 
-        fetch('./variant1_hierarchy_nodes.json')
+        fetch('variant1_hierarchy_nodes.json')
             .then(response => response.json())
             .then(data => {
                 nodes = Object.values(data.nodes);
@@ -145,6 +145,15 @@
             })
             .catch(error => {
                 console.error('Failed to load nodes:', error);
+                // Fallback minimal nodes
+                nodes = [
+                    { id: 'q1', x: 500, y: 100, type: 'question', title: '❓ Модульность движка?', description: 'Ядро отделено от UI и плагинов', details: 'Варианты: Модульная | Монолитная', children: ['modular-arch'] },
+                    { id: 'modular-arch', x: 200, y: 300, type: 'critical', title: '✅ Модульная', description: 'Ядро легко отделяется', details: '➕ Тестирование, замена UI ➖ Сложность', children: ['all-blocks'] },
+                    { id: 'all-blocks', x: 100, y: 500, type: 'critical', title: '✅ Всё - блоки', description: 'Единая модель данных', details: '➕ Единые операции ➖ Сложность', children: [] }
+                ];
+                dependencies = { blocking: [['modular-arch', 'all-blocks']], influencing: [] };
+                initCanvas();
+                updateTransform();
             });
 
         function createNode(node) {
