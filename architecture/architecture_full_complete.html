@@ -118,13 +118,36 @@
         let lastMouseX = 0;
         let lastMouseY = 0;
 
-        // Embedded JSON data to avoid CORS issues
-        const data = {"nodes":{"q1":{"id":"q1","x":500,"y":100,"type":"question","title":"❓ Модульность движка?","description":"Ядро отделено от UI и плагинов","details":"Варианты: Модульная | Монолитная","children":["modular-arch","monolith-arch"],"criteriaId":1},"modular-arch":{"id":"modular-arch","x":200,"y":300,"type":"critical","title":"✅ Модульная","description":"Ядро легко отделяется","details":"➕ Тестирование, замена UI ➖ Сложность","children":[],"criteriaId":1},"monolith-arch":{"id":"monolith-arch","x":800,"y":300,"type":"rejected","title":"❌ Монолитная","description":"Всё в одном модуле","details":"➕ Быстрый старт ➖ Спагетти-код","children":[],"criteriaId":1},"q2":{"id":"q2","x":1500,"y":100,"type":"question","title":"❓ Блочность элементов?","description":"Всё является блоками","details":"Варианты: Всё блоки | Смешанная","children":["all-blocks","mixed-model"],"criteriaId":2},"all-blocks":{"id":"all-blocks","x":1200,"y":300,"type":"critical","title":"✅ Всё - блоки","description":"Единая модель данных","details":"➕ Единые операции ➖ Сложность","children":[],"criteriaId":2},"mixed-model":{"id":"mixed-model","x":1800,"y":300,"type":"rejected","title":"❌ Смешанная","description":"Блоки + особые сущности","details":"➕ Простота ➖ Ломаются refs","children":[],"criteriaId":2}}};
-        nodes = Object.values(data.nodes);
-        compatibility = data.compatibility || {};
-        console.log('Loaded nodes:', nodes.length);
-        initCanvas();
-        updateTransform();
+        // Load nodes from external JSON
+        console.log('Loading nodes.json...');
+        fetch('./nodes.json')
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Loaded data:', data);
+                console.log('Nodes count:', Object.keys(data.nodes).length);
+                nodes = Object.values(data.nodes);
+                compatibility = data.compatibility;
+                console.log('Final nodes array:', nodes.length);
+                initCanvas();
+                updateTransform();
+            })
+            .catch(error => {
+                console.error('Failed to load nodes:', error);
+                alert('JSON не загрузился: ' + error.message);
+                // Fallback to minimal nodes
+                nodes = [
+                    { id: 'q1', x: 500, y: 100, type: 'question', title: '❓ Модульность движка?', description: 'Ядро отделено от UI и плагинов', details: 'Варианты: Модульная | Монолитная', children: ['modular-arch', 'monolith-arch'] },
+                    { id: 'modular-arch', x: 200, y: 300, type: 'critical', title: '✅ Модульная', description: 'Ядро легко отделяется', details: '➕ Тестирование, замена UI ➖ Сложность', children: [] }
+                ];
+                initCanvas();
+                updateTransform();
+            });
 
         function createNode(node) {
             const div = document.createElement('div');
