@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromAi - Граф зависимостей (вопросы + ответы)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117; color: #c9d1d9; overflow: hidden;
+        }
+        #canvas { 
+            width: 15000px; height: 10000px; position: relative; 
+            background: radial-gradient(circle at 50% 50%, #161b22 0%, #0d1117 100%);
+            transform-origin: 0 0;
+        }
+        #viewport { 
+            width: 100vw; height: 100vh; overflow: hidden; position: relative;
+            cursor: grab; background: #0d1117;
+        }
+        #viewport.dragging { cursor: grabbing; }
+        
+        .node {
+            position: absolute; background: #21262d; border: 2px solid #30363d;
+            border-radius: 12px; padding: 16px; min-width: 280px; max-width: 320px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease;
+        }
+        .node:hover { transform: scale(1.05); box-shadow: 0 12px 48px rgba(0,0,0,0.6); z-index: 100; }
+        
+        .node.question { border-color: #58a6ff; background: linear-gradient(135deg, #21262d 0%, #1b2332 100%); }
+        .node.critical { border-color: #f85149; background: linear-gradient(135deg, #21262d 0%, #2d1b1f 100%); }
+        .node.important { border-color: #f79009; background: linear-gradient(135deg, #21262d 0%, #2d2419 100%); }
+        .node.flexible { border-color: #3fb950; background: linear-gradient(135deg, #21262d 0%, #1b2d1f 100%); }
+        .node.rejected { border-color: #8b949e; background: linear-gradient(135deg, #21262d 0%, #2d2d2d 100%); opacity: 0.5; }
+        
+        .node h3 { font-size: 14px; margin-bottom: 8px; color: #f0f6fc; }
+        .node p { font-size: 12px; line-height: 1.4; margin-bottom: 8px; color: #8b949e; }
+        .node .details { font-size: 10px; color: #6e7681; }
+        
+        .badge {
+            display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px;
+            font-weight: bold; margin-bottom: 8px; margin-right: 4px;
+        }
+        .badge.question { background: #58a6ff; color: #fff; }
+        .badge.critical { background: #f85149; color: #fff; }
+        .badge.important { background: #f79009; color: #fff; }
+        .badge.flexible { background: #3fb950; color: #fff; }
+        .badge.rejected { background: #8b949e; color: #fff; }
+        
+        .connection {
+            position: absolute; height: 3px; transform-origin: left center; z-index: 1;
+            transition: all 0.3s ease;
+        }
+        .connection.critical { background: #f85149; }
+        .connection.important { background: #f79009; }
+        .connection.flexible { background: #3fb950; }
+        .connection.question { background: #58a6ff; }
+        .connection.rejected { background: #8b949e; opacity: 0.3; }
+        .connection:hover { height: 5px; z-index: 50; }
+        
+        .arrow {
+            position: absolute; right: -8px; top: -4px;
+            width: 0; height: 0;
+            border-left: 8px solid;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+        }
+        .arrow.critical { border-left-color: #f85149; }
+        .arrow.important { border-left-color: #f79009; }
+        .arrow.flexible { border-left-color: #3fb950; }
+        .arrow.question { border-left-color: #58a6ff; }
+        .arrow.rejected { border-left-color: #8b949e; }
+        
+        .controls {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.95); padding: 16px; border-radius: 8px;
+            border: 1px solid #30363d; max-width: 300px;
+        }
+        .controls button {
+            background: #238636; color: #fff; border: none; padding: 8px 12px;
+            border-radius: 6px; margin: 4px; cursor: pointer; font-size: 12px;
+        }
+        .controls button:hover { background: #2ea043; }
+        .controls button.active { background: #f85149; }
+        
+        .legend {
+            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.95); padding: 16px; border-radius: 8px;
+            border: 1px solid #30363d; font-size: 12px;
+        }
+        .legend-item { margin: 8px 0; display: flex; align-items: center; }
+        .legend-box { width: 20px; height: 20px; margin-right: 8px; border-radius: 4px; }
+        
+        .stats {
+            position: fixed; bottom: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.95); padding: 12px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 12px;
+        }
+        
+        .zoom-info {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.95); padding: 8px 12px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <div style="margin-bottom: 12px; font-weight: bold;">Режимы отображения:</div>
+        <button onclick="showAll()" class="active" id="btnAll">Все связи</button>
+        <button onclick="showCritical()" id="btnCritical">Только критичные</button>
+        <button onclick="showBlocking()" id="btnBlocking">Блокирующие</button>
+        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #30363d;">
+            <button onclick="resetView()">Сброс вида</button>
+            <button onclick="centerView()">Центр</button>
+        </div>
+    </div>
+    
+    <div class="legend">
+        <div style="font-weight: bold; margin-bottom: 8px;">Легенда:</div>
+        <div class="legend-item">
+            <div class="legend-box" style="background: #58a6ff;"></div>
+            <span>Вопрос</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-box" style="background: #f85149;"></div>
+            <span>Критичный ответ</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-box" style="background: #f79009;"></div>
+            <span>Важный ответ</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-box" style="background: #3fb950;"></div>
+            <span>Гибкий ответ</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-box" style="background: #8b949e;"></div>
+            <span>Отклонённый</span>
+        </div>
+    </div>
+    
+    <div class="stats">
+        <div>Узлов: <span id="nodeCount">0</span></div>
+        <div>Связей: <span id="connCount">0</span></div>
+    </div>
+    
+    <div class="zoom-info">
+        Зум: <span id="zoomLevel">100%</span>
+    </div>
+    
+    <div id="viewport">
+        <div id="canvas"></div>
+    </div>
+
+    <script>
+        const LAYOUT = {
+            QUESTION_SPACING_X: 1200,
+            ANSWER_SPACING_X: 600,
+            ANSWER_SPACING_Y: 350,
+            START_X: 300,
+            START_Y: 200
+        };
+
+        let nodesData = null;
+        let scale = 0.25;
+        let translateX = 100;
+        let translateY = 100;
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+        let currentMode = 'all';
+
+        fetch('./nodes_data.json')
+            .then(response => response.json())
+            .then(data => {
+                nodesData = data;
+                initCanvas();
+                updateStats();
+                updateTransform();
+            })
+            .catch(error => {
+                console.error('Failed to load data:', error);
+                alert('Ошибка загрузки JSON: ' + error.message);
+            });
+
+        function calculatePositions() {
+            const positions = {};
+            const questions = nodesData.nodes.filter(n => n.type === 'question');
+            
+            questions.forEach((q, qIndex) => {
+                positions[q.id] = {
+                    x: LAYOUT.START_X + qIndex * LAYOUT.QUESTION_SPACING_X,
+                    y: LAYOUT.START_Y,
+                    node: q
+                };
+                
+                if (q.children && q.children.length > 0) {
+                    q.children.forEach((childId, childIndex) => {
+                        const child = nodesData.nodes.find(n => n.id === childId);
+                        if (child) {
+                            const offsetX = (childIndex - (q.children.length - 1) / 2) * LAYOUT.ANSWER_SPACING_X;
+                            positions[childId] = {
+                                x: positions[q.id].x + offsetX,
+                                y: positions[q.id].y + LAYOUT.ANSWER_SPACING_Y,
+                                node: child
+                            };
+                        }
+                    });
+                }
+            });
+            
+            return positions;
+        }
+
+        function createNode(node) {
+            const div = document.createElement('div');
+            div.className = `node ${node.type}`;
+            div.id = 'node-' + node.id;
+            
+            const badgeType = node.type === 'question' ? 'ВОПРОС' :
+                             node.type === 'critical' ? 'КРИТИЧНО' :
+                             node.type === 'important' ? 'ВАЖНО' :
+                             node.type === 'flexible' ? 'ГИБКО' : 'ОТКЛОНЕНО';
+            
+            let blocksInfo = '';
+            if (node.blocks && node.blocks.length > 0) {
+                blocksInfo = `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #30363d; font-size: 10px; color: #f85149;">
+                    → Блокирует: ${node.blocks.join(', ')}
+                </div>`;
+            }
+            
+            div.innerHTML = `
+                <div class="badge ${node.type}">${badgeType}</div>
+                <h3>${node.title}</h3>
+                <p>${node.description}</p>
+                <div class="details">${node.details}</div>
+                ${blocksInfo}
+            `;
+            
+            return div;
+        }
+
+        function createConnection(fromPos, toPos, type) {
+            const line = document.createElement('div');
+            line.className = `connection ${type}`;
+            
+            const dx = toPos.x - fromPos.x;
+            const dy = toPos.y - fromPos.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            line.style.left = (fromPos.x + 160) + 'px';
+            line.style.top = (fromPos.y + 60) + 'px';
+            line.style.width = length + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            const arrow = document.createElement('div');
+            arrow.className = `arrow ${type}`;
+            line.appendChild(arrow);
+            
+            return line;
+        }
+
+        function initCanvas() {
+            const canvas = document.getElementById('canvas');
+            canvas.innerHTML = '';
+            
+            const positions = calculatePositions();
+            let connectionCount = 0;
+            
+            // Create all nodes
+            Object.values(positions).forEach(pos => {
+                const node = createNode(pos.node);
+                node.style.left = pos.x + 'px';
+                node.style.top = pos.y + 'px';
+                canvas.appendChild(node);
+            });
+            
+            // Create connections from answers to questions they block
+            nodesData.nodes.forEach(node => {
+                if (node.blocks && node.blocks.length > 0 && positions[node.id]) {
+                    node.blocks.forEach(blockedId => {
+                        if (positions[blockedId]) {
+                            const conn = createConnection(positions[node.id], positions[blockedId], node.type);
+                            conn.dataset.from = node.id;
+                            conn.dataset.to = blockedId;
+                            conn.dataset.type = node.type;
+                            canvas.appendChild(conn);
+                            connectionCount++;
+                        }
+                    });
+                }
+            });
+            
+            document.getElementById('connCount').textContent = connectionCount;
+        }
+
+        function showAll() {
+            currentMode = 'all';
+            document.querySelectorAll('.connection').forEach(c => c.style.display = 'block');
+            document.querySelectorAll('.node').forEach(n => n.style.opacity = '1');
+            setActiveButton('btnAll');
+        }
+
+        function showCritical() {
+            currentMode = 'critical';
+            document.querySelectorAll('.connection').forEach(c => {
+                c.style.display = c.dataset.type === 'critical' ? 'block' : 'none';
+            });
+            document.querySelectorAll('.node').forEach(n => {
+                const isCritical = n.classList.contains('critical') || n.classList.contains('question');
+                n.style.opacity = isCritical ? '1' : '0.2';
+            });
+            setActiveButton('btnCritical');
+        }
+
+        function showBlocking() {
+            currentMode = 'blocking';
+            const blockingNodes = new Set();
+            nodesData.nodes.forEach(n => {
+                if (n.blocks && n.blocks.length > 0) {
+                    blockingNodes.add(n.id);
+                    n.blocks.forEach(b => blockingNodes.add(b));
+                }
+            });
+            
+            document.querySelectorAll('.connection').forEach(c => {
+                const hasBlocks = blockingNodes.has(c.dataset.from);
+                c.style.display = hasBlocks ? 'block' : 'none';
+            });
+            
+            document.querySelectorAll('.node').forEach(n => {
+                const id = n.id.replace('node-', '');
+                n.style.opacity = blockingNodes.has(id) ? '1' : '0.2';
+            });
+            
+            setActiveButton('btnBlocking');
+        }
+
+        function setActiveButton(id) {
+            document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function updateStats() {
+            document.getElementById('nodeCount').textContent = nodesData.nodes.length;
+        }
+
+        function updateTransform() {
+            const canvas = document.getElementById('canvas');
+            canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
+        }
+
+        function resetView() {
+            scale = 0.25;
+            translateX = 100;
+            translateY = 100;
+            updateTransform();
+        }
+
+        function centerView() {
+            translateX = window.innerWidth / 2 - 2000;
+            translateY = window.innerHeight / 2 - 500;
+            updateTransform();
+        }
+
+        const viewport = document.getElementById('viewport');
+
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const rect = viewport.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const newScale = Math.max(0.1, Math.min(3, scale * delta));
+            const canvasX = (mouseX - translateX) / scale;
+            const canvasY = (mouseY - translateY) / scale;
+            scale = newScale;
+            translateX = mouseX - canvasX * scale;
+            translateY = mouseY - canvasY * scale;
+            updateTransform();
+        });
+
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                isDragging = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                viewport.classList.add('dragging');
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - lastMouseX;
+                const deltaY = e.clientY - lastMouseY;
+                translateX += deltaX;
+                translateY += deltaY;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                updateTransform();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            viewport.classList.remove('dragging');
+        });
+    </script>
+</body>
+</html>
