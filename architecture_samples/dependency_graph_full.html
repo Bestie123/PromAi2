@@ -110,6 +110,8 @@
         <div style="margin-bottom: 12px; font-weight: bold;">Режимы отображения:</div>
         <button onclick="showAll()" class="active" id="btnAll">Все связи</button>
         <button onclick="showCritical()" id="btnCritical">Только критичные</button>
+        <button onclick="showCriticalPath()" id="btnCriticalPath">Критический путь</button>
+        <button onclick="showParallel()" id="btnParallel">Параллельные треки</button>
         <button onclick="showBlocking()" id="btnBlocking">Блокирующие</button>
         <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #30363d;">
             <button onclick="resetView()">Сброс вида</button>
@@ -144,6 +146,7 @@
     <div class="stats">
         <div>Узлов: <span id="nodeCount">0</span></div>
         <div>Связей: <span id="connCount">0</span></div>
+        <div>Критический путь: <span id="criticalLength">-</span></div>
     </div>
     
     <div class="zoom-info">
@@ -164,6 +167,7 @@
         };
 
         let nodesData = null;
+        let sequenceData = null;
         let scale = 0.25;
         let translateX = 100;
         let translateY = 100;
@@ -172,10 +176,13 @@
         let lastMouseY = 0;
         let currentMode = 'all';
 
-        fetch('./nodes_data.json')
-            .then(response => response.json())
-            .then(data => {
-                nodesData = data;
+        Promise.all([
+            fetch('./nodes_data.json').then(r => r.json()),
+            fetch('./development_sequence.json').then(r => r.json())
+        ])
+            .then(([nodes, sequence]) => {
+                nodesData = nodes;
+                sequenceData = sequence;
                 initCanvas();
                 updateStats();
                 updateTransform();
@@ -316,6 +323,49 @@
             setActiveButton('btnCritical');
         }
 
+        function showCriticalPath() {
+            if (!sequenceData) return;
+            currentMode = 'criticalPath';
+            const criticalSet = new Set(sequenceData.criticalPath.questions);
+            
+            document.querySelectorAll('.connection').forEach(c => {
+                const from = c.dataset.from;
+                const to = c.dataset.to;
+                c.style.display = (criticalSet.has(from) || criticalSet.has(to)) ? 'block' : 'none';
+            });
+            
+            document.querySelectorAll('.node').forEach(n => {
+                const id = n.id.replace('node-', '');
+                const node = nodesData.nodes.find(nd => nd.id === id);
+                const isInPath = criticalSet.has(id) || (node && node.type === 'critical');
+                n.style.opacity = isInPath ? '1' : '0.2';
+            });
+            
+            setActiveButton('btnCriticalPath');
+        }
+
+        function showParallel() {
+            if (!sequenceData) return;
+            currentMode = 'parallel';
+            const parallelSet = new Set();
+            Object.values(sequenceData.parallelTracks).forEach(track => {
+                track.questions.forEach(q => parallelSet.add(q));
+            });
+            
+            document.querySelectorAll('.connection').forEach(c => {
+                const from = c.dataset.from;
+                const to = c.dataset.to;
+                c.style.display = (parallelSet.has(from) || parallelSet.has(to)) ? 'block' : 'none';
+            });
+            
+            document.querySelectorAll('.node').forEach(n => {
+                const id = n.id.replace('node-', '');
+                n.style.opacity = parallelSet.has(id) ? '1' : '0.2';
+            });
+            
+            setActiveButton('btnParallel');
+        }
+
         function showBlocking() {
             currentMode = 'blocking';
             const blockingNodes = new Set();
@@ -346,6 +396,9 @@
 
         function updateStats() {
             document.getElementById('nodeCount').textContent = nodesData.nodes.length;
+            if (sequenceData) {
+                document.getElementById('criticalLength').textContent = sequenceData.criticalPath.length;
+            }
         }
 
         function updateTransform() {
