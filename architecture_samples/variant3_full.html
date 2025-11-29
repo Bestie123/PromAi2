@@ -137,7 +137,10 @@
         let lastMouseY = 0;
         let showDeps = true;
 
-        fetch('./variant3_full.json')
+        const urlParams = new URLSearchParams(window.location.search);
+        const jsonFile = urlParams.get('json') || 'variant3_full.json';
+        
+        fetch('./' + jsonFile)
             .then(response => response.json())
             .then(data => {
                 const positions = calculatePositions(data);
