@@ -1,0 +1,465 @@
+{
+  "metadata": {
+    "title": "PromAi PKM - Граф зависимостей разработки",
+    "totalCriteria": 29,
+    "criticalPath": "50-65 дней",
+    "parallelTasks": "18-29 дней",
+    "totalTime": "68-94 дня (10-13 недель)",
+    "minTeam": "2-3 разработчика"
+  },
+  "criticalPaths": [
+    {
+      "id": "path1",
+      "name": "Архитектура → Блоки → CRDT",
+      "risk": "МАКСИМАЛЬНЫЙ",
+      "time": "35-50 дней",
+      "description": "Самый длинный путь, блокирует всё",
+      "sequence": [1, 29, 2, 3, 4, 13, 16, 17]
+    },
+    {
+      "id": "path2",
+      "name": "Блоки → Ссылки → CRDT Refs",
+      "risk": "ВЫСОКИЙ",
+      "time": "10-15 дней",
+      "description": "Блокирует knowledge graph",
+      "sequence": [3, 7, 8, 18]
+    },
+    {
+      "id": "path3",
+      "name": "UI → Рендеринг → Производительность",
+      "risk": "ВЫСОКИЙ",
+      "time": "12-16 дней",
+      "description": "Блокирует UX",
+      "sequence": [11, 21, 5]
+    },
+    {
+      "id": "path4",
+      "name": "Архитектура → Плагины → Расширяемость",
+      "risk": "ВЫСОКИЙ",
+      "time": "17-24 дня",
+      "description": "Блокирует экосистему",
+      "sequence": [1, 2, 26, 27, 28]
+    }
+  ],
+  "parallelGroups": [
+    {
+      "id": "groupA",
+      "name": "Инфраструктура",
+      "week": 1,
+      "criteria": [9, 10, 15],
+      "time": "5-8 дней"
+    },
+    {
+      "id": "groupB",
+      "name": "UI принципы",
+      "week": 1,
+      "criteria": [11, 12, 20],
+      "time": "4-6 дней"
+    },
+    {
+      "id": "groupC",
+      "name": "Производительность",
+      "week": "3-4",
+      "criteria": [22, 23],
+      "time": "6-8 дней"
+    },
+    {
+      "id": "groupD",
+      "name": "Безопасность",
+      "week": "3-4",
+      "criteria": [24, 25],
+      "time": "6-8 дней"
+    }
+  ],
+  "criteria": [
+    {
+      "id": 1,
+      "title": "Модульная архитектура",
+      "type": "critical",
+      "week": 1,
+      "time": "2-3 дня",
+      "requires": [],
+      "blocks": ["ВСЁ"],
+      "description": "Ядро отделено от UI и плагинов",
+      "risk": "МАКСИМАЛЬНЫЙ"
+    },
+    {
+      "id": 29,
+      "title": "Модульность кода",
+      "type": "critical",
+      "week": 1,
+      "time": "1 день",
+      "requires": [1],
+      "blocks": ["качество кода"],
+      "description": "Файлы ≤500 строк, функции ≤50 строк",
+      "risk": "ВЫСОКИЙ"
+    },
+    {
+      "id": 2,
+      "title": "Блочная система",
+      "type": "critical",
+      "week": 1,
+      "time": "2-3 дня",
+      "requires": [1],
+      "blocks": [3, 4],
+      "description": "Всё является блоками",
+      "risk": "МАКСИМАЛЬНЫЙ"
+    },
+    {
+      "id": 3,
+      "title": "UUID для блоков",
+      "type": "critical",
+      "week": 1,
+      "time": "1 день",
+      "requires": [2],
+      "blocks": [4, 7],
+      "description": "Уникальные глобальные ID (v4/v7)",
+      "risk": "ВЫСОКИЙ"
+    },
+    {
+      "id": 4,
+      "title": "Вложенные блоки",
+      "type": "critical",
+      "week": 1,
+      "time": "2-3 дня",
+      "requires": [3],
+      "blocks": [13],
+      "description": "Иерархия любой глубины",
+      "risk": "ВЫСОКИЙ"
+    },
+    {
+      "id": 13,
+      "title": "CRDT (Yjs)",
+      "type": "critical",
+      "week": 2,
+      "time": "5-7 дней",
+      "requires": [4],
+      "blocks": [14, 16, 18, 25],
+      "description": "Single source of truth",
+      "risk": "МАКСИМАЛЬНЫЙ"
+    },
+    {
+      "id": 16,
+      "title": "Все через CRDT",
+      "type": "critical",
+      "week": 2,
+      "time": "3-4 дня",
+      "requires": [13],
+      "blocks": [17, 25],
+      "description": "Все изменения только через CRDT-операции",
+      "risk": "ВЫСОКИЙ"
+    },
+    {
+      "id": 17,
+      "title": "Атомарные транзакции",
+      "type": "critical",
+      "week": 2,
+      "time": "3-4 дня",
+      "requires": [16],
+      "blocks": ["undo/redo"],
+      "description": "Целостность данных",
+      "risk": "ВЫСОКИЙ"
+    },
+    {
+      "id": 14,
+      "title": "Event Sourcing",
+      "type": "critical",
+      "week": 2,
+      "time": "2-3 дня",
+      "requires": [13],
+      "blocks": ["versioning"],
+      "description": "Immutable ops log",
+      "risk": "СРЕДНИЙ"
+    },
+    {
+      "id": 6,
+      "title": "Rich Text",
+      "type": "critical",
+      "week": 3,
+      "time": "7-10 дней",
+      "requires": [2, 16],
+      "blocks": ["UX"],
+      "description": "Markdown + WYSIWYG",
+      "risk": "ВЫСОКИЙ"
+    },
+    {
+      "id": 21,
+      "title": "Virtual scrolling",
+      "type": "critical",
+      "week": 3,
+      "time": "5-7 дней",
+      "requires": [11],
+      "blocks": ["performance"],
+      "description": "Работа с 100k+ блоков",
+      "risk": "ВЫСОКИЙ"
+    },
+    {
+      "id": 5,
+      "title": "Drag & Drop",
+      "type": "critical",
+      "week": 4,
+      "time": "5-7 дней",
+      "requires": [4, 21],
+      "blocks": ["UX реорганизации"],
+      "description": "Порядок блоков",
+      "risk": "СРЕДНИЙ"
+    },
+    {
+      "id": 26,
+      "title": "Плагинная система",
+      "type": "critical",
+      "week": 5,
+      "time": "7-10 дней",
+      "requires": [1, 2],
+      "blocks": [27, 28],
+      "description": "Единый механизм для всех блоков",
+      "risk": "ВЫСОКИЙ"
+    },
+    {
+      "id": 27,
+      "title": "Композитные блоки",
+      "type": "critical",
+      "week": 5,
+      "time": "5-7 дней",
+      "requires": [26, 4],
+      "blocks": ["сложные плагины"],
+      "description": "Кастомные блоки с вложенностью",
+      "risk": "СРЕДНИЙ"
+    },
+    {
+      "id": 28,
+      "title": "Состояние блоков",
+      "type": "critical",
+      "week": 6,
+      "time": "3-4 дня",
+      "requires": [26],
+      "blocks": ["виджеты"],
+      "description": "JSON состояние для плагинов",
+      "risk": "СРЕДНИЙ"
+    },
+    {
+      "id": 9,
+      "title": "Локальное хранилище",
+      "type": "parallel",
+      "week": 1,
+      "time": "2-3 дня",
+      "requires": [],
+      "blocks": [],
+      "description": "JSON или SQLite или Hybrid",
+      "risk": "НИЗКИЙ"
+    },
+    {
+      "id": 11,
+      "title": "Декларативный UI",
+      "type": "parallel",
+      "week": 1,
+      "time": "2-3 дня",
+      "requires": [],
+      "blocks": [],
+      "description": "JSON-структуры, чистые функции",
+      "risk": "СРЕДНИЙ"
+    },
+    {
+      "id": 12,
+      "title": "Zero runtime logic",
+      "type": "parallel",
+      "week": 1,
+      "time": "1-2 дня",
+      "requires": [],
+      "blocks": [],
+      "description": "Чистая функция рендера",
+      "risk": "СРЕДНИЙ"
+    },
+    {
+      "id": 20,
+      "title": "Нет глобального состояния",
+      "type": "parallel",
+      "week": 1,
+      "time": "1 день",
+      "requires": [],
+      "blocks": [],
+      "description": "Локальное состояние",
+      "risk": "СРЕДНИЙ"
+    },
+    {
+      "id": 10,
+      "title": "Полная оффлайн работа",
+      "type": "parallel",
+      "week": 1,
+      "time": "1-2 дня",
+      "requires": [],
+      "blocks": [],
+      "description": "Все функции без сети",
+      "risk": "НИЗКИЙ"
+    },
+    {
+      "id": 15,
+      "title": "Schema-first",
+      "type": "parallel",
+      "week": 1,
+      "time": "2-3 дня",
+      "requires": [],
+      "blocks": [],
+      "description": "JSON Schema + Zod",
+      "risk": "НИЗКИЙ"
+    },
+    {
+      "id": 7,
+      "title": "Refs по UUID",
+      "type": "parallel",
+      "week": 2,
+      "time": "2-3 дня",
+      "requires": [3],
+      "blocks": [8, 18],
+      "description": "Ссылки на блоки",
+      "risk": "СРЕДНИЙ"
+    },
+    {
+      "id": 8,
+      "title": "Backlinks",
+      "type": "parallel",
+      "week": 2,
+      "time": "2-3 дня",
+      "requires": [7],
+      "blocks": [],
+      "description": "Автоматические обратные ссылки",
+      "risk": "СРЕДНИЙ"
+    },
+    {
+      "id": 18,
+      "title": "Refs в CRDT",
+      "type": "parallel",
+      "week": 2,
+      "time": "3-4 дня",
+      "requires": [13, 7],
+      "blocks": [],
+      "description": "First-class ссылки в CRDT",
+      "risk": "СРЕДНИЙ"
+    },
+    {
+      "id": 19,
+      "title": "Плоский граф",
+      "type": "flexible",
+      "week": 2,
+      "time": "1-2 дня",
+      "requires": [],
+      "blocks": [],
+      "description": "Блоки ≠ страницы",
+      "risk": "НИЗКИЙ"
+    },
+    {
+      "id": 22,
+      "title": "Web Workers",
+      "type": "parallel",
+      "week": 3,
+      "time": "4-5 дней",
+      "requires": [],
+      "blocks": [],
+      "description": "Поиск, индексация, CRDT",
+      "risk": "СРЕДНИЙ"
+    },
+    {
+      "id": 23,
+      "title": "Circular Detection",
+      "type": "parallel",
+      "week": 3,
+      "time": "2-3 дня",
+      "requires": [],
+      "blocks": [],
+      "description": "Предотвращение циклов",
+      "risk": "СРЕДНИЙ"
+    },
+    {
+      "id": 24,
+      "title": "E2EE готовность",
+      "type": "parallel",
+      "week": 3,
+      "time": "3-4 дня",
+      "requires": [],
+      "blocks": [],
+      "description": "Формат хранения",
+      "risk": "НИЗКИЙ"
+    },
+    {
+      "id": 25,
+      "title": "Конфликт-менеджмент",
+      "type": "parallel",
+      "week": 4,
+      "time": "3-4 дня",
+      "requires": [13, 16],
+      "blocks": [],
+      "description": "CRDT merge",
+      "risk": "СРЕДНИЙ"
+    }
+  ],
+  "phases": [
+    {
+      "phase": 1,
+      "name": "Фундамент",
+      "weeks": "1-2",
+      "time": "21-29 дней",
+      "criticalPath": [1, 29, 2, 3, 4, 13, 16],
+      "parallel": [9, 11, 12, 20, 10, 15],
+      "description": "Базовая архитектура и CRDT"
+    },
+    {
+      "phase": 2,
+      "name": "Операции и связи",
+      "weeks": "2-3",
+      "time": "15-20 дней",
+      "criticalPath": [17, 14],
+      "parallel": [7, 8, 18, 19],
+      "description": "Транзакции, Event Sourcing, Refs"
+    },
+    {
+      "phase": 3,
+      "name": "UI и контент",
+      "weeks": "3-4",
+      "time": "17-24 дня",
+      "criticalPath": [6, 21, 5],
+      "parallel": [22, 23, 24, 25],
+      "description": "Rich Text, Virtual scrolling, Drag & Drop"
+    },
+    {
+      "phase": 4,
+      "name": "Плагины",
+      "weeks": "5-6",
+      "time": "15-21 день",
+      "criticalPath": [26, 27, 28],
+      "parallel": [],
+      "description": "Plugin система и расширяемость"
+    }
+  ],
+  "questions": [
+    {
+      "question": "UUID v4 vs v7?",
+      "options": ["v4 (случайные)", "v7 (с timestamp)"],
+      "recommendation": "v4 для MVP, v7 опционально",
+      "impact": "НИЗКИЙ"
+    },
+    {
+      "question": "Хранилище: JSON vs SQLite vs Hybrid?",
+      "options": ["JSON (читаемость)", "SQLite (производительность)", "Hybrid (лучшее из двух)"],
+      "recommendation": "Hybrid для масштабируемости",
+      "impact": "СРЕДНИЙ"
+    },
+    {
+      "question": "Rich Text: Markdown vs WYSIWYG?",
+      "options": ["Markdown", "WYSIWYG", "Объединить"],
+      "recommendation": "Markdown+ с live preview",
+      "impact": "ВЫСОКИЙ"
+    },
+    {
+      "question": "Drag & Drop: Native vs Library?",
+      "options": ["Native (производительность)", "Library (простота)", "Объединить"],
+      "recommendation": "Можно объединить",
+      "impact": "СРЕДНИЙ"
+    },
+    {
+      "question": "Приоритет параллельных задач?",
+      "options": ["Группа A (инфраструктура)", "Группа B (UI принципы)", "Группа C (производительность)", "Группа D (безопасность)"],
+      "recommendation": "Группа B → Группа A → Группа C → Группа D",
+      "impact": "СРЕДНИЙ"
+    }
+  ]
+}
