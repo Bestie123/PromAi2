@@ -1,0 +1,81 @@
+{
+  "nodes": {
+    "q1": { 
+      "id": "q1", "x": 500, "y": 100, "type": "question", 
+      "title": "❓ Модульность движка?", 
+      "description": "Ядро отделено от UI и плагинов", 
+      "children": ["modular-arch", "monolith-arch"], 
+      "criteriaId": 1,
+      "dependency_type": "hard",
+      "enables": [11, 12, 26, 29],
+      "blocking": true
+    },
+    "modular-arch": { 
+      "id": "modular-arch", "x": 200, "y": 300, "type": "critical", 
+      "title": "✅ Модульная", 
+      "description": "Ядро легко отделяется", 
+      "criteriaId": 1,
+      "dependency_type": "hard",
+      "enables": [11, 12, 26, 29],
+      "blocking": true
+    },
+    "q13": { 
+      "id": "q13", "x": 2500, "y": 1100, "type": "question", 
+      "title": "❓ Какую CRDT?", 
+      "description": "Single source of truth", 
+      "children": ["yjs-crdt", "automerge-crdt"], 
+      "criteriaId": 13,
+      "dependency_type": "hard",
+      "enables": [14, 16, 18, 25],
+      "blocking": true
+    },
+    "yjs-crdt": { 
+      "id": "yjs-crdt", "x": 2200, "y": 1300, "type": "critical", 
+      "title": "✅ Yjs", 
+      "description": "Быстрая, популярная CRDT", 
+      "criteriaId": 13,
+      "dependency_type": "hard",
+      "enables": [14, 16, 18, 25],
+      "blocking": true
+    },
+    "q11": { 
+      "id": "q11", "x": 500, "y": 1100, "type": "question", 
+      "title": "❓ Декларативный UI?", 
+      "description": "100% декларативный рендер", 
+      "children": ["declarative-ui", "imperative-ui"], 
+      "criteriaId": 11,
+      "dependency_type": "soft",
+      "enhances": [12, 20, 21]
+    },
+    "declarative-ui": { 
+      "id": "declarative-ui", "x": 200, "y": 1300, "type": "critical", 
+      "title": "✅ Декларативный", 
+      "description": "JSON-структуры, чистые функции", 
+      "criteriaId": 11,
+      "dependency_type": "soft",
+      "enhances": [12, 20, 21]
+    }
+  },
+  "dependencies": {
+    "hard": {
+      "1": {"enables": [11, 12, 26, 29], "blocking": true},
+      "2": {"enables": [4, 7, 8, 16, 18, 19], "blocking": true},
+      "13": {"enables": [14, 16, 18, 25], "blocking": true}
+    },
+    "soft": {
+      "11": {"enhances": [12, 20, 21]},
+      "21": {"enhances": [22]},
+      "26": {"enables": [27, 28]}
+    },
+    "blocking": {
+      "foundation": [1, 2, 13],
+      "ui": [11, 12],
+      "data": [3, 9, 16]
+    }
+  },
+  "development_order": [1, 2, 3, 13, 11, 12, 4, 7, 8, 16, 21, 26],
+  "compatibility": {
+    "modular-arch,monolith-arch": "невозможно",
+    "yjs-crdt,automerge-crdt": "переключать"
+  }
+}
