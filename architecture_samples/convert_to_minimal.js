@@ -7,7 +7,12 @@ const original = JSON.parse(fs.readFileSync('../architecture/nodes.json', 'utf8'
 const minimal = {
   nodes: {},
   dependencies: {},
-  useOriginalPositions: true
+  layout: {
+    columnWidth: 400,
+    rowHeight: 300,
+    startX: 100,
+    startY: 100
+  }
 };
 
 // Фазы из dependency_tracker.json
@@ -26,37 +31,45 @@ Object.keys(phases).forEach(phase => {
   });
 });
 
-// Конвертируем ВСЕ узлы с оригинальными координатами
+// Конвертируем ВСЕ узлы
 Object.keys(original.nodes).forEach(id => {
   const node = original.nodes[id];
   minimal.nodes[id] = {
-    x: node.x,
-    y: node.y,
     phase: nodePhases[id] || 'other',
     criteriaId: node.criteriaId,
     title: node.title,
-    type: node.type,
-    children: node.children || []
+    type: node.type
   };
 });
 
-// Зависимости из children (вопрос -> ответы)
+// Зависимости ТОЛЬКО из вопросов к ответам
 Object.keys(original.nodes).forEach(id => {
   const node = original.nodes[id];
-  if (node.children && node.children.length > 0) {
+  if (node.type === 'question' && node.children && node.children.length > 0) {
     minimal.dependencies[id] = node.children;
   }
 });
 
-// Добавляем фазовые зависимости отдельно
+// Фазовые зависимости (enables)
 minimal.phaseDependencies = {
-  'modular-arch': ['declarative-ui', 'plugin-unified'],
-  'all-blocks': ['nested-blocks', 'refs-uuid', 'crdt-only'],
-  'uuid-v4': ['refs-uuid', 'backlinks-auto'],
-  'yjs-crdt': ['crdt-only'],
-  'declarative-ui': ['zero-runtime', 'virtual-scrolling'],
-  'virtual-scrolling': ['web-workers-all'],
-  'plugin-unified': ['composite-blocks']
+  blocking: [
+    { from: 'modular-arch', to: 'declarative-ui' },
+    { from: 'modular-arch', to: 'plugin-unified' },
+    { from: 'all-blocks', to: 'nested-blocks' },
+    { from: 'all-blocks', to: 'refs-uuid' },
+    { from: 'all-blocks', to: 'crdt-only' },
+    { from: 'uuid-v4', to: 'refs-uuid' },
+    { from: 'uuid-v4', to: 'backlinks-auto' },
+    { from: 'yjs-crdt', to: 'crdt-only' }
+  ],
+  hard: [
+    { from: 'declarative-ui', to: 'zero-runtime' },
+    { from: 'declarative-ui', to: 'virtual-scrolling' }
+  ],
+  soft: [
+    { from: 'virtual-scrolling', to: 'web-workers-all' },
+    { from: 'plugin-unified', to: 'composite-blocks' }
+  ]
 };
 
 fs.writeFileSync('./variant3_full.json', JSON.stringify(minimal, null, 2));
