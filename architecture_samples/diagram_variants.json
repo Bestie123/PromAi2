@@ -1,0 +1,687 @@
+{
+  "variants": [
+    {
+      "id": "variant-1-dependency-tree",
+      "name": "Дерево зависимостей модулей",
+      "description": "Показывает какие модули от каких зависят",
+      "structure": {
+        "rootNode": {
+          "id": "root",
+          "type": "root",
+          "title": "🏗️ PromAi Architecture",
+          "children": ["mod-arch"]
+        },
+        "nodes": [
+          {
+            "id": "mod-arch",
+            "type": "module",
+            "title": "Модульная архитектура",
+            "criteria": [1, 29],
+            "children": ["mod-block-core"]
+          },
+          {
+            "id": "mod-block-core",
+            "type": "module",
+            "title": "Блочная система",
+            "criteria": [2, 3, 4],
+            "children": ["mod-crdt", "mod-schema", "mod-ui-core"]
+          },
+          {
+            "id": "mod-crdt",
+            "type": "module",
+            "title": "CRDT Foundation",
+            "criteria": [13, 14, 16, 17],
+            "children": ["mod-storage", "mod-refs", "mod-workers", "mod-drag-drop", "mod-plugin-core", "mod-sync"]
+          },
+          {
+            "id": "mod-storage",
+            "type": "module",
+            "title": "Local Storage",
+            "criteria": [9, 10, 24],
+            "children": ["mod-sync"]
+          },
+          {
+            "id": "mod-refs",
+            "type": "module",
+            "title": "References System",
+            "criteria": [7, 8, 18],
+            "children": ["mod-graph", "mod-rich-text"]
+          },
+          {
+            "id": "mod-graph",
+            "type": "module",
+            "title": "Graph Structure",
+            "criteria": [19, 23],
+            "children": []
+          },
+          {
+            "id": "mod-schema",
+            "type": "module",
+            "title": "Schema Validation",
+            "criteria": [15],
+            "children": []
+          },
+          {
+            "id": "mod-ui-core",
+            "type": "module",
+            "title": "Declarative UI",
+            "criteria": [11, 12, 20],
+            "children": ["mod-virtual-scroll", "mod-workers", "mod-rich-text", "mod-drag-drop", "mod-plugin-core"]
+          },
+          {
+            "id": "mod-virtual-scroll",
+            "type": "module",
+            "title": "Virtual Scrolling",
+            "criteria": [21],
+            "children": []
+          },
+          {
+            "id": "mod-workers",
+            "type": "module",
+            "title": "Web Workers",
+            "criteria": [22],
+            "children": []
+          },
+          {
+            "id": "mod-rich-text",
+            "type": "module",
+            "title": "Rich Text Editor",
+            "criteria": [6],
+            "children": []
+          },
+          {
+            "id": "mod-drag-drop",
+            "type": "module",
+            "title": "Drag & Drop",
+            "criteria": [5],
+            "children": []
+          },
+          {
+            "id": "mod-plugin-core",
+            "type": "module",
+            "title": "Plugin System",
+            "criteria": [26, 27, 28],
+            "children": []
+          },
+          {
+            "id": "mod-sync",
+            "type": "module",
+            "title": "Sync Engine",
+            "criteria": [25],
+            "children": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "variant-2-layer-tree",
+      "name": "Дерево архитектурных слоёв",
+      "description": "Группировка по архитектурным слоям",
+      "structure": {
+        "rootNode": {
+          "id": "root",
+          "type": "root",
+          "title": "🏗️ PromAi Layers",
+          "children": ["layer-foundation", "layer-data", "layer-ui", "layer-features"]
+        },
+        "nodes": [
+          {
+            "id": "layer-foundation",
+            "type": "layer",
+            "title": "🔧 Foundation Layer",
+            "description": "Базовая инфраструктура",
+            "children": ["mod-arch", "mod-block-core", "mod-crdt", "mod-storage"]
+          },
+          {
+            "id": "layer-data",
+            "type": "layer",
+            "title": "💾 Data Layer",
+            "description": "Работа с данными",
+            "children": ["mod-refs", "mod-graph", "mod-schema"]
+          },
+          {
+            "id": "layer-ui",
+            "type": "layer",
+            "title": "🎨 UI Layer",
+            "description": "Пользовательский интерфейс",
+            "children": ["mod-ui-core", "mod-virtual-scroll", "mod-workers"]
+          },
+          {
+            "id": "layer-features",
+            "type": "layer",
+            "title": "✨ Features Layer",
+            "description": "Функциональность",
+            "children": ["mod-rich-text", "mod-drag-drop", "mod-plugin-core", "mod-sync"]
+          },
+          {
+            "id": "mod-arch",
+            "type": "module",
+            "title": "Модульная архитектура",
+            "criteria": [1, 29],
+            "children": []
+          },
+          {
+            "id": "mod-block-core",
+            "type": "module",
+            "title": "Блочная система",
+            "criteria": [2, 3, 4],
+            "children": []
+          },
+          {
+            "id": "mod-crdt",
+            "type": "module",
+            "title": "CRDT Foundation",
+            "criteria": [13, 14, 16, 17],
+            "children": []
+          },
+          {
+            "id": "mod-storage",
+            "type": "module",
+            "title": "Local Storage",
+            "criteria": [9, 10, 24],
+            "children": []
+          },
+          {
+            "id": "mod-refs",
+            "type": "module",
+            "title": "References System",
+            "criteria": [7, 8, 18],
+            "children": []
+          },
+          {
+            "id": "mod-graph",
+            "type": "module",
+            "title": "Graph Structure",
+            "criteria": [19, 23],
+            "children": []
+          },
+          {
+            "id": "mod-schema",
+            "type": "module",
+            "title": "Schema Validation",
+            "criteria": [15],
+            "children": []
+          },
+          {
+            "id": "mod-ui-core",
+            "type": "module",
+            "title": "Declarative UI",
+            "criteria": [11, 12, 20],
+            "children": []
+          },
+          {
+            "id": "mod-virtual-scroll",
+            "type": "module",
+            "title": "Virtual Scrolling",
+            "criteria": [21],
+            "children": []
+          },
+          {
+            "id": "mod-workers",
+            "type": "module",
+            "title": "Web Workers",
+            "criteria": [22],
+            "children": []
+          },
+          {
+            "id": "mod-rich-text",
+            "type": "module",
+            "title": "Rich Text Editor",
+            "criteria": [6],
+            "children": []
+          },
+          {
+            "id": "mod-drag-drop",
+            "type": "module",
+            "title": "Drag & Drop",
+            "criteria": [5],
+            "children": []
+          },
+          {
+            "id": "mod-plugin-core",
+            "type": "module",
+            "title": "Plugin System",
+            "criteria": [26, 27, 28],
+            "children": []
+          },
+          {
+            "id": "mod-sync",
+            "type": "module",
+            "title": "Sync Engine",
+            "criteria": [25],
+            "children": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "variant-3-priority-tree",
+      "name": "Дерево по приоритетам",
+      "description": "Группировка по критичности для MVP",
+      "structure": {
+        "rootNode": {
+          "id": "root",
+          "type": "root",
+          "title": "🎯 PromAi Priorities",
+          "children": ["priority-critical", "priority-important", "priority-optional"]
+        },
+        "nodes": [
+          {
+            "id": "priority-critical",
+            "type": "priority",
+            "title": "🔴 CRITICAL (MVP Blockers)",
+            "description": "Без этого MVP невозможен",
+            "children": ["mod-arch", "mod-block-core", "mod-crdt", "mod-storage", "mod-refs", "mod-ui-core", "mod-plugin-core"]
+          },
+          {
+            "id": "priority-important",
+            "type": "priority",
+            "title": "🟠 IMPORTANT (MVP Enhanced)",
+            "description": "Сильно улучшает MVP",
+            "children": ["mod-graph", "mod-schema", "mod-virtual-scroll", "mod-workers", "mod-rich-text"]
+          },
+          {
+            "id": "priority-optional",
+            "type": "priority",
+            "title": "🟢 OPTIONAL (Post-MVP)",
+            "description": "Можно добавить после MVP",
+            "children": ["mod-drag-drop", "mod-sync"]
+          },
+          {
+            "id": "mod-arch",
+            "type": "module",
+            "title": "Модульная архитектура",
+            "criteria": [1, 29],
+            "children": []
+          },
+          {
+            "id": "mod-block-core",
+            "type": "module",
+            "title": "Блочная система",
+            "criteria": [2, 3, 4],
+            "children": []
+          },
+          {
+            "id": "mod-crdt",
+            "type": "module",
+            "title": "CRDT Foundation",
+            "criteria": [13, 14, 16, 17],
+            "children": []
+          },
+          {
+            "id": "mod-storage",
+            "type": "module",
+            "title": "Local Storage",
+            "criteria": [9, 10, 24],
+            "children": []
+          },
+          {
+            "id": "mod-refs",
+            "type": "module",
+            "title": "References System",
+            "criteria": [7, 8, 18],
+            "children": []
+          },
+          {
+            "id": "mod-ui-core",
+            "type": "module",
+            "title": "Declarative UI",
+            "criteria": [11, 12, 20],
+            "children": []
+          },
+          {
+            "id": "mod-plugin-core",
+            "type": "module",
+            "title": "Plugin System",
+            "criteria": [26, 27, 28],
+            "children": []
+          },
+          {
+            "id": "mod-graph",
+            "type": "module",
+            "title": "Graph Structure",
+            "criteria": [19, 23],
+            "children": []
+          },
+          {
+            "id": "mod-schema",
+            "type": "module",
+            "title": "Schema Validation",
+            "criteria": [15],
+            "children": []
+          },
+          {
+            "id": "mod-virtual-scroll",
+            "type": "module",
+            "title": "Virtual Scrolling",
+            "criteria": [21],
+            "children": []
+          },
+          {
+            "id": "mod-workers",
+            "type": "module",
+            "title": "Web Workers",
+            "criteria": [22],
+            "children": []
+          },
+          {
+            "id": "mod-rich-text",
+            "type": "module",
+            "title": "Rich Text Editor",
+            "criteria": [6],
+            "children": []
+          },
+          {
+            "id": "mod-drag-drop",
+            "type": "module",
+            "title": "Drag & Drop",
+            "criteria": [5],
+            "children": []
+          },
+          {
+            "id": "mod-sync",
+            "type": "module",
+            "title": "Sync Engine",
+            "criteria": [25],
+            "children": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "variant-4-criteria-tree",
+      "name": "Дерево по группам критериев",
+      "description": "Группировка по типам архитектурных решений",
+      "structure": {
+        "rootNode": {
+          "id": "root",
+          "type": "root",
+          "title": "📋 PromAi Criteria Groups",
+          "children": ["group-architecture", "group-data-model", "group-ui-rendering", "group-extensibility"]
+        },
+        "nodes": [
+          {
+            "id": "group-architecture",
+            "type": "group",
+            "title": "🏗️ Architecture & Code",
+            "description": "Структура кода и модулей",
+            "children": ["crit-1", "crit-29"]
+          },
+          {
+            "id": "group-data-model",
+            "type": "group",
+            "title": "💾 Data Model & Storage",
+            "description": "Модель данных и хранение",
+            "children": ["crit-2-4", "crit-7-8", "crit-9-10", "crit-13-18", "crit-19", "crit-23-25"]
+          },
+          {
+            "id": "group-ui-rendering",
+            "type": "group",
+            "title": "🎨 UI & Rendering",
+            "description": "Интерфейс и отрисовка",
+            "children": ["crit-11-12", "crit-20-22", "crit-5-6"]
+          },
+          {
+            "id": "group-extensibility",
+            "type": "group",
+            "title": "🔌 Extensibility",
+            "description": "Расширяемость и плагины",
+            "children": ["crit-26-28", "crit-15"]
+          },
+          {
+            "id": "crit-1",
+            "type": "criteria-group",
+            "title": "Критерий 1: Модульность движка",
+            "children": ["modular-arch"]
+          },
+          {
+            "id": "crit-29",
+            "type": "criteria-group",
+            "title": "Критерий 29: Модульность кода",
+            "children": ["modular-code"]
+          },
+          {
+            "id": "crit-2-4",
+            "type": "criteria-group",
+            "title": "Критерии 2-4: Блочная система",
+            "children": ["all-blocks", "uuid-v4", "nested-blocks"]
+          },
+          {
+            "id": "crit-7-8",
+            "type": "criteria-group",
+            "title": "Критерии 7-8: References & Backlinks",
+            "children": ["refs-uuid", "backlinks-auto"]
+          },
+          {
+            "id": "crit-9-10",
+            "type": "criteria-group",
+            "title": "Критерии 9-10: Storage & Offline",
+            "children": ["json-storage", "offline-full"]
+          },
+          {
+            "id": "crit-13-18",
+            "type": "criteria-group",
+            "title": "Критерии 13-18: CRDT & Operations",
+            "children": ["yjs-crdt", "event-sourcing-separate", "crdt-only", "atomic-transactions", "refs-crdt-first"]
+          },
+          {
+            "id": "crit-19",
+            "type": "criteria-group",
+            "title": "Критерий 19: Плоский граф",
+            "children": ["flat-graph"]
+          },
+          {
+            "id": "crit-23-25",
+            "type": "criteria-group",
+            "title": "Критерии 23-25: Cycles & Sync",
+            "children": ["circular-render", "e2ee-ready", "crdt-merge"]
+          },
+          {
+            "id": "crit-11-12",
+            "type": "criteria-group",
+            "title": "Критерии 11-12: Declarative UI",
+            "children": ["declarative-ui", "zero-runtime"]
+          },
+          {
+            "id": "crit-20-22",
+            "type": "criteria-group",
+            "title": "Критерии 20-22: State & Performance",
+            "children": ["no-global-state", "virtual-scrolling", "web-workers-all"]
+          },
+          {
+            "id": "crit-5-6",
+            "type": "criteria-group",
+            "title": "Критерии 5-6: Editing",
+            "children": ["drag-drop-native", "markdown-rich"]
+          },
+          {
+            "id": "crit-26-28",
+            "type": "criteria-group",
+            "title": "Критерии 26-28: Plugin System",
+            "children": ["plugin-unified", "composite-blocks", "block-state-json"]
+          },
+          {
+            "id": "crit-15",
+            "type": "criteria-group",
+            "title": "Критерий 15: Schema Validation",
+            "children": ["json-schema"]
+          },
+          {
+            "id": "modular-arch",
+            "type": "decision",
+            "title": "✅ Модульная архитектура",
+            "children": []
+          },
+          {
+            "id": "modular-code",
+            "type": "decision",
+            "title": "✅ Модульный код (≤500 строк)",
+            "children": []
+          },
+          {
+            "id": "all-blocks",
+            "type": "decision",
+            "title": "✅ Всё - блоки",
+            "children": []
+          },
+          {
+            "id": "uuid-v4",
+            "type": "decision",
+            "title": "✅ UUID v4",
+            "children": []
+          },
+          {
+            "id": "nested-blocks",
+            "type": "decision",
+            "title": "✅ Вложенные блоки",
+            "children": []
+          },
+          {
+            "id": "refs-uuid",
+            "type": "decision",
+            "title": "✅ Refs по UUID",
+            "children": []
+          },
+          {
+            "id": "backlinks-auto",
+            "type": "decision",
+            "title": "✅ Автоматические backlinks",
+            "children": []
+          },
+          {
+            "id": "json-storage",
+            "type": "decision",
+            "title": "✅ JSON Storage",
+            "children": []
+          },
+          {
+            "id": "offline-full",
+            "type": "decision",
+            "title": "✅ Полная оффлайн работа",
+            "children": []
+          },
+          {
+            "id": "yjs-crdt",
+            "type": "decision",
+            "title": "✅ Yjs CRDT",
+            "children": []
+          },
+          {
+            "id": "event-sourcing-separate",
+            "type": "decision",
+            "title": "✅ Event Sourcing (отдельный лог)",
+            "children": []
+          },
+          {
+            "id": "crdt-only",
+            "type": "decision",
+            "title": "✅ Только CRDT операции",
+            "children": []
+          },
+          {
+            "id": "atomic-transactions",
+            "type": "decision",
+            "title": "✅ Атомарные транзакции",
+            "children": []
+          },
+          {
+            "id": "refs-crdt-first",
+            "type": "decision",
+            "title": "✅ Refs first-class в CRDT",
+            "children": []
+          },
+          {
+            "id": "flat-graph",
+            "type": "decision",
+            "title": "✅ Плоский граф блоков",
+            "children": []
+          },
+          {
+            "id": "circular-render",
+            "type": "decision",
+            "title": "✅ Circular detection при рендере",
+            "children": []
+          },
+          {
+            "id": "e2ee-ready",
+            "type": "decision",
+            "title": "✅ E2EE готовность",
+            "children": []
+          },
+          {
+            "id": "crdt-merge",
+            "type": "decision",
+            "title": "✅ CRDT merge",
+            "children": []
+          },
+          {
+            "id": "declarative-ui",
+            "type": "decision",
+            "title": "✅ Декларативный UI",
+            "children": []
+          },
+          {
+            "id": "zero-runtime",
+            "type": "decision",
+            "title": "✅ Zero runtime logic",
+            "children": []
+          },
+          {
+            "id": "no-global-state",
+            "type": "decision",
+            "title": "✅ Локальное состояние",
+            "children": []
+          },
+          {
+            "id": "virtual-scrolling",
+            "type": "decision",
+            "title": "✅ Virtual scrolling",
+            "children": []
+          },
+          {
+            "id": "web-workers-all",
+            "type": "decision",
+            "title": "✅ Web Workers для всех операций",
+            "children": []
+          },
+          {
+            "id": "drag-drop-native",
+            "type": "decision",
+            "title": "✅ Нативный Drag & Drop",
+            "children": []
+          },
+          {
+            "id": "markdown-rich",
+            "type": "decision",
+            "title": "✅ Markdown+ Rich Text",
+            "children": []
+          },
+          {
+            "id": "plugin-unified",
+            "type": "decision",
+            "title": "✅ Единая plugin система",
+            "children": []
+          },
+          {
+            "id": "composite-blocks",
+            "type": "decision",
+            "title": "✅ Композитные блоки",
+            "children": []
+          },
+          {
+            "id": "block-state-json",
+            "type": "decision",
+            "title": "✅ JSON состояние блоков",
+            "children": []
+          },
+          {
+            "id": "json-schema",
+            "type": "decision",
+            "title": "✅ JSON Schema валидация",
+            "children": []
+          }
+        ]
+      }
+    }
+  ]
+}

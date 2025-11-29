@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromAi Architecture Trees</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117; color: #c9d1d9; padding: 20px;
+        }
+        
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { margin-bottom: 20px; color: #58a6ff; }
+        
+        .variant-selector {
+            background: #161b22; border: 2px solid #30363d; border-radius: 8px;
+            padding: 15px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;
+        }
+        
+        .variant-btn {
+            background: #21262d; border: 2px solid #30363d; color: #c9d1d9;
+            padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .variant-btn:hover { border-color: #58a6ff; }
+        .variant-btn.active { background: #58a6ff; color: #fff; border-color: #58a6ff; }
+        
+        .tree-container {
+            background: #161b22; border: 2px solid #30363d; border-radius: 12px;
+            padding: 30px; overflow: auto;
+        }
+        
+        .tree { list-style: none; }
+        .tree ul { list-style: none; margin-left: 30px; position: relative; }
+        
+        .tree ul::before {
+            content: ''; position: absolute; left: -15px; top: 0; bottom: 0;
+            width: 2px; background: #30363d;
+        }
+        
+        .tree li {
+            position: relative; padding: 8px 0; padding-left: 25px;
+        }
+        
+        .tree li::before {
+            content: ''; position: absolute; left: -15px; top: 20px;
+            width: 20px; height: 2px; background: #30363d;
+        }
+        
+        .tree li:last-child::after {
+            content: ''; position: absolute; left: -15px; top: 20px; bottom: 0;
+            width: 2px; background: #161b22;
+        }
+        
+        .node {
+            display: inline-block; background: #21262d; border: 2px solid #30363d;
+            padding: 10px 15px; border-radius: 8px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .node:hover { transform: translateX(5px); border-color: #58a6ff; }
+        
+        .node.root { border-color: #58a6ff; background: #1b2332; font-weight: bold; font-size: 16px; }
+        .node.layer { border-color: #f79009; background: #2d2419; }
+        .node.priority { border-color: #f85149; background: #2d1b1f; }
+        .node.group { border-color: #3fb950; background: #1b2d1f; }
+        .node.module { border-color: #58a6ff; }
+        .node.criteria-group { border-color: #8b949e; font-size: 13px; }
+        .node.decision { border-color: #3fb950; font-size: 12px; }
+        
+        .node-title { font-weight: bold; }
+        .node-description { font-size: 11px; color: #8b949e; margin-top: 4px; }
+        .node-criteria { font-size: 10px; color: #f79009; margin-top: 4px; }
+        
+        .variant-description {
+            background: #21262d; border-left: 4px solid #58a6ff;
+            padding: 15px; margin-bottom: 20px; border-radius: 4px;
+        }
+        
+        .variant-description h3 { color: #58a6ff; margin-bottom: 8px; }
+        .variant-description p { font-size: 14px; color: #8b949e; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌳 PromAi Architecture Tree Variants</h1>
+        
+        <div class="variant-selector" id="variantSelector"></div>
+        
+        <div class="variant-description" id="variantDescription"></div>
+        
+        <div class="tree-container">
+            <ul class="tree" id="treeView"></ul>
+        </div>
+    </div>
+
+    <script>
+        let variants = [];
+        let currentVariant = null;
+
+        fetch('./diagram_variants.json')
+            .then(r => r.json())
+            .then(data => {
+                variants = data.variants;
+                renderVariantSelector();
+                selectVariant(variants[0].id);
+            });
+
+        function renderVariantSelector() {
+            const html = variants.map(v => `
+                <button class="variant-btn" onclick="selectVariant('${v.id}')" id="btn-${v.id}">
+                    ${v.name}
+                </button>
+            `).join('');
+            document.getElementById('variantSelector').innerHTML = html;
+        }
+
+        function selectVariant(variantId) {
+            currentVariant = variants.find(v => v.id === variantId);
+            
+            document.querySelectorAll('.variant-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${variantId}`).classList.add('active');
+            
+            renderDescription();
+            renderTree();
+        }
+
+        function renderDescription() {
+            document.getElementById('variantDescription').innerHTML = `
+                <h3>${currentVariant.name}</h3>
+                <p>${currentVariant.description}</p>
+            `;
+        }
+
+        function renderTree() {
+            const root = currentVariant.structure.rootNode;
+            const nodes = currentVariant.structure.nodes;
+            const nodeMap = {};
+            
+            nodes.forEach(n => nodeMap[n.id] = n);
+            
+            const html = renderNode(root, nodeMap);
+            document.getElementById('treeView').innerHTML = html;
+        }
+
+        function renderNode(node, nodeMap) {
+            const children = node.children || [];
+            const criteriaText = node.criteria ? `<div class="node-criteria">Критерии: ${node.criteria.join(', ')}</div>` : '';
+            const descText = node.description ? `<div class="node-description">${node.description}</div>` : '';
+            
+            let html = `
+                <li>
+                    <div class="node ${node.type}">
+                        <div class="node-title">${node.title}</div>
+                        ${descText}
+                        ${criteriaText}
+                    </div>
+            `;
+            
+            if (children.length > 0) {
+                html += '<ul>';
+                children.forEach(childId => {
+                    const child = nodeMap[childId];
+                    if (child) {
+                        html += renderNode(child, nodeMap);
+                    }
+                });
+                html += '</ul>';
+            }
+            
+            html += '</li>';
+            return html;
+        }
+    </script>
+</body>
+</html>
