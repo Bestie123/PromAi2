@@ -1,0 +1,335 @@
+{
+  "metadata": {
+    "description": "Граф зависимостей вопросов и критериев для последовательной разработки",
+    "generated": "2025-01-29",
+    "version": "1.0"
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "title": "❓ Модульность движка?",
+      "criteriaId": 1,
+      "priority": "critical",
+      "dependsOn": [],
+      "blocks": ["q2", "q3", "q29"],
+      "reason": "Фундамент архитектуры - без этого невозможно ничего"
+    },
+    {
+      "id": "q2",
+      "title": "❓ Блочность элементов?",
+      "criteriaId": 2,
+      "priority": "critical",
+      "dependsOn": ["q1"],
+      "blocks": ["q3", "q4"],
+      "reason": "Единая модель данных зависит от модульной архитектуры"
+    },
+    {
+      "id": "q3",
+      "title": "❓ UUID для блоков?",
+      "criteriaId": 3,
+      "priority": "critical",
+      "dependsOn": ["q2"],
+      "blocks": ["q4", "q7"],
+      "reason": "Идентификация блоков требует готовой блочной модели"
+    },
+    {
+      "id": "q4",
+      "title": "❓ Вложенные блоки?",
+      "criteriaId": 4,
+      "priority": "critical",
+      "dependsOn": ["q3"],
+      "blocks": ["q13"],
+      "reason": "Иерархия требует UUID для связей"
+    },
+    {
+      "id": "q13",
+      "title": "❓ Какую CRDT?",
+      "criteriaId": 13,
+      "priority": "critical",
+      "dependsOn": ["q4"],
+      "blocks": ["q14", "q16"],
+      "reason": "CRDT работает с готовой иерархией блоков"
+    },
+    {
+      "id": "q14",
+      "title": "❓ Event Sourcing?",
+      "criteriaId": 14,
+      "priority": "critical",
+      "dependsOn": ["q13"],
+      "blocks": ["q15", "q17"],
+      "reason": "Лог операций зависит от выбора CRDT"
+    },
+    {
+      "id": "q15",
+      "title": "❓ Schema-first?",
+      "criteriaId": 15,
+      "priority": "critical",
+      "dependsOn": ["q14"],
+      "blocks": ["q16"],
+      "reason": "Валидация схем требует определенного формата операций"
+    },
+    {
+      "id": "q16",
+      "title": "❓ Все через CRDT?",
+      "criteriaId": 16,
+      "priority": "critical",
+      "dependsOn": ["q13", "q15"],
+      "blocks": ["q17", "q18"],
+      "reason": "Стратегия изменений зависит от CRDT и схем"
+    },
+    {
+      "id": "q17",
+      "title": "❓ Атомарные транзакции?",
+      "criteriaId": 17,
+      "priority": "critical",
+      "dependsOn": ["q16"],
+      "blocks": ["q18"],
+      "reason": "Транзакции работают поверх CRDT операций"
+    },
+    {
+      "id": "q18",
+      "title": "❓ Refs в CRDT?",
+      "criteriaId": 18,
+      "priority": "critical",
+      "dependsOn": ["q7", "q16"],
+      "blocks": ["q8", "q19"],
+      "reason": "Ссылки в CRDT требуют решения по UUID и стратегии CRDT"
+    },
+    {
+      "id": "q7",
+      "title": "❓ Refs по UUID?",
+      "criteriaId": 7,
+      "priority": "critical",
+      "dependsOn": ["q3"],
+      "blocks": ["q18", "q8"],
+      "reason": "Механизм ссылок требует UUID"
+    },
+    {
+      "id": "q8",
+      "title": "❓ Backlinks?",
+      "criteriaId": 8,
+      "priority": "critical",
+      "dependsOn": ["q18"],
+      "blocks": ["q19"],
+      "reason": "Обратные ссылки зависят от механизма refs в CRDT"
+    },
+    {
+      "id": "q19",
+      "title": "❓ Плоский граф?",
+      "criteriaId": 19,
+      "priority": "critical",
+      "dependsOn": ["q18"],
+      "blocks": ["q11", "q12"],
+      "reason": "Структура графа зависит от refs в CRDT"
+    },
+    {
+      "id": "q11",
+      "title": "❓ Декларативный UI?",
+      "criteriaId": 11,
+      "priority": "critical",
+      "dependsOn": ["q19"],
+      "blocks": ["q12", "q20"],
+      "reason": "UI рендерит структуру графа"
+    },
+    {
+      "id": "q12",
+      "title": "❓ Zero runtime logic?",
+      "criteriaId": 12,
+      "priority": "critical",
+      "dependsOn": ["q11"],
+      "blocks": ["q20", "q21"],
+      "reason": "Чистые функции требуют декларативного UI"
+    },
+    {
+      "id": "q20",
+      "title": "❓ Глобальное состояние?",
+      "criteriaId": 20,
+      "priority": "critical",
+      "dependsOn": ["q12"],
+      "blocks": ["q21"],
+      "reason": "Управление состоянием зависит от архитектуры рендера"
+    },
+    {
+      "id": "q21",
+      "title": "❓ Virtual scrolling?",
+      "criteriaId": 21,
+      "priority": "critical",
+      "dependsOn": ["q20"],
+      "blocks": ["q22", "q23"],
+      "reason": "Оптимизация рендера требует готового управления состоянием"
+    },
+    {
+      "id": "q22",
+      "title": "❓ Web Workers?",
+      "criteriaId": 22,
+      "priority": "critical",
+      "dependsOn": ["q21"],
+      "blocks": ["q23"],
+      "reason": "Тяжелые операции выносятся после оптимизации UI"
+    },
+    {
+      "id": "q23",
+      "title": "❓ Обнаружение циклов?",
+      "criteriaId": 23,
+      "priority": "critical",
+      "dependsOn": ["q21", "q22"],
+      "blocks": ["q6"],
+      "reason": "Защита от циклов при рендере требует virtual scrolling и workers"
+    },
+    {
+      "id": "q6",
+      "title": "❓ Rich Text?",
+      "criteriaId": 6,
+      "priority": "critical",
+      "dependsOn": ["q23"],
+      "blocks": ["q5"],
+      "reason": "Редактор контента требует защищенного рендера"
+    },
+    {
+      "id": "q5",
+      "title": "❓ Drag & Drop порядка?",
+      "criteriaId": 5,
+      "priority": "critical",
+      "dependsOn": ["q6"],
+      "blocks": ["q26"],
+      "reason": "Интерактивность требует готового редактора"
+    },
+    {
+      "id": "q9",
+      "title": "❓ Локальные данные?",
+      "criteriaId": 9,
+      "priority": "critical",
+      "dependsOn": ["q14"],
+      "blocks": ["q10", "q24"],
+      "reason": "Формат хранения зависит от Event Sourcing"
+    },
+    {
+      "id": "q10",
+      "title": "❓ Оффлайн работа?",
+      "criteriaId": 10,
+      "priority": "critical",
+      "dependsOn": ["q9"],
+      "blocks": ["q25"],
+      "reason": "Оффлайн требует локального хранилища"
+    },
+    {
+      "id": "q24",
+      "title": "❓ E2EE готовность?",
+      "criteriaId": 24,
+      "priority": "critical",
+      "dependsOn": ["q9"],
+      "blocks": ["q25"],
+      "reason": "Шифрование зависит от формата хранения"
+    },
+    {
+      "id": "q25",
+      "title": "❓ Конфликт-менеджмент?",
+      "criteriaId": 25,
+      "priority": "critical",
+      "dependsOn": ["q10", "q13"],
+      "blocks": [],
+      "reason": "Синхронизация требует оффлайн работы и CRDT"
+    },
+    {
+      "id": "q26",
+      "title": "❓ Плагинная система?",
+      "criteriaId": 26,
+      "priority": "critical",
+      "dependsOn": ["q5"],
+      "blocks": ["q27", "q28"],
+      "reason": "Плагины требуют готового базового UI"
+    },
+    {
+      "id": "q27",
+      "title": "❓ Композитные блоки?",
+      "criteriaId": 27,
+      "priority": "critical",
+      "dependsOn": ["q26"],
+      "blocks": ["q28"],
+      "reason": "Сложные блоки требуют плагинной системы"
+    },
+    {
+      "id": "q28",
+      "title": "❓ Состояние блоков?",
+      "criteriaId": 28,
+      "priority": "critical",
+      "dependsOn": ["q27"],
+      "blocks": [],
+      "reason": "Сохранение состояния требует композитных блоков"
+    },
+    {
+      "id": "q29",
+      "title": "❓ Модульность кода?",
+      "criteriaId": 29,
+      "priority": "critical",
+      "dependsOn": ["q1"],
+      "blocks": [],
+      "reason": "Стандарты кода применяются с первого модуля"
+    }
+  ],
+  "developmentPhases": [
+    {
+      "phase": 1,
+      "name": "Фундамент архитектуры",
+      "questions": ["q1", "q29"],
+      "description": "Модульная структура и стандарты кода"
+    },
+    {
+      "phase": 2,
+      "name": "Блочная модель",
+      "questions": ["q2", "q3", "q4"],
+      "description": "Базовая модель данных с UUID и иерархией"
+    },
+    {
+      "phase": 3,
+      "name": "CRDT и операции",
+      "questions": ["q13", "q14", "q15", "q16", "q17"],
+      "description": "Система синхронизации и операций"
+    },
+    {
+      "phase": 4,
+      "name": "Ссылки и граф",
+      "questions": ["q7", "q18", "q8", "q19"],
+      "description": "Система ссылок и структура графа"
+    },
+    {
+      "phase": 5,
+      "name": "UI архитектура",
+      "questions": ["q11", "q12", "q20", "q21", "q22", "q23"],
+      "description": "Декларативный UI с оптимизациями"
+    },
+    {
+      "phase": 6,
+      "name": "Редактор и интерактивность",
+      "questions": ["q6", "q5"],
+      "description": "Rich text и drag & drop"
+    },
+    {
+      "phase": 7,
+      "name": "Хранение и синхронизация",
+      "questions": ["q9", "q10", "q24", "q25"],
+      "description": "Локальное хранилище и оффлайн"
+    },
+    {
+      "phase": 8,
+      "name": "Расширяемость",
+      "questions": ["q26", "q27", "q28"],
+      "description": "Плагинная система и кастомные блоки"
+    }
+  ],
+  "criticalPath": [
+    "q1 → q2 → q3 → q4 → q13 → q14 → q15 → q16 → q17 → q18 → q19 → q11 → q12 → q20 → q21 → q22 → q23 → q6 → q5 → q26 → q27 → q28"
+  ],
+  "parallelTracks": {
+    "storage": {
+      "description": "Можно разрабатывать параллельно с UI",
+      "questions": ["q9", "q10", "q24", "q25"],
+      "startsAfter": "q14"
+    },
+    "codeStandards": {
+      "description": "Применяется с первого дня",
+      "questions": ["q29"],
+      "startsAfter": "q1"
+    }
+  }
+}
