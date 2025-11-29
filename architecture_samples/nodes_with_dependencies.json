@@ -1,0 +1,83 @@
+{
+  "nodes": {
+    "q1": { "id": "q1", "x": 500, "y": 100, "type": "question", "title": "❓ Модульность движка?", "description": "Ядро отделено от UI и плагинов", "details": "Варианты: Модульная | Монолитная", "children": ["modular-arch", "monolith-arch"], "criteriaId": 1 },
+    "modular-arch": { "id": "modular-arch", "x": 200, "y": 300, "type": "critical", "title": "✅ Модульная", "description": "Ядро легко отделяется", "details": "➕ Тестирование, замена UI ➖ Сложность", "children": [], "criteriaId": 1, "enables": ["declarative-ui", "zero-runtime", "plugin-unified", "modular-code"], "blocks": ["q11", "q12", "q26", "q29"] },
+    "monolith-arch": { "id": "monolith-arch", "x": 800, "y": 300, "type": "rejected", "title": "❌ Монолитная", "description": "Всё в одном модуле", "details": "➕ Быстрый старт ➖ Спагетти-код", "children": [], "criteriaId": 1 },
+    
+    "q2": { "id": "q2", "x": 1500, "y": 100, "type": "question", "title": "❓ Блочность элементов?", "description": "Всё является блоками", "details": "Варианты: Всё блоки | Смешанная", "children": ["all-blocks", "mixed-model"], "criteriaId": 2 },
+    "all-blocks": { "id": "all-blocks", "x": 1200, "y": 300, "type": "critical", "title": "✅ Всё - блоки", "description": "Единая модель данных", "details": "➕ Единые операции ➖ Сложность", "children": [], "criteriaId": 2, "enables": ["nested-blocks", "refs-uuid", "backlinks-auto", "crdt-only", "refs-crdt-first", "flat-graph"], "blocks": ["q4", "q7", "q8", "q16", "q18", "q19"] },
+    "mixed-model": { "id": "mixed-model", "x": 1800, "y": 300, "type": "rejected", "title": "❌ Смешанная", "description": "Блоки + особые сущности", "details": "➕ Простота ➖ Ломаются refs", "children": [], "criteriaId": 2 },
+    
+    "q3": { "id": "q3", "x": 2500, "y": 100, "type": "question", "title": "❓ UUID для блоков?", "description": "Уникальные глобальные ID", "details": "Варианты: UUID v4 | UUID v7", "children": ["uuid-v4", "uuid-v7"], "criteriaId": 3 },
+    "uuid-v4": { "id": "uuid-v4", "x": 2200, "y": 300, "type": "critical", "title": "🎲 UUID v4", "description": "Случайные UUID", "details": "➕ Проверенные ➖ Нет сортировки", "children": [], "criteriaId": 3, "enables": ["refs-uuid", "backlinks-auto", "refs-crdt-first"], "blocks": ["q7", "q8", "q18"] },
+    "uuid-v7": { "id": "uuid-v7", "x": 2800, "y": 300, "type": "important", "title": "⏰ UUID v7", "description": "UUID с timestamp", "details": "➕ Сортировка ➖ Новый стандарт", "children": [], "criteriaId": 3, "enables": ["refs-uuid", "backlinks-auto", "refs-crdt-first"], "blocks": ["q7", "q8", "q18"] },
+    
+    "q13": { "id": "q13", "x": 2500, "y": 1100, "type": "question", "title": "❓ Какую CRDT?", "description": "Single source of truth", "details": "Варианты: Yjs | Automerge", "children": ["yjs-crdt", "automerge-crdt"], "criteriaId": 13 },
+    "yjs-crdt": { "id": "yjs-crdt", "x": 2200, "y": 1300, "type": "critical", "title": "✅ Yjs", "description": "Быстрая, популярная CRDT", "details": "➕ Производительность, WebRTC ➖ Сложность API", "children": [], "criteriaId": 13, "enables": ["event-sourcing-separate", "crdt-only", "refs-crdt-first", "crdt-merge"], "blocks": ["q14", "q16", "q18", "q25"] },
+    "automerge-crdt": { "id": "automerge-crdt", "x": 2800, "y": 1300, "type": "important", "title": "⚡ Automerge", "description": "Функциональная CRDT", "details": "➕ Простота API ➖ Медленнее Yjs", "children": [], "criteriaId": 13, "enables": ["event-sourcing-separate", "crdt-only", "refs-crdt-first", "crdt-merge"], "blocks": ["q14", "q16", "q18", "q25"] },
+    
+    "q11": { "id": "q11", "x": 500, "y": 1100, "type": "question", "title": "❓ Декларативный UI?", "description": "100% декларативный рендер", "details": "Варианты: Декларативный | Императивный", "children": ["declarative-ui", "imperative-ui"], "criteriaId": 11 },
+    "declarative-ui": { "id": "declarative-ui", "x": 200, "y": 1300, "type": "critical", "title": "✅ Декларативный", "description": "JSON-структуры, чистые функции", "details": "➕ Предсказуемость, отладка ➖ Сложность", "children": [], "criteriaId": 11, "requires": ["modular-arch"], "enables": ["zero-runtime", "no-global-state", "virtual-scrolling"], "blocks": ["q12", "q20", "q21"] },
+    "imperative-ui": { "id": "imperative-ui", "x": 800, "y": 1300, "type": "rejected", "title": "❌ Императивный", "description": "Обычный код с мутациями", "details": "➕ Простота ➖ Необъяснимые баги", "children": [], "criteriaId": 11 },
+    
+    "q12": { "id": "q12", "x": 1500, "y": 1100, "type": "question", "title": "❓ Zero runtime logic?", "description": "Чистая функция рендера", "details": "Варианты: Чистые функции | Stateful", "children": ["zero-runtime", "stateful-runtime"], "criteriaId": 12 },
+    "zero-runtime": { "id": "zero-runtime", "x": 1200, "y": 1300, "type": "critical", "title": "✅ Чистые функции", "description": "Никакой runtime логики в рендере", "details": "➕ Нет race conditions ➖ Сложность реализации", "children": [], "criteriaId": 12, "requires": ["declarative-ui"], "enhances": ["virtual-scrolling"] },
+    "stateful-runtime": { "id": "stateful-runtime", "x": 1800, "y": 1300, "type": "rejected", "title": "❌ Stateful", "description": "Логика в рендере", "details": "➕ Простота ➖ Глюки через 30-40 плагинов", "children": [], "criteriaId": 12 },
+    
+    "q21": { "id": "q21", "x": 500, "y": 2100, "type": "question", "title": "❓ Virtual scrolling?", "description": "Работа с 100к+ блоков", "details": "Варианты: Virtual scrolling | Lazy loading", "children": ["virtual-scrolling", "lazy-loading"], "criteriaId": 21 },
+    "virtual-scrolling": { "id": "virtual-scrolling", "x": 200, "y": 2300, "type": "critical", "title": "✅ Virtual scrolling", "description": "Рендер только видимых элементов", "details": "➕ 100к+ блоков без тормозов ➖ Сложность", "children": [], "criteriaId": 21, "requires": ["declarative-ui"], "enhances": ["web-workers-all"] },
+    "lazy-loading": { "id": "lazy-loading", "x": 800, "y": 2300, "type": "important", "title": "⚡ Lazy loading", "description": "Ленивая загрузка по требованию", "details": "➕ Простота ➖ Привычка «всё в DOM»", "children": [], "criteriaId": 21 },
+    
+    "q22": { "id": "q22", "x": 1500, "y": 2100, "type": "question", "title": "❓ Web Workers?", "description": "Тяжёлые операции в отдельном потоке", "details": "Варианты: Все операции | Только поиск", "children": ["web-workers-all", "web-workers-search"], "criteriaId": 22 },
+    "web-workers-all": { "id": "web-workers-all", "x": 1200, "y": 2300, "type": "critical", "title": "✅ Все операции", "description": "Поиск, индексация, CRDT", "details": "➕ UI остаётся отзывчивым ➖ Сложность API", "children": [], "criteriaId": 22, "enhances": ["virtual-scrolling"] },
+    "web-workers-search": { "id": "web-workers-search", "x": 1800, "y": 2300, "type": "important", "title": "🔍 Только поиск", "description": "Поиск и индексация в Workers", "details": "➕ Простота ➖ UI будет зависать", "children": [], "criteriaId": 22 }
+  },
+  "dependencies": {
+    "hard_dependencies": {
+      "modular-arch": ["declarative-ui", "zero-runtime", "plugin-unified", "modular-code"],
+      "all-blocks": ["nested-blocks", "refs-uuid", "backlinks-auto", "crdt-only", "refs-crdt-first", "flat-graph"],
+      "uuid-v4": ["refs-uuid", "backlinks-auto", "refs-crdt-first"],
+      "yjs-crdt": ["event-sourcing-separate", "crdt-only", "refs-crdt-first", "crdt-merge"],
+      "declarative-ui": ["zero-runtime", "no-global-state", "virtual-scrolling"]
+    },
+    "soft_dependencies": {
+      "virtual-scrolling": ["web-workers-all"],
+      "web-workers-all": ["virtual-scrolling"],
+      "plugin-unified": ["composite-blocks", "block-state-json"]
+    },
+    "blocking_dependencies": {
+      "foundation_blockers": ["modular-arch", "all-blocks", "yjs-crdt"],
+      "ui_blockers": ["declarative-ui", "zero-runtime"],
+      "data_blockers": ["uuid-v4", "json-storage", "crdt-only"]
+    }
+  },
+  "development_phases": {
+    "phase1_foundation": {
+      "nodes": ["modular-arch", "all-blocks", "uuid-v4", "yjs-crdt"],
+      "description": "Несущие стены архитектуры",
+      "priority": 1
+    },
+    "phase2_core": {
+      "nodes": ["declarative-ui", "zero-runtime", "nested-blocks", "refs-uuid", "backlinks-auto"],
+      "description": "Основная функциональность",
+      "priority": 2,
+      "requires": ["phase1_foundation"]
+    },
+    "phase3_features": {
+      "nodes": ["crdt-only", "virtual-scrolling", "plugin-unified", "json-storage", "offline-full"],
+      "description": "Ключевые возможности",
+      "priority": 3,
+      "requires": ["phase2_core"]
+    }
+  },
+  "compatibility": {
+    "modular-arch,monolith-arch": "невозможно",
+    "all-blocks,mixed-model": "невозможно",
+    "uuid-v4,uuid-v7": "переключать",
+    "declarative-ui,imperative-ui": "невозможно",
+    "zero-runtime,stateful-runtime": "невозможно",
+    "yjs-crdt,automerge-crdt": "переключать",
+    "virtual-scrolling,lazy-loading": "объединить",
+    "web-workers-all,web-workers-search": "объединить"
+  }
+}
