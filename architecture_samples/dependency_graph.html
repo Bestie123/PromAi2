@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromAi - Граф зависимостей разработки</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117; color: #c9d1d9; overflow: hidden;
+        }
+        #canvas { 
+            width: 15000px; height: 10000px; position: relative; 
+            background: radial-gradient(circle at 50% 50%, #161b22 0%, #0d1117 100%);
+            transform-origin: 0 0;
+        }
+        #viewport { 
+            width: 100vw; height: 100vh; overflow: hidden; position: relative;
+            cursor: grab; background: #0d1117;
+        }
+        #viewport.dragging { cursor: grabbing; }
+        
+        .node {
+            position: absolute; background: #21262d; border: 2px solid #30363d;
+            border-radius: 12px; padding: 16px; min-width: 280px; max-width: 320px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease;
+        }
+        .node:hover { transform: scale(1.05); box-shadow: 0 12px 48px rgba(0,0,0,0.6); z-index: 100; }
+        .node.critical-path { border-color: #f85149; border-width: 3px; }
+        .node.parallel-track { border-color: #3fb950; border-width: 3px; }
+        
+        .node h3 { font-size: 14px; margin-bottom: 8px; color: #f0f6fc; }
+        .node p { font-size: 12px; line-height: 1.4; margin-bottom: 8px; color: #8b949e; }
+        .node .meta { font-size: 10px; color: #6e7681; margin-top: 8px; }
+        
+        .badge {
+            display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px;
+            font-weight: bold; margin-bottom: 8px; margin-right: 4px;
+        }
+        .badge.critical { background: #f85149; color: #fff; }
+        .badge.parallel { background: #3fb950; color: #fff; }
+        .badge.step { background: #58a6ff; color: #fff; }
+        
+        .connection {
+            position: absolute; height: 3px; transform-origin: left center; z-index: 1;
+            transition: all 0.3s ease;
+        }
+        .connection.blocking { background: #f85149; }
+        .connection.parallel { background: #3fb950; }
+        .connection.normal { background: #30363d; }
+        .connection:hover { height: 5px; z-index: 50; }
+        
+        .arrow {
+            position: absolute; right: -8px; top: -4px;
+            width: 0; height: 0;
+            border-left: 8px solid;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+        }
+        .arrow.blocking { border-left-color: #f85149; }
+        .arrow.parallel { border-left-color: #3fb950; }
+        .arrow.normal { border-left-color: #30363d; }
+        
+        .controls {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.95); padding: 16px; border-radius: 8px;
+            border: 1px solid #30363d; max-width: 300px;
+        }
+        .controls button {
+            background: #238636; color: #fff; border: none; padding: 8px 12px;
+            border-radius: 6px; margin: 4px; cursor: pointer; font-size: 12px;
+        }
+        .controls button:hover { background: #2ea043; }
+        .controls button.active { background: #f85149; }
+        
+        .legend {
+            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.95); padding: 16px; border-radius: 8px;
+            border: 1px solid #30363d; font-size: 12px;
+        }
+        .legend-item { margin: 8px 0; display: flex; align-items: center; }
+        .legend-line { width: 40px; height: 3px; margin-right: 8px; }
+        
+        .stats {
+            position: fixed; bottom: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.95); padding: 12px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 12px;
+        }
+        
+        .zoom-info {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.95); padding: 8px 12px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <div style="margin-bottom: 12px; font-weight: bold;">Режимы отображения:</div>
+        <button onclick="showAll()" class="active" id="btnAll">Все связи</button>
+        <button onclick="showCriticalPath()" id="btnCritical">Критический путь</button>
+        <button onclick="showParallel()" id="btnParallel">Параллельные треки</button>
+        <button onclick="showBlocking()" id="btnBlocking">Блокирующие</button>
+        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #30363d;">
+            <button onclick="resetView()">Сброс вида</button>
+            <button onclick="centerView()">Центр</button>
+        </div>
+    </div>
+    
+    <div class="legend">
+        <div style="font-weight: bold; margin-bottom: 8px;">Легенда:</div>
+        <div class="legend-item">
+            <div class="legend-line" style="background: #f85149;"></div>
+            <span>Критический путь</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-line" style="background: #3fb950;"></div>
+            <span>Параллельный трек</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-line" style="background: #30363d;"></div>
+            <span>Обычная зависимость</span>
+        </div>
+    </div>
+    
+    <div class="stats">
+        <div>Вопросов: <span id="nodeCount">0</span></div>
+        <div>Зависимостей: <span id="depCount">0</span></div>
+        <div>Критический путь: <span id="criticalLength">0</span></div>
+    </div>
+    
+    <div class="zoom-info">
+        Зум: <span id="zoomLevel">100%</span>
+    </div>
+    
+    <div id="viewport">
+        <div id="canvas"></div>
+    </div>
+
+    <script>
+        const LAYOUT = {
+            STEP_WIDTH: 800,
+            TRACK_HEIGHT: 400,
+            START_X: 200,
+            START_Y: 200
+        };
+
+        let data = null;
+        let scale = 0.3;
+        let translateX = 100;
+        let translateY = 100;
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+        let currentMode = 'all';
+
+        fetch('./development_sequence.json')
+            .then(response => response.json())
+            .then(json => {
+                data = json;
+                initCanvas();
+                updateStats();
+                updateTransform();
+            })
+            .catch(error => {
+                console.error('Failed to load data:', error);
+                alert('Ошибка загрузки JSON: ' + error.message);
+            });
+
+        function calculatePositions() {
+            const positions = {};
+            const criticalPathSet = new Set(data.criticalPath.questions);
+            const parallelQuestions = new Set();
+            
+            Object.values(data.parallelTracks).forEach(track => {
+                track.questions.forEach(q => parallelQuestions.add(q));
+            });
+
+            data.optimizedSchedule.timeline.forEach((step, stepIndex) => {
+                if (step.parallel) {
+                    step.tracks.forEach((track, trackIndex) => {
+                        track.questions.forEach(q => {
+                            positions[q] = {
+                                x: LAYOUT.START_X + stepIndex * LAYOUT.STEP_WIDTH,
+                                y: LAYOUT.START_Y + trackIndex * LAYOUT.TRACK_HEIGHT,
+                                step: step.step,
+                                isCritical: criticalPathSet.has(q),
+                                isParallel: parallelQuestions.has(q)
+                            };
+                        });
+                    });
+                } else {
+                    step.questions.forEach((q, qIndex) => {
+                        positions[q] = {
+                            x: LAYOUT.START_X + stepIndex * LAYOUT.STEP_WIDTH,
+                            y: LAYOUT.START_Y + qIndex * 100,
+                            step: step.step,
+                            isCritical: criticalPathSet.has(q),
+                            isParallel: parallelQuestions.has(q)
+                        };
+                    });
+                }
+            });
+
+            return positions;
+        }
+
+        function createNode(question, position) {
+            const div = document.createElement('div');
+            div.className = 'node';
+            div.id = 'node-' + question.id;
+            
+            if (position.isCritical) div.classList.add('critical-path');
+            if (position.isParallel) div.classList.add('parallel-track');
+            
+            div.style.left = position.x + 'px';
+            div.style.top = position.y + 'px';
+            
+            let badges = `<div class="badge step">Шаг ${position.step}</div>`;
+            if (position.isCritical) badges += `<div class="badge critical">КРИТИЧЕСКИЙ</div>`;
+            if (position.isParallel) badges += `<div class="badge parallel">ПАРАЛЛЕЛЬНЫЙ</div>`;
+            
+            const blocksText = question.blocks.length > 0 ? 
+                `Блокирует: ${question.blocks.join(', ')}` : 'Ничего не блокирует';
+            
+            const dependsText = question.dependsOn.length > 0 ? 
+                `Зависит от: ${question.dependsOn.join(', ')}` : 'Нет зависимостей';
+            
+            div.innerHTML = `
+                ${badges}
+                <h3>${question.title}</h3>
+                <p>${question.reason}</p>
+                <div class="meta">
+                    ${dependsText}<br>
+                    ${blocksText}
+                </div>
+            `;
+            
+            return div;
+        }
+
+        function createConnection(fromPos, toPos, type) {
+            const line = document.createElement('div');
+            line.className = `connection ${type}`;
+            
+            const dx = toPos.x - fromPos.x;
+            const dy = toPos.y - fromPos.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            line.style.left = (fromPos.x + 160) + 'px';
+            line.style.top = (fromPos.y + 60) + 'px';
+            line.style.width = length + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            const arrow = document.createElement('div');
+            arrow.className = `arrow ${type}`;
+            line.appendChild(arrow);
+            
+            return line;
+        }
+
+        function initCanvas() {
+            const canvas = document.getElementById('canvas');
+            canvas.innerHTML = '';
+            
+            const positions = calculatePositions();
+            
+            // Create nodes
+            data.questions.forEach(q => {
+                if (positions[q.id]) {
+                    const node = createNode(q, positions[q.id]);
+                    canvas.appendChild(node);
+                }
+            });
+            
+            // Create connections
+            data.blockingDependencies.dependencies.forEach(dep => {
+                const fromPos = positions[dep.blocker];
+                dep.blocks.forEach(blockId => {
+                    const toPos = positions[blockId];
+                    if (fromPos && toPos) {
+                        const isCritical = positions[dep.blocker].isCritical && positions[blockId].isCritical;
+                        const isParallel = positions[dep.blocker].isParallel || positions[blockId].isParallel;
+                        const type = isCritical ? 'blocking' : (isParallel ? 'parallel' : 'normal');
+                        const conn = createConnection(fromPos, toPos, type);
+                        conn.dataset.from = dep.blocker;
+                        conn.dataset.to = blockId;
+                        conn.dataset.type = type;
+                        canvas.appendChild(conn);
+                    }
+                });
+            });
+        }
+
+        function showAll() {
+            currentMode = 'all';
+            document.querySelectorAll('.connection').forEach(c => c.style.display = 'block');
+            document.querySelectorAll('.node').forEach(n => n.style.opacity = '1');
+            setActiveButton('btnAll');
+        }
+
+        function showCriticalPath() {
+            currentMode = 'critical';
+            const criticalSet = new Set(data.criticalPath.questions);
+            
+            document.querySelectorAll('.connection').forEach(c => {
+                const from = c.dataset.from;
+                const to = c.dataset.to;
+                c.style.display = (criticalSet.has(from) && criticalSet.has(to)) ? 'block' : 'none';
+            });
+            
+            document.querySelectorAll('.node').forEach(n => {
+                const id = n.id.replace('node-', '');
+                n.style.opacity = criticalSet.has(id) ? '1' : '0.2';
+            });
+            
+            setActiveButton('btnCritical');
+        }
+
+        function showParallel() {
+            currentMode = 'parallel';
+            const parallelSet = new Set();
+            Object.values(data.parallelTracks).forEach(track => {
+                track.questions.forEach(q => parallelSet.add(q));
+            });
+            
+            document.querySelectorAll('.connection').forEach(c => {
+                c.style.display = c.dataset.type === 'parallel' ? 'block' : 'none';
+            });
+            
+            document.querySelectorAll('.node').forEach(n => {
+                const id = n.id.replace('node-', '');
+                n.style.opacity = parallelSet.has(id) ? '1' : '0.2';
+            });
+            
+            setActiveButton('btnParallel');
+        }
+
+        function showBlocking() {
+            currentMode = 'blocking';
+            
+            document.querySelectorAll('.connection').forEach(c => {
+                c.style.display = c.dataset.type === 'blocking' ? 'block' : 'none';
+            });
+            
+            document.querySelectorAll('.node').forEach(n => n.style.opacity = '1');
+            
+            setActiveButton('btnBlocking');
+        }
+
+        function setActiveButton(id) {
+            document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function updateStats() {
+            document.getElementById('nodeCount').textContent = data.questions.length;
+            document.getElementById('depCount').textContent = data.blockingDependencies.dependencies.length;
+            document.getElementById('criticalLength').textContent = data.criticalPath.length;
+        }
+
+        function updateTransform() {
+            const canvas = document.getElementById('canvas');
+            canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
+        }
+
+        function resetView() {
+            scale = 0.3;
+            translateX = 100;
+            translateY = 100;
+            updateTransform();
+        }
+
+        function centerView() {
+            translateX = window.innerWidth / 2 - 2000;
+            translateY = window.innerHeight / 2 - 1000;
+            updateTransform();
+        }
+
+        const viewport = document.getElementById('viewport');
+
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const rect = viewport.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const newScale = Math.max(0.1, Math.min(3, scale * delta));
+            const canvasX = (mouseX - translateX) / scale;
+            const canvasY = (mouseY - translateY) / scale;
+            scale = newScale;
+            translateX = mouseX - canvasX * scale;
+            translateY = mouseY - canvasY * scale;
+            updateTransform();
+        });
+
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                isDragging = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                viewport.classList.add('dragging');
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - lastMouseX;
+                const deltaY = e.clientY - lastMouseY;
+                translateX += deltaX;
+                translateY += deltaY;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                updateTransform();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            viewport.classList.remove('dragging');
+        });
+    </script>
+</body>
+</html>
