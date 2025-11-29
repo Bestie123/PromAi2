@@ -4,100 +4,89 @@
     <title>Option 1: Enhanced JSON Dependencies</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        .node { border: 2px solid #ccc; border-radius: 8px; padding: 10px; margin: 5px; display: inline-block; min-width: 150px; }
-        .critical { border-color: #4CAF50; background: #E8F5E8; }
-        .question { border-color: #2196F3; background: #E3F2FD; }
-        .hard-dep { border-left: 5px solid #f44336; }
-        .soft-dep { border-left: 5px solid #FF9800; }
-        .blocking { box-shadow: 0 0 8px red; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .hard { background: #FFEBEE; border-color: #f44336; }
+        .soft { background: #FFF8E1; border-color: #FF9800; }
+        .blocking { background: #E8F5E8; border-color: #4CAF50; }
+        .dep-item { margin: 5px 0; padding: 8px; background: white; border-radius: 4px; }
+        .order { background: #E3F2FD; padding: 10px; border-radius: 4px; }
         .controls { margin-bottom: 20px; }
         button { margin: 5px; padding: 8px 16px; }
-        .dep-info { font-size: 12px; color: #666; margin-top: 5px; }
-        .order { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 4px; }
     </style>
 </head>
 <body>
     <h1>Option 1: Enhanced JSON Dependencies</h1>
-    <p><strong>Подход:</strong> Расширенная JSON структура с типами зависимостей</p>
     
     <div class="controls">
-        <button onclick="showHardDeps()">Hard Dependencies</button>
-        <button onclick="showSoftDeps()">Soft Dependencies</button>
+        <button onclick="showHard()">Hard Dependencies</button>
+        <button onclick="showSoft()">Soft Dependencies</button>
         <button onclick="showBlocking()">Blocking</button>
-        <button onclick="showAll()">All</button>
         <button onclick="showOrder()">Development Order</button>
+        <button onclick="showAll()">All</button>
     </div>
 
-    <div id="order-container"></div>
-    <div id="nodes-container"></div>
+    <div id="content"></div>
 
     <script>
-        let nodesData = null;
+        let data = null;
 
         async function loadData() {
-            try {
-                const response = await fetch('option1_enhanced_nodes.json');
-                nodesData = await response.json();
-                renderNodes();
-            } catch (error) {
-                console.error('Error loading data:', error);
-                document.getElementById('nodes-container').innerHTML = '<p>Error loading data</p>';
-            }
+            const response = await fetch('option1_enhanced_json.json');
+            data = await response.json();
+            showAll();
         }
 
-        function renderNodes(filter = null) {
-            const container = document.getElementById('nodes-container');
-            container.innerHTML = '';
-
-            Object.values(nodesData.nodes).forEach(node => {
-                if (filter && !filter(node)) return;
-
-                const nodeEl = document.createElement('div');
-                nodeEl.className = `node ${node.type}`;
-                
-                if (node.dependency_type === 'hard') nodeEl.classList.add('hard-dep');
-                if (node.dependency_type === 'soft') nodeEl.classList.add('soft-dep');
-                if (node.blocking) nodeEl.classList.add('blocking');
-
-                nodeEl.innerHTML = `
-                    <div><strong>${node.title}</strong></div>
-                    <div>${node.description || ''}</div>
-                    <div class="dep-info">
-                        Type: ${node.dependency_type || 'N/A'} |
-                        ${node.blocking ? 'BLOCKING' : ''}
-                        ${node.enables ? `<br>Enables: ${node.enables.join(', ')}` : ''}
-                        ${node.enhances ? `<br>Enhances: ${node.enhances.join(', ')}` : ''}
-                    </div>
-                `;
-
-                container.appendChild(nodeEl);
+        function showHard() {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="section hard"><h3>Hard Dependencies</h3></div>';
+            
+            Object.entries(data.dependencies.hard).forEach(([from, toList]) => {
+                const item = document.createElement('div');
+                item.className = 'dep-item';
+                item.innerHTML = `<strong>${from}</strong> enables → ${toList.join(', ')}`;
+                content.firstChild.appendChild(item);
             });
         }
 
-        function showHardDeps() {
-            renderNodes(node => node.dependency_type === 'hard');
-        }
-
-        function showSoftDeps() {
-            renderNodes(node => node.dependency_type === 'soft');
+        function showSoft() {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="section soft"><h3>Soft Dependencies</h3></div>';
+            
+            Object.entries(data.dependencies.soft).forEach(([from, toList]) => {
+                const item = document.createElement('div');
+                item.className = 'dep-item';
+                item.innerHTML = `<strong>${from}</strong> enhances → ${toList.join(', ')}`;
+                content.firstChild.appendChild(item);
+            });
         }
 
         function showBlocking() {
-            renderNodes(node => node.blocking);
-        }
-
-        function showAll() {
-            renderNodes();
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="section blocking"><h3>Blocking Dependencies</h3></div>';
+            
+            Object.entries(data.dependencies.blocking).forEach(([criteria, nodes]) => {
+                const item = document.createElement('div');
+                item.className = 'dep-item';
+                item.innerHTML = `<strong>Criteria ${criteria}</strong> blocks without → ${nodes.join(', ')}`;
+                content.firstChild.appendChild(item);
+            });
         }
 
         function showOrder() {
-            const container = document.getElementById('order-container');
-            container.innerHTML = `
+            const content = document.getElementById('content');
+            content.innerHTML = `
                 <div class="order">
-                    <h3>Development Order:</h3>
-                    ${nodesData.development_order.join(' → ')}
+                    <h3>Development Order</h3>
+                    ${data.development_order.join(' → ')}
                 </div>
             `;
+        }
+
+        function showAll() {
+            showHard();
+            showSoft();
+            showBlocking();
+            showOrder();
         }
 
         loadData();

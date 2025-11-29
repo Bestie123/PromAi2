@@ -4,48 +4,41 @@
     <title>Option 2: Development Phases</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        .phase { border: 2px solid #ddd; margin: 20px 0; padding: 15px; border-radius: 8px; }
-        .foundation { border-color: #FF5722; background: #FFF3E0; }
-        .core { border-color: #FF9800; background: #FFF8E1; }
-        .features { border-color: #4CAF50; background: #E8F5E8; }
-        .polish { border-color: #9C27B0; background: #F3E5F5; }
-        .node { border: 1px solid #ccc; border-radius: 4px; padding: 8px; margin: 5px; display: inline-block; min-width: 120px; }
-        .critical { background: #C8E6C9; }
-        .question { background: #E3F2FD; }
+        .phase { margin: 20px 0; padding: 15px; border: 2px solid #ddd; border-radius: 8px; }
+        .phase1 { border-color: #FF5722; background: #FFF3E0; }
+        .phase2 { border-color: #FF9800; background: #FFF8E1; }
+        .phase3 { border-color: #4CAF50; background: #E8F5E8; }
+        .phase4 { border-color: #9C27B0; background: #F3E5F5; }
         .timeline { display: flex; align-items: center; margin: 10px 0; }
         .week-bar { height: 20px; background: #2196F3; margin: 0 5px; border-radius: 3px; }
         .milestone { font-weight: bold; color: #1976D2; }
-        .parallel { border: 2px dashed #4CAF50; }
+        .nodes { margin: 10px 0; }
+        .node { display: inline-block; padding: 4px 8px; margin: 2px; background: white; border-radius: 4px; font-size: 12px; }
         .controls { margin-bottom: 20px; }
         button { margin: 5px; padding: 8px 16px; }
     </style>
 </head>
 <body>
     <h1>Option 2: Development Phases</h1>
-    <p><strong>Подход:</strong> Фазовая разработка с milestone'ами</p>
     
     <div class="controls">
         <button onclick="showTimeline()">Timeline</button>
-        <button onclick="showPhase('foundation')">Foundation</button>
-        <button onclick="showPhase('core')">Core</button>
-        <button onclick="showPhase('features')">Features</button>
+        <button onclick="showPhase('phase1_foundation')">Phase 1</button>
+        <button onclick="showPhase('phase2_core')">Phase 2</button>
+        <button onclick="showPhase('phase3_features')">Phase 3</button>
         <button onclick="showAll()">All Phases</button>
     </div>
 
     <div id="timeline-container"></div>
-    <div id="phases-container"></div>
+    <div id="content"></div>
 
     <script>
-        let nodesData = null;
+        let data = null;
 
         async function loadData() {
-            try {
-                const response = await fetch('option2_phases_nodes.json');
-                nodesData = await response.json();
-                renderPhases();
-            } catch (error) {
-                console.error('Error loading data:', error);
-            }
+            const response = await fetch('option2_phases.json');
+            data = await response.json();
+            showAll();
         }
 
         function showTimeline() {
@@ -53,74 +46,67 @@
             container.innerHTML = '<h3>Development Timeline</h3>';
 
             let totalWeeks = 0;
-            Object.entries(nodesData.phases).forEach(([phaseName, phase]) => {
+            Object.entries(data.phases).forEach(([phaseName, phase]) => {
                 const timelineEl = document.createElement('div');
                 timelineEl.className = 'timeline';
                 
-                const weeks = phase.duration_weeks || 0;
+                const weeks = phase.weeks || 0;
                 totalWeeks += weeks;
                 
                 timelineEl.innerHTML = `
                     <strong>${phaseName}:</strong>
                     <div class="week-bar" style="width: ${weeks * 15}px;"></div>
                     <span>${weeks}w</span>
-                    <span class="milestone">${phase.milestone}</span>
+                    <span class="milestone">${data.milestones[phaseName.replace('phase', '').replace('_foundation', '').replace('_core', '').replace('_features', '').replace('_polish', '')] || ''}</span>
                 `;
                 
                 container.appendChild(timelineEl);
             });
 
             const totalEl = document.createElement('div');
-            totalEl.innerHTML = `<strong>Total: ${totalWeeks} weeks (~${Math.round(totalWeeks/4)} months)</strong>`;
+            totalEl.innerHTML = `<strong>Total: ${totalWeeks} weeks</strong>`;
             container.appendChild(totalEl);
         }
 
-        function renderPhases(filterPhase = null) {
-            const container = document.getElementById('phases-container');
-            container.innerHTML = '';
-
-            Object.entries(nodesData.phases).forEach(([phaseName, phase]) => {
-                if (filterPhase && phaseName !== filterPhase) return;
-
-                const phaseEl = document.createElement('div');
-                phaseEl.className = `phase ${phaseName}`;
-                
-                phaseEl.innerHTML = `
-                    <h3>${phaseName.toUpperCase()} - ${phase.milestone}</h3>
-                    <p>${phase.description}</p>
-                    <p>Duration: ${phase.duration_weeks}w | Criteria: ${phase.criteria.join(', ')}</p>
-                    ${phase.depends_on ? `<p>Depends on: ${phase.depends_on.join(', ')}</p>` : ''}
-                `;
-
-                // Add nodes for this phase
-                const nodesInPhase = Object.values(nodesData.nodes).filter(node => 
-                    node.phase === phaseName
-                );
-
-                nodesInPhase.forEach(node => {
-                    const nodeEl = document.createElement('div');
-                    nodeEl.className = `node ${node.type}`;
-                    if (node.parallel_with) nodeEl.classList.add('parallel');
-                    
-                    nodeEl.innerHTML = `
-                        <div><strong>${node.title}</strong></div>
-                        ${node.weeks_estimate ? `<div>Est: ${node.weeks_estimate}w</div>` : ''}
-                        ${node.parallel_with ? `<div>Parallel: ${node.parallel_with.join(', ')}</div>` : ''}
-                        ${node.requires ? `<div>Requires: ${node.requires.join(', ')}</div>` : ''}
-                    `;
-                    phaseEl.appendChild(nodeEl);
-                });
-
-                container.appendChild(phaseEl);
-            });
-        }
-
-        function showPhase(phase) {
-            renderPhases(phase);
+        function showPhase(phaseName) {
+            const content = document.getElementById('content');
+            const phase = data.phases[phaseName];
+            
+            content.innerHTML = `
+                <div class="phase ${phaseName.replace('_', '')}">
+                    <h3>${phaseName.toUpperCase()}</h3>
+                    <p><strong>Duration:</strong> ${phase.weeks}w | <strong>Criteria:</strong> ${phase.criteria.join(', ')}</p>
+                    ${phase.depends_on ? `<p><strong>Depends on:</strong> ${phase.depends_on.join(', ')}</p>` : ''}
+                    ${phase.enables ? `<p><strong>Enables:</strong> ${phase.enables.join(', ')}</p>` : ''}
+                    <div class="nodes">
+                        <strong>Nodes:</strong> 
+                        ${phase.nodes.map(node => `<span class="node">${node}</span>`).join('')}
+                    </div>
+                </div>
+            `;
         }
 
         function showAll() {
-            renderPhases();
+            const content = document.getElementById('content');
+            content.innerHTML = '';
+            
+            Object.keys(data.phases).forEach(phaseName => {
+                const phase = data.phases[phaseName];
+                const phaseEl = document.createElement('div');
+                phaseEl.className = `phase ${phaseName.replace('_', '')}`;
+                
+                phaseEl.innerHTML = `
+                    <h3>${phaseName.toUpperCase()}</h3>
+                    <p><strong>Duration:</strong> ${phase.weeks}w | <strong>Criteria:</strong> ${phase.criteria.join(', ')}</p>
+                    ${phase.depends_on ? `<p><strong>Depends on:</strong> ${phase.depends_on.join(', ')}</p>` : ''}
+                    <div class="nodes">
+                        <strong>Nodes:</strong> 
+                        ${phase.nodes.map(node => `<span class="node">${node}</span>`).join('')}
+                    </div>
+                `;
+                
+                content.appendChild(phaseEl);
+            });
         }
 
         loadData();
