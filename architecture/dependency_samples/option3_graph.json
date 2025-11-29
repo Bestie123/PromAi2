@@ -1,0 +1,38 @@
+{
+  "dependency_graph": {
+    "nodes": {
+      "1": {"weight": 10, "type": "foundation"},
+      "2": {"weight": 10, "type": "foundation"},
+      "13": {"weight": 9, "type": "foundation"},
+      "11": {"weight": 8, "type": "core"},
+      "12": {"weight": 8, "type": "core"},
+      "21": {"weight": 7, "type": "feature"},
+      "26": {"weight": 6, "type": "feature"}
+    },
+    "edges": [
+      {"from": 1, "to": 11, "type": "enables", "strength": "strong"},
+      {"from": 1, "to": 12, "type": "enables", "strength": "strong"},
+      {"from": 1, "to": 26, "type": "enables", "strength": "medium"},
+      {"from": 2, "to": 4, "type": "requires", "strength": "strong"},
+      {"from": 2, "to": 7, "type": "enables", "strength": "medium"},
+      {"from": 2, "to": 8, "type": "enables", "strength": "medium"},
+      {"from": 13, "to": 16, "type": "enables", "strength": "strong"},
+      {"from": 13, "to": 14, "type": "enables", "strength": "medium"},
+      {"from": 11, "to": 12, "type": "requires", "strength": "strong"},
+      {"from": 11, "to": 21, "type": "enables", "strength": "medium"}
+    ]
+  },
+  "critical_path": [1, 2, 13, 11, 12, 21, 26],
+  "parallel_tracks": {
+    "foundation": [1, 2, 3, 13],
+    "ui": [11, 12, 21],
+    "data": [16, 9, 10],
+    "plugins": [26, 27, 28]
+  },
+  "bottlenecks": [13, 21, 26],
+  "risk_matrix": {
+    "high": [13, 21, 26],
+    "medium": [11, 12, 16],
+    "low": [1, 2, 3, 9, 10]
+  }
+}
