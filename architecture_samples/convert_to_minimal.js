@@ -7,7 +7,12 @@ const original = JSON.parse(fs.readFileSync('../architecture/nodes.json', 'utf8'
 const minimal = {
   nodes: {},
   dependencies: {},
-  useOriginalPositions: true
+  layout: {
+    columnWidth: 400,
+    rowHeight: 300,
+    startX: 100,
+    startY: 100
+  }
 };
 
 // Фазы из dependency_tracker.json
@@ -26,12 +31,10 @@ Object.keys(phases).forEach(phase => {
   });
 });
 
-// Конвертируем ВСЕ узлы с оригинальными координатами
+// Конвертируем ВСЕ узлы
 Object.keys(original.nodes).forEach(id => {
   const node = original.nodes[id];
   minimal.nodes[id] = {
-    x: node.x,
-    y: node.y,
     phase: nodePhases[id] || 'other',
     criteriaId: node.criteriaId,
     title: node.title,
