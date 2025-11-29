@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вариант 2: Tree Layout (Дерево)</title>
+    <title>Вариант 3: Circular Layout (Круг)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -90,7 +90,7 @@
     </style>
 </head>
 <body>
-    <div class="title">Вариант 2: Tree Layout (Дерево)</div>
+    <div class="title">Вариант 3: Circular Layout (Круг)</div>
     
     <div class="controls">
         <button onclick="resetView()">Сброс</button>
@@ -120,7 +120,7 @@
         let lastMouseX = 0;
         let lastMouseY = 0;
 
-        fetch('./nodes_tree.json')
+        fetch('./nodes_circular.json')
             .then(response => response.json())
             .then(data => {
                 nodes = Object.values(data.nodes);
