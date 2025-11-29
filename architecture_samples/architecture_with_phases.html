@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromAi - Architecture + Development Phases</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117; color: #c9d1d9; overflow: hidden;
+        }
+        #canvas { 
+            width: 12000px; height: 8000px; position: relative; 
+            background: radial-gradient(circle at 50% 50%, #161b22 0%, #0d1117 100%);
+            transform-origin: 0 0;
+        }
+        #viewport { 
+            width: 100vw; height: 100vh; overflow: hidden; position: relative;
+            cursor: grab; background: #0d1117;
+        }
+        #viewport.dragging { cursor: grabbing; }
+        
+        .node {
+            position: absolute; background: #21262d; border: 2px solid #30363d;
+            border-radius: 12px; padding: 16px; min-width: 280px; max-width: 320px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease;
+        }
+        .node:hover { transform: scale(1.05); box-shadow: 0 12px 48px rgba(0,0,0,0.6); }
+        
+        .root { border-color: #58a6ff; background: linear-gradient(135deg, #1b2332 0%, #0d1117 100%); font-size: 18px; min-width: 400px; }
+        .phase { border-color: #f79009; background: linear-gradient(135deg, #2d2419 0%, #21262d 100%); }
+        .phase-node { border-color: #3fb950; background: linear-gradient(135deg, #1b2d1f 0%, #21262d 100%); }
+        .module { border-color: #58a6ff; background: linear-gradient(135deg, #1b2332 0%, #21262d 100%); }
+        .critical { border-color: #f85149; background: linear-gradient(135deg, #21262d 0%, #2d1b1f 100%); }
+        .important { border-color: #f79009; background: linear-gradient(135deg, #21262d 0%, #2d2419 100%); }
+        .flexible { border-color: #3fb950; background: linear-gradient(135deg, #21262d 0%, #1b2d1f 100%); }
+        .question { border-color: #58a6ff; background: linear-gradient(135deg, #21262d 0%, #1b2332 100%); }
+        .rejected { border-color: #8b949e; background: linear-gradient(135deg, #21262d 0%, #2d2d2d 100%); opacity: 0.7; }
+        
+        .badge {
+            display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px;
+            font-weight: bold; margin-bottom: 8px;
+        }
+        .badge.root { background: #58a6ff; color: #fff; }
+        .badge.phase { background: #f79009; color: #fff; }
+        .badge.phase-node { background: #3fb950; color: #fff; }
+        .badge.module { background: #58a6ff; color: #fff; }
+        .badge.critical { background: #f85149; color: #fff; }
+        .badge.important { background: #f79009; color: #fff; }
+        .badge.flexible { background: #3fb950; color: #fff; }
+        .badge.question { background: #58a6ff; color: #fff; }
+        .badge.rejected { background: #8b949e; color: #fff; }
+        
+        .node h3 { font-size: 14px; margin-bottom: 8px; color: #f0f6fc; }
+        .node p { font-size: 12px; line-height: 1.4; margin-bottom: 8px; color: #8b949e; }
+        .details { font-size: 11px; color: #6e7681; }
+        
+        .connection {
+            position: absolute; background: #30363d; height: 2px; transform-origin: left center;
+            z-index: -1;
+        }
+        .connection.root { background: #58a6ff; }
+        .connection.phase { background: #f79009; }
+        .connection.phase-node { background: #3fb950; }
+        .connection.module { background: #58a6ff; }
+        .connection.critical { background: #f85149; }
+        .connection.important { background: #f79009; }
+        .connection.question { background: #58a6ff; }
+        
+        .controls {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 12px; border-radius: 8px;
+            border: 1px solid #30363d;
+        }
+        .controls button {
+            background: #238636; color: #fff; border: none; padding: 8px 12px;
+            border-radius: 6px; margin-right: 8px; cursor: pointer; font-size: 12px;
+        }
+        .controls button:hover { background: #2ea043; }
+        
+        .zoom-info {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 8px 12px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 12px;
+        }
+        
+        .stats {
+            position: fixed; bottom: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 8px 12px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 12px; color: #3fb950;
+        }
+        
+        .legend {
+            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 12px; border-radius: 8px;
+            border: 1px solid #30363d; font-size: 11px;
+        }
+        .legend-item { display: flex; align-items: center; margin-bottom: 5px; }
+        .legend-color { width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="resetView()">Сброс</button>
+        <button onclick="centerView()">Центр</button>
+        <span style="color: #8b949e; margin-left: 12px;">Колесо - зум | ЛКМ - перетаскивание</span>
+    </div>
+    
+    <div class="legend">
+        <div style="font-weight: bold; margin-bottom: 8px; color: #58a6ff;">Легенда:</div>
+        <div class="legend-item"><div class="legend-color" style="background: #58a6ff;"></div>Root / Modules</div>
+        <div class="legend-item"><div class="legend-color" style="background: #f79009;"></div>Arch Decisions</div>
+        <div class="legend-item"><div class="legend-color" style="background: #3fb950;"></div>Dev Phases</div>
+        <div class="legend-item"><div class="legend-color" style="background: #f85149;"></div>Critical</div>
+        <div class="legend-item"><div class="legend-color" style="background: #8b949e;"></div>Rejected</div>
+    </div>
+    
+    <div class="zoom-info">
+        Зум: <span id="zoomLevel">100%</span>
+    </div>
+    
+    <div class="stats">
+        Узлов: <span id="nodeCount">0</span> | Фаз: <span id="phaseCount">6</span> | Модулей: <span id="moduleCount">14</span>
+    </div>
+    
+    <div id="viewport">
+        <div id="canvas"></div>
+    </div>
+
+    <script>
+        const LAYOUT = {
+            HORIZONTAL_SPACING: 1200,
+            VERTICAL_SPACING: 600,
+            ROOT_Y: 100,
+            BRANCH_Y: 400,
+            PHASE_Y: 800,
+            MODULE_Y: 1200
+        };
+
+        let nodes = [];
+        let dependencies = {};
+        let scale = 0.15;
+        let translateX = 100;
+        let translateY = 50;
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        function generateLayout(nodesData) {
+            const root = nodesData.find(n => n.id === 'root');
+            const archDecisions = nodesData.find(n => n.id === 'arch-decisions');
+            const devSequence = nodesData.find(n => n.id === 'dev-sequence');
+            const phases = nodesData.filter(n => n.type === 'phase-node');
+            const modules = nodesData.filter(n => n.type === 'module');
+            const questions = nodesData.filter(n => n.type === 'question');
+            
+            // Root
+            root.x = 500;
+            root.y = LAYOUT.ROOT_Y;
+            
+            // Main branches
+            archDecisions.x = 200;
+            archDecisions.y = LAYOUT.BRANCH_Y;
+            
+            devSequence.x = 2000;
+            devSequence.y = LAYOUT.BRANCH_Y;
+            
+            // Questions (under arch-decisions)
+            questions.forEach((q, i) => {
+                q.x = 200 + (i % 6) * 600;
+                q.y = LAYOUT.BRANCH_Y + 500 + Math.floor(i / 6) * 800;
+            });
+            
+            // Answers (under questions)
+            nodesData.filter(n => ['critical', 'important', 'flexible', 'rejected'].includes(n.type)).forEach(a => {
+                const parent = questions.find(q => q.children && q.children.includes(a.id));
+                if (parent) {
+                    const siblingIndex = parent.children.indexOf(a.id);
+                    const totalSiblings = parent.children.length;
+                    const offset = (siblingIndex - (totalSiblings - 1) / 2) * 400;
+                    a.x = parent.x + offset;
+                    a.y = parent.y + 300;
+                }
+            });
+            
+            // Phases (under dev-sequence)
+            phases.forEach((p, i) => {
+                p.x = 2000 + i * 800;
+                p.y = LAYOUT.PHASE_Y;
+            });
+            
+            // Modules (under phases)
+            modules.forEach(m => {
+                const parent = phases.find(p => p.children && p.children.includes(m.id));
+                if (parent) {
+                    const siblingIndex = parent.children.indexOf(m.id);
+                    const totalSiblings = parent.children.length;
+                    const offset = (siblingIndex - (totalSiblings - 1) / 2) * 350;
+                    m.x = parent.x + offset;
+                    m.y = parent.y + 400;
+                }
+            });
+            
+            return nodesData;
+        }
+
+        fetch('./nodes_data_extended.json')
+            .then(response => response.json())
+            .then(data => {
+                nodes = generateLayout(data.nodes);
+                dependencies = data.dependencies;
+                initCanvas();
+                updateTransform();
+            })
+            .catch(error => {
+                console.error('Failed to load nodes:', error);
+                alert('JSON не загрузился: ' + error.message);
+            });
+
+        function createNode(node) {
+            const div = document.createElement('div');
+            div.className = `node ${node.type}`;
+            div.style.left = node.x + 'px';
+            div.style.top = node.y + 'px';
+            
+            const badgeText = {
+                'root': 'ROOT',
+                'phase': 'ARCH',
+                'phase-node': 'PHASE',
+                'module': 'MODULE',
+                'critical': 'КРИТИЧНО',
+                'important': 'ВАЖНО',
+                'flexible': 'ГИБКО',
+                'question': 'ВОПРОС',
+                'rejected': 'ОТКЛОНЕНО'
+            }[node.type] || node.type.toUpperCase();
+            
+            div.innerHTML = `
+                <div class="badge ${node.type}">${badgeText}</div>
+                <h3>${node.title}</h3>
+                <p>${node.description}</p>
+                <div class="details">${node.details}</div>
+            `;
+            
+            return div;
+        }
+
+        function createConnection(from, to, type) {
+            const line = document.createElement('div');
+            line.className = `connection ${type}`;
+            
+            const dx = to.x - from.x;
+            const dy = to.y - from.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            line.style.left = (from.x + 160) + 'px';
+            line.style.top = (from.y + 60) + 'px';
+            line.style.width = length + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            return line;
+        }
+
+        function initCanvas() {
+            const canvas = document.getElementById('canvas');
+            canvas.innerHTML = '';
+            const nodeMap = {};
+            
+            nodes.forEach(node => {
+                const nodeEl = createNode(node);
+                canvas.appendChild(nodeEl);
+                nodeMap[node.id] = node;
+            });
+            
+            nodes.forEach(node => {
+                if (node.children) {
+                    node.children.forEach(childId => {
+                        const child = nodeMap[childId];
+                        if (child) {
+                            const connection = createConnection(node, child, node.type);
+                            canvas.appendChild(connection);
+                        }
+                    });
+                }
+            });
+            
+            document.getElementById('nodeCount').textContent = nodes.length;
+            document.getElementById('phaseCount').textContent = nodes.filter(n => n.type === 'phase-node').length;
+            document.getElementById('moduleCount').textContent = nodes.filter(n => n.type === 'module').length;
+        }
+
+        function updateTransform() {
+            const canvas = document.getElementById('canvas');
+            canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
+        }
+
+        function resetView() {
+            scale = 0.15;
+            translateX = 100;
+            translateY = 50;
+            updateTransform();
+        }
+
+        function centerView() {
+            translateX = 100;
+            translateY = 50;
+            updateTransform();
+        }
+
+        const viewport = document.getElementById('viewport');
+
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            
+            const rect = viewport.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const newScale = Math.max(0.1, Math.min(3, scale * delta));
+            
+            const canvasX = (mouseX - translateX) / scale;
+            const canvasY = (mouseY - translateY) / scale;
+            
+            scale = newScale;
+            
+            translateX = mouseX - canvasX * scale;
+            translateY = mouseY - canvasY * scale;
+            
+            updateTransform();
+        });
+
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                isDragging = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                viewport.classList.add('dragging');
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - lastMouseX;
+                const deltaY = e.clientY - lastMouseY;
+                translateX += deltaX;
+                translateY += deltaY;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                updateTransform();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            viewport.classList.remove('dragging');
+        });
+    </script>
+</body>
+</html>
