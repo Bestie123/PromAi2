@@ -168,9 +168,6 @@
                          node.type === 'important' ? 'ВАЖНО' : 
                          node.type === 'flexible' ? 'ГИБКО' : 'ОТКЛОНЕНО';
             
-            let extraInfo = '';
-            if (node.criteriaId) extraInfo += `<div class="week">№${node.criteriaId}</div>`;
-            
             // Найти зависимости по criteriaId
             const deps = node.dependencies ? node.dependencies.map(depId => {
                 const depNode = nodes.find(n => n.id === depId);
@@ -182,6 +179,7 @@
                 n.dependencies && n.dependencies.includes(node.id)
             ).map(n => n.criteriaId).filter(Boolean);
             
+            let extraInfo = '';
             if (deps.length > 0) {
                 extraInfo += `<div class="requires">📋 Требует: №${deps.join(', №')}</div>`;
             }
@@ -189,9 +187,11 @@
                 extraInfo += `<div class="blocks">🚫 Блокирует: №${blockedNodes.join(', №')}</div>`;
             }
             
+            const titleWithNum = node.criteriaId ? `№${node.criteriaId} • ${node.title}` : node.title;
+            
             div.innerHTML = `
                 <div class="badge ${node.type}">${badge}</div>
-                <h3>${node.title}</h3>
+                <h3>${titleWithNum}</h3>
                 <p>${node.description}</p>
                 <div class="details">${node.details}</div>
                 ${extraInfo}
