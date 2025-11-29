@@ -5,25 +5,26 @@ npm-debug.log*
 # Build outputs
 dist/
 build/
-*.tsbuildinfo
-
-# Environment
-.env
-.env.local
+out/
 
 # IDE
-.vscode/settings.json
+.vscode/
 .idea/
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Logs
+# Large files (exclude from context)
 *.log
-logs/
+*.sqlite
+*.db
+*.json.bak
+
+# Generated documentation
+docs/generated/
 
 # Temporary files
+tmp/
+temp/
 *.tmp
-*.temp
-.cache/

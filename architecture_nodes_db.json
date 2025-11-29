@@ -1,0 +1,89 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2024-12-19",
+    "totalCriteria": 29,
+    "description": "Architecture decision nodes database for PromAi PKM system"
+  },
+  "criteria_mapping": {
+    "1": { "id": "q1", "title": "Модульность движка", "requirement": "Ядро отделено от UI и плагинов" },
+    "2": { "id": "q2", "title": "Блочность элементов", "requirement": "Всё является блоками" },
+    "3": { "id": "q3", "title": "UUID для блоков", "requirement": "Уникальные глобальные ID" },
+    "4": { "id": "q4", "title": "Вложенные блоки", "requirement": "Иерархия любой глубины" },
+    "5": { "id": "q5", "title": "Drag & Drop порядка", "requirement": "Порядок дочерних блоков" },
+    "6": { "id": "q6", "title": "Rich Text", "requirement": "Markdown-подобный + сущности" },
+    "7": { "id": "q7", "title": "Refs по UUID", "requirement": "Любой блок ссылается на любой" },
+    "8": { "id": "q8", "title": "Backlinks", "requirement": "Мгновенный доступ к обратным ссылкам" },
+    "9": { "id": "q9", "title": "Локальные данные", "requirement": "Открытый читаемый формат" },
+    "10": { "id": "q10", "title": "Оффлайн работа", "requirement": "Полная оффлайн-работа" },
+    "11": { "id": "q11", "title": "Декларативный UI", "requirement": "100% декларативный рендер" },
+    "12": { "id": "q12", "title": "Zero runtime logic", "requirement": "Чистая функция рендера" },
+    "13": { "id": "q13", "title": "CRDT", "requirement": "Single source of truth" },
+    "14": { "id": "q14", "title": "Event Sourcing", "requirement": "Immutable ops log с первого дня" },
+    "15": { "id": "q15", "title": "Schema-first", "requirement": "Runtime валидация схем" },
+    "16": { "id": "q16", "title": "CRDT операции", "requirement": "Все изменения только через CRDT-операции" },
+    "17": { "id": "q17", "title": "Атомарные транзакции", "requirement": "Целостность данных, undo/redo" },
+    "18": { "id": "q18", "title": "Refs в CRDT", "requirement": "References и backlinks first-class в CRDT" },
+    "19": { "id": "q19", "title": "Плоский граф", "requirement": "Блоки ≠ страницы" },
+    "20": { "id": "q20", "title": "Глобальное состояние", "requirement": "Отсутствие глобального mutable состояния" },
+    "21": { "id": "q21", "title": "Virtual scrolling", "requirement": "Работа с 100к+ блоков" },
+    "22": { "id": "q22", "title": "Web Workers", "requirement": "Тяжёлые операции в отдельном потоке" },
+    "23": { "id": "q23", "title": "Обнаружение циклов", "requirement": "Circular Reference Detection" },
+    "24": { "id": "q24", "title": "E2EE готовность", "requirement": "Формат хранения готов к шифрованию" },
+    "25": { "id": "q25", "title": "Конфликт-менеджмент", "requirement": "При синхронизации" },
+    "26": { "id": "q26", "title": "Плагинная система", "requirement": "Все пользовательские блоки как плагины" },
+    "27": { "id": "q27", "title": "Композитные блоки", "requirement": "Кастомные блоки, содержащие другие" },
+    "28": { "id": "q28", "title": "Состояние блоков", "requirement": "Каждый блок может сохранять состояние" },
+    "29": { "id": "q29", "title": "Модульность кода", "requirement": "Файлы ≤500 строк, функции ≤50" }
+  },
+  "nodes": {
+    "q1": {
+      "criteriaId": 1,
+      "type": "question",
+      "title": "❓ Модульность движка?",
+      "description": "Ядро отделено от UI и плагинов",
+      "details": "Варианты: Модульная | Монолитная",
+      "children": ["modular-arch", "monolith-arch"],
+      "dependencies": [],
+      "position": { "x": 500, "y": 100 }
+    },
+    "modular-arch": {
+      "criteriaId": 1,
+      "type": "critical",
+      "title": "✅ Модульная",
+      "description": "Ядро легко отделяется",
+      "details": "➕ Тестирование, замена UI ➖ Сложность",
+      "children": [],
+      "dependencies": ["q1"],
+      "position": { "x": 200, "y": 300 }
+    },
+    "monolith-arch": {
+      "criteriaId": 1,
+      "type": "rejected",
+      "title": "❌ Монолитная",
+      "description": "Всё в одном модуле",
+      "details": "➕ Быстрый старт ➖ Спагетти-код",
+      "children": [],
+      "dependencies": ["q1"],
+      "position": { "x": 800, "y": 300 }
+    }
+  },
+  "compatibility": {
+    "modular-arch,monolith-arch": "невозможно",
+    "all-blocks,mixed-model": "невозможно",
+    "uuid-v4,uuid-v7": "переключать",
+    "nested-blocks,flat-only": "невозможно",
+    "drag-drop-native,drag-drop-lib": "объединить"
+  },
+  "decision_sequence": [
+    {
+      "order": 1,
+      "criteriaId": 1,
+      "nodeId": "q1",
+      "title": "Модульность движка",
+      "rationale": "Фундаментальное архитектурное решение",
+      "blockers": [],
+      "enables": ["q11", "q12", "q26"]
+    }
+  ]
+}
