@@ -31,33 +31,28 @@ Object.keys(phases).forEach(phase => {
   });
 });
 
-// Конвертируем узлы (только критичные, без вопросов и rejected)
+// Конвертируем ВСЕ узлы (включая вопросы и rejected)
 Object.keys(original.nodes).forEach(id => {
   const node = original.nodes[id];
-  if (node.type === 'critical' || node.type === 'important') {
-    minimal.nodes[id] = {
-      phase: nodePhases[id] || 'other',
-      criteriaId: node.criteriaId,
-      title: node.title,
-      type: node.type
-    };
-  }
+  minimal.nodes[id] = {
+    phase: nodePhases[id] || 'other',
+    criteriaId: node.criteriaId,
+    title: node.title,
+    type: node.type,
+    children: node.children || []
+  };
 });
 
-// Извлекаем зависимости из оригинального файла
-// Используем children для построения зависимостей
+// Зависимости из children (вопрос -> ответы)
 Object.keys(original.nodes).forEach(id => {
   const node = original.nodes[id];
   if (node.children && node.children.length > 0) {
-    const validChildren = node.children.filter(childId => minimal.nodes[childId]);
-    if (validChildren.length > 0 && minimal.nodes[id]) {
-      minimal.dependencies[id] = validChildren;
-    }
+    minimal.dependencies[id] = node.children;
   }
 });
 
-// Добавляем явные зависимости из варианта 1
-const explicitDeps = {
+// Добавляем фазовые зависимости отдельно
+minimal.phaseDependencies = {
   'modular-arch': ['declarative-ui', 'plugin-unified'],
   'all-blocks': ['nested-blocks', 'refs-uuid', 'crdt-only'],
   'uuid-v4': ['refs-uuid', 'backlinks-auto'],
@@ -66,14 +61,6 @@ const explicitDeps = {
   'virtual-scrolling': ['web-workers-all'],
   'plugin-unified': ['composite-blocks']
 };
-
-Object.keys(explicitDeps).forEach(from => {
-  if (minimal.nodes[from]) {
-    const existing = minimal.dependencies[from] || [];
-    const newDeps = explicitDeps[from].filter(to => minimal.nodes[to]);
-    minimal.dependencies[from] = [...new Set([...existing, ...newDeps])];
-  }
-});
 
 fs.writeFileSync('./variant3_full.json', JSON.stringify(minimal, null, 2));
 console.log('Конвертировано узлов:', Object.keys(minimal.nodes).length);
