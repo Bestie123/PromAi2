@@ -275,6 +275,8 @@
                         const line = createDependencyLine(from, to, 'blocking');
                         canvas.appendChild(line);
                         depCount++;
+                    } else {
+                        console.warn('Missing nodes for dependency:', dep.from, '->', dep.to);
                     }
                 });
             }
@@ -287,6 +289,8 @@
                         const line = createDependencyLine(from, to, 'hard');
                         canvas.appendChild(line);
                         depCount++;
+                    } else {
+                        console.warn('Missing nodes for dependency:', dep.from, '->', dep.to);
                     }
                 });
             }
@@ -299,6 +303,8 @@
                         const line = createDependencyLine(from, to, 'soft');
                         canvas.appendChild(line);
                         depCount++;
+                    } else {
+                        console.warn('Missing nodes for dependency:', dep.from, '->', dep.to);
                     }
                 });
             }
