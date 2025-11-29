@@ -338,9 +338,11 @@
             viewport.classList.remove('dragging');
         });
 
-        // Initialize
-        initCanvas();
-        updateTransform();
+        // Initialize after DOM loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initCanvas();
+            updateTransform();
+        });
     </script>
 </body>
 </html>
