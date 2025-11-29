@@ -181,6 +181,36 @@
             return div;
         }
 
+        function createCompatibilityLine(node1, node2, compatibility) {
+            const line = document.createElement('div');
+            line.className = 'compatibility-line';
+            line.style.background = compatibility === 'объединить' ? '#3fb950' : 
+                                   compatibility === 'переключать' ? '#f79009' : '#f85149';
+            
+            const startX = Math.min(node1.x, node2.x) + 160;
+            const endX = Math.max(node1.x, node2.x) + 160;
+            const y = node1.y + 60;
+            
+            line.style.left = startX + 'px';
+            line.style.top = y + 'px';
+            line.style.width = (endX - startX) + 'px';
+            
+            const label = document.createElement('div');
+            label.style.position = 'absolute';
+            label.style.left = ((endX - startX) / 2 - 30) + 'px';
+            label.style.top = '-20px';
+            label.style.fontSize = '10px';
+            label.style.color = '#8b949e';
+            label.style.background = '#0d1117';
+            label.style.padding = '2px 6px';
+            label.style.borderRadius = '4px';
+            label.style.whiteSpace = 'nowrap';
+            label.textContent = compatibility;
+            
+            line.appendChild(label);
+            return line;
+        }
+
         function createConnection(from, to, type) {
             const line = document.createElement('div');
             line.className = `connection ${type}`;
