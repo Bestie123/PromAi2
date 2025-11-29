@@ -317,19 +317,149 @@
       "description": "Плагинная система и кастомные блоки"
     }
   ],
-  "criticalPath": [
-    "q1 → q2 → q3 → q4 → q13 → q14 → q15 → q16 → q17 → q18 → q19 → q11 → q12 → q20 → q21 → q22 → q23 → q6 → q5 → q26 → q27 → q28"
-  ],
+  "criticalPath": {
+    "description": "Самая длинная цепочка блокирующих зависимостей - минимальное время разработки",
+    "path": "q1 → q2 → q3 → q4 → q13 → q14 → q15 → q16 → q17 → q18 → q19 → q11 → q12 → q20 → q21 → q22 → q23 → q6 → q5 → q26 → q27 → q28",
+    "length": 28,
+    "questions": ["q1", "q2", "q3", "q4", "q13", "q14", "q15", "q16", "q17", "q18", "q19", "q11", "q12", "q20", "q21", "q22", "q23", "q6", "q5", "q26", "q27", "q28"]
+  },
   "parallelTracks": {
     "storage": {
-      "description": "Можно разрабатывать параллельно с UI",
+      "description": "Можно разрабатывать параллельно с UI (после Event Sourcing)",
       "questions": ["q9", "q10", "q24", "q25"],
-      "startsAfter": "q14"
+      "startsAfter": "q14",
+      "canRunWith": ["q15", "q16", "q17", "q18", "q19", "q11", "q12", "q20", "q21", "q22", "q23"],
+      "path": "q14 → q9 → [q10, q24] → q25"
     },
     "codeStandards": {
-      "description": "Применяется с первого дня",
+      "description": "Применяется с первого дня параллельно всему",
       "questions": ["q29"],
-      "startsAfter": "q1"
+      "startsAfter": "q1",
+      "canRunWith": ["q2", "q3", "q4", "q13", "q14", "q15", "q16", "q17", "q18", "q19", "q11", "q12", "q20", "q21", "q22", "q23", "q6", "q5", "q9", "q10", "q24", "q25", "q26", "q27", "q28"],
+      "path": "q1 → q29 (постоянно)"
     }
+  },
+  "blockingDependencies": {
+    "description": "Все блокирующие зависимости - вопрос X блокирует вопросы Y",
+    "dependencies": [
+      { "blocker": "q1", "blocks": ["q2", "q29"], "reason": "Модульная архитектура - фундамент для всего" },
+      { "blocker": "q2", "blocks": ["q3"], "reason": "Блочная модель нужна для UUID" },
+      { "blocker": "q3", "blocks": ["q4", "q7"], "reason": "UUID нужны для иерархии и ссылок" },
+      { "blocker": "q4", "blocks": ["q13"], "reason": "Иерархия блоков нужна для CRDT" },
+      { "blocker": "q13", "blocks": ["q14", "q16", "q25"], "reason": "CRDT - основа для операций и синхронизации" },
+      { "blocker": "q14", "blocks": ["q15", "q9"], "reason": "Event Sourcing определяет формат операций и хранения" },
+      { "blocker": "q15", "blocks": ["q16"], "reason": "Схемы нужны для валидации CRDT операций" },
+      { "blocker": "q16", "blocks": ["q17", "q18"], "reason": "Стратегия CRDT определяет транзакции и refs" },
+      { "blocker": "q17", "blocks": ["q18"], "reason": "Транзакции нужны для атомарных refs" },
+      { "blocker": "q7", "blocks": ["q18"], "reason": "Механизм refs нужен для интеграции в CRDT" },
+      { "blocker": "q18", "blocks": ["q8", "q19"], "reason": "Refs в CRDT нужны для backlinks и графа" },
+      { "blocker": "q8", "blocks": ["q19"], "reason": "Backlinks влияют на структуру графа" },
+      { "blocker": "q19", "blocks": ["q11"], "reason": "Структура графа определяет UI" },
+      { "blocker": "q11", "blocks": ["q12", "q20"], "reason": "Декларативный UI - основа для чистых функций" },
+      { "blocker": "q12", "blocks": ["q20", "q21"], "reason": "Zero runtime logic определяет управление состоянием" },
+      { "blocker": "q20", "blocks": ["q21"], "reason": "Управление состоянием нужно для оптимизации рендера" },
+      { "blocker": "q21", "blocks": ["q22", "q23"], "reason": "Virtual scrolling - основа для workers и защиты от циклов" },
+      { "blocker": "q22", "blocks": ["q23"], "reason": "Workers нужны для безопасного обнаружения циклов" },
+      { "blocker": "q23", "blocks": ["q6"], "reason": "Защита от циклов нужна для безопасного редактора" },
+      { "blocker": "q6", "blocks": ["q5"], "reason": "Rich text редактор нужен для drag & drop" },
+      { "blocker": "q5", "blocks": ["q26"], "reason": "Базовая интерактивность нужна для плагинов" },
+      { "blocker": "q26", "blocks": ["q27"], "reason": "Плагинная система нужна для композитных блоков" },
+      { "blocker": "q27", "blocks": ["q28"], "reason": "Композитные блоки нужны для состояния блоков" },
+      { "blocker": "q9", "blocks": ["q10", "q24"], "reason": "Формат хранения определяет оффлайн и E2EE" },
+      { "blocker": "q10", "blocks": ["q25"], "reason": "Оффлайн работа нужна для синхронизации" },
+      { "blocker": "q24", "blocks": ["q25"], "reason": "E2EE готовность влияет на синхронизацию" }
+    ]
+  },
+  "optimizedSchedule": {
+    "description": "Оптимальный план с учетом параллельных треков",
+    "timeline": [
+      {
+        "step": 1,
+        "parallel": false,
+        "questions": ["q1"],
+        "description": "Модульная архитектура - блокирует всё"
+      },
+      {
+        "step": 2,
+        "parallel": true,
+        "tracks": [
+          { "track": "main", "questions": ["q2"] },
+          { "track": "standards", "questions": ["q29"] }
+        ],
+        "description": "Блочная модель + стандарты кода"
+      },
+      {
+        "step": 3,
+        "parallel": false,
+        "questions": ["q3"],
+        "description": "UUID для блоков"
+      },
+      {
+        "step": 4,
+        "parallel": true,
+        "tracks": [
+          { "track": "main", "questions": ["q4"] },
+          { "track": "refs", "questions": ["q7"] }
+        ],
+        "description": "Вложенные блоки + механизм refs"
+      },
+      {
+        "step": 5,
+        "parallel": false,
+        "questions": ["q13"],
+        "description": "CRDT (Yjs/Automerge)"
+      },
+      {
+        "step": 6,
+        "parallel": false,
+        "questions": ["q14"],
+        "description": "Event Sourcing"
+      },
+      {
+        "step": 7,
+        "parallel": true,
+        "tracks": [
+          { "track": "main", "questions": ["q15", "q16", "q17"] },
+          { "track": "storage", "questions": ["q9"] }
+        ],
+        "description": "Schema + CRDT операции + транзакции || Локальное хранилище"
+      },
+      {
+        "step": 8,
+        "parallel": true,
+        "tracks": [
+          { "track": "main", "questions": ["q18", "q8", "q19"] },
+          { "track": "storage", "questions": ["q10", "q24"] }
+        ],
+        "description": "Refs в CRDT + backlinks + граф || Оффлайн + E2EE"
+      },
+      {
+        "step": 9,
+        "parallel": true,
+        "tracks": [
+          { "track": "main", "questions": ["q11", "q12", "q20"] },
+          { "track": "storage", "questions": ["q25"] }
+        ],
+        "description": "Декларативный UI + zero runtime + состояние || Синхронизация"
+      },
+      {
+        "step": 10,
+        "parallel": false,
+        "questions": ["q21", "q22", "q23"],
+        "description": "Virtual scrolling + Workers + защита от циклов"
+      },
+      {
+        "step": 11,
+        "parallel": false,
+        "questions": ["q6", "q5"],
+        "description": "Rich text + Drag & Drop"
+      },
+      {
+        "step": 12,
+        "parallel": false,
+        "questions": ["q26", "q27", "q28"],
+        "description": "Плагинная система + композитные блоки + состояние"
+      }
+    ]
   }
 }
