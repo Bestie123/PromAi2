@@ -1,0 +1,355 @@
+{
+  "nodes": {
+    "q1": { 
+      "id": "q1", "x": 500, "y": 100, "type": "question", 
+      "title": "❓ Модульность движка?", 
+      "description": "Ядро отделено от UI и плагинов", 
+      "details": "Варианты: Модульная | Монолитная", 
+      "children": ["modular-arch", "monolith-arch"], 
+      "criteriaId": 1,
+      "phase": "foundation",
+      "priority": "critical",
+      "enables": [11, 12, 26, 29],
+      "blocks": []
+    },
+    "modular-arch": { 
+      "id": "modular-arch", "x": 200, "y": 300, "type": "critical", 
+      "title": "✅ Модульная", 
+      "description": "Ядро легко отделяется", 
+      "details": "➕ Тестирование, замена UI ➖ Сложность", 
+      "children": [], 
+      "criteriaId": 1,
+      "phase": "foundation",
+      "developmentOrder": 1,
+      "estimatedWeeks": 2,
+      "enables": ["MODULE_Core_VER_1", "MODULE_UI_VER_1", "MODULE_Plugin_VER_1"],
+      "blocks": ["q11", "q12", "q26", "q29"]
+    },
+    "monolith-arch": { 
+      "id": "monolith-arch", "x": 800, "y": 300, "type": "rejected", 
+      "title": "❌ Монолитная", 
+      "description": "Всё в одном модуле", 
+      "details": "➕ Быстрый старт ➖ Спагетти-код", 
+      "children": [], 
+      "criteriaId": 1,
+      "incompatible": ["modular-arch"]
+    },
+    "q2": { 
+      "id": "q2", "x": 1500, "y": 100, "type": "question", 
+      "title": "❓ Блочность элементов?", 
+      "description": "Всё является блоками", 
+      "details": "Варианты: Всё блоки | Смешанная", 
+      "children": ["all-blocks", "mixed-model"], 
+      "criteriaId": 2,
+      "phase": "foundation",
+      "priority": "critical",
+      "enables": [4, 7, 8, 16, 18, 19]
+    },
+    "all-blocks": { 
+      "id": "all-blocks", "x": 1200, "y": 300, "type": "critical", 
+      "title": "✅ Всё - блоки", 
+      "description": "Единая модель данных", 
+      "details": "➕ Единые операции ➖ Сложность", 
+      "children": [], 
+      "criteriaId": 2,
+      "phase": "foundation",
+      "developmentOrder": 1,
+      "estimatedWeeks": 3,
+      "enables": ["block_schema.json", "CRDT operations"],
+      "blocks": ["q4", "q7", "q8", "q16", "q18", "q19"]
+    },
+    "mixed-model": { 
+      "id": "mixed-model", "x": 1800, "y": 300, "type": "rejected", 
+      "title": "❌ Смешанная", 
+      "description": "Блоки + особые сущности", 
+      "details": "➕ Простота ➖ Ломаются refs", 
+      "children": [], 
+      "criteriaId": 2,
+      "incompatible": ["all-blocks"]
+    },
+    "q3": { 
+      "id": "q3", "x": 2500, "y": 100, "type": "question", 
+      "title": "❓ UUID для блоков?", 
+      "description": "Уникальные глобальные ID", 
+      "details": "Варианты: UUID v4 | UUID v7", 
+      "children": ["uuid-v4", "uuid-v7"], 
+      "criteriaId": 3,
+      "phase": "foundation",
+      "priority": "critical",
+      "enables": [7, 8, 18]
+    },
+    "uuid-v4": { 
+      "id": "uuid-v4", "x": 2200, "y": 300, "type": "critical", 
+      "title": "🎲 UUID v4", 
+      "description": "Случайные UUID", 
+      "details": "➕ Проверенные ➖ Нет сортировки", 
+      "children": [], 
+      "criteriaId": 3,
+      "phase": "foundation",
+      "developmentOrder": 1,
+      "estimatedWeeks": 1,
+      "enables": ["refs system", "backlinks"],
+      "switchable": ["uuid-v7"]
+    },
+    "uuid-v7": { 
+      "id": "uuid-v7", "x": 2800, "y": 300, "type": "important", 
+      "title": "⏰ UUID v7", 
+      "description": "UUID с timestamp", 
+      "details": "➕ Сортировка ➖ Новый стандарт", 
+      "children": [], 
+      "criteriaId": 3,
+      "switchable": ["uuid-v4"]
+    },
+    "q13": { 
+      "id": "q13", "x": 2500, "y": 1100, "type": "question", 
+      "title": "❓ Какую CRDT?", 
+      "description": "Single source of truth", 
+      "details": "Варианты: Yjs | Automerge", 
+      "children": ["yjs-crdt", "automerge-crdt"], 
+      "criteriaId": 13,
+      "phase": "foundation",
+      "priority": "critical",
+      "enables": [14, 16, 18, 25]
+    },
+    "yjs-crdt": { 
+      "id": "yjs-crdt", "x": 2200, "y": 1300, "type": "critical", 
+      "title": "✅ Yjs", 
+      "description": "Быстрая, популярная CRDT", 
+      "details": "➕ Производительность, WebRTC ➖ Сложность API", 
+      "children": [], 
+      "criteriaId": 13,
+      "phase": "foundation",
+      "developmentOrder": 2,
+      "estimatedWeeks": 4,
+      "enables": ["MODULE_CRDT_VER_1", "sync system"],
+      "switchable": ["automerge-crdt"],
+      "blocks": ["q14", "q16", "q18", "q25"]
+    },
+    "automerge-crdt": { 
+      "id": "automerge-crdt", "x": 2800, "y": 1300, "type": "important", 
+      "title": "⚡ Automerge", 
+      "description": "Функциональная CRDT", 
+      "details": "➕ Простота API ➖ Медленнее Yjs", 
+      "children": [], 
+      "criteriaId": 13,
+      "switchable": ["yjs-crdt"]
+    },
+    "q11": { 
+      "id": "q11", "x": 500, "y": 1100, "type": "question", 
+      "title": "❓ Декларативный UI?", 
+      "description": "100% декларативный рендер", 
+      "details": "Варианты: Декларативный | Императивный", 
+      "children": ["declarative-ui", "imperative-ui"], 
+      "criteriaId": 11,
+      "phase": "core",
+      "priority": "critical",
+      "dependsOn": [1],
+      "enables": [12, 20, 21]
+    },
+    "declarative-ui": { 
+      "id": "declarative-ui", "x": 200, "y": 1300, "type": "critical", 
+      "title": "✅ Декларативный", 
+      "description": "JSON-структуры, чистые функции", 
+      "details": "➕ Предсказуемость, отладка ➖ Сложность", 
+      "children": [], 
+      "criteriaId": 11,
+      "phase": "core",
+      "developmentOrder": 3,
+      "estimatedWeeks": 3,
+      "dependsOn": ["modular-arch"],
+      "enables": ["MODULE_UI_VER_1", "render system"],
+      "incompatible": ["imperative-ui"],
+      "blocks": ["q12", "q20", "q21"]
+    },
+    "imperative-ui": { 
+      "id": "imperative-ui", "x": 800, "y": 1300, "type": "rejected", 
+      "title": "❌ Императивный", 
+      "description": "Обычный код с мутациями", 
+      "details": "➕ Простота ➖ Необъяснимые баги", 
+      "children": [], 
+      "criteriaId": 11,
+      "incompatible": ["declarative-ui"]
+    },
+    "q12": { 
+      "id": "q12", "x": 1500, "y": 1100, "type": "question", 
+      "title": "❓ Zero runtime logic?", 
+      "description": "Чистая функция рендера", 
+      "details": "Варианты: Чистые функции | Stateful", 
+      "children": ["zero-runtime", "stateful-runtime"], 
+      "criteriaId": 12,
+      "phase": "core",
+      "priority": "critical",
+      "dependsOn": [11]
+    },
+    "zero-runtime": { 
+      "id": "zero-runtime", "x": 1200, "y": 1300, "type": "critical", 
+      "title": "✅ Чистые функции", 
+      "description": "Никакой runtime логики в рендере", 
+      "details": "➕ Нет race conditions ➖ Сложность реализации", 
+      "children": [], 
+      "criteriaId": 12,
+      "phase": "core",
+      "developmentOrder": 4,
+      "estimatedWeeks": 2,
+      "dependsOn": ["declarative-ui"],
+      "enables": ["pure render functions"],
+      "incompatible": ["stateful-runtime"]
+    },
+    "stateful-runtime": { 
+      "id": "stateful-runtime", "x": 1800, "y": 1300, "type": "rejected", 
+      "title": "❌ Stateful", 
+      "description": "Логика в рендере", 
+      "details": "➕ Простота ➖ Глюки через 30-40 плагинов", 
+      "children": [], 
+      "criteriaId": 12,
+      "incompatible": ["zero-runtime"]
+    },
+    "q21": { 
+      "id": "q21", "x": 500, "y": 2100, "type": "question", 
+      "title": "❓ Virtual scrolling?", 
+      "description": "Работа с 100к+ блоков", 
+      "details": "Варианты: Virtual scrolling | Lazy loading", 
+      "children": ["virtual-scrolling", "lazy-loading"], 
+      "criteriaId": 21,
+      "phase": "features",
+      "priority": "critical",
+      "dependsOn": [11]
+    },
+    "virtual-scrolling": { 
+      "id": "virtual-scrolling", "x": 200, "y": 2300, "type": "critical", 
+      "title": "✅ Virtual scrolling", 
+      "description": "Рендер только видимых элементов", 
+      "details": "➕ 100к+ блоков без тормозов ➖ Сложность", 
+      "children": [], 
+      "criteriaId": 21,
+      "phase": "features",
+      "developmentOrder": 5,
+      "estimatedWeeks": 4,
+      "dependsOn": ["declarative-ui"],
+      "enables": ["performance optimization"],
+      "combinable": ["lazy-loading"]
+    },
+    "lazy-loading": { 
+      "id": "lazy-loading", "x": 800, "y": 2300, "type": "important", 
+      "title": "⚡ Lazy loading", 
+      "description": "Ленивая загрузка по требованию", 
+      "details": "➕ Простота ➖ Привычка «всё в DOM»", 
+      "children": [], 
+      "criteriaId": 21,
+      "combinable": ["virtual-scrolling"]
+    },
+    "q26": { 
+      "id": "q26", "x": 500, "y": 2600, "type": "question", 
+      "title": "❓ Плагинная система?", 
+      "description": "Все пользовательские блоки как плагины", 
+      "details": "Варианты: Единая система | Разные API", 
+      "children": ["plugin-unified", "plugin-mixed"], 
+      "criteriaId": 26,
+      "phase": "features",
+      "priority": "critical",
+      "dependsOn": [1, 11],
+      "enables": [27, 28]
+    },
+    "plugin-unified": { 
+      "id": "plugin-unified", "x": 200, "y": 2800, "type": "critical", 
+      "title": "✅ Единая система", 
+      "description": "Единый механизм для всех блоков", 
+      "details": "➕ Предсказуемость, безопасность ➖ Ограничения", 
+      "children": [], 
+      "criteriaId": 26,
+      "phase": "features",
+      "developmentOrder": 6,
+      "estimatedWeeks": 5,
+      "dependsOn": ["modular-arch", "declarative-ui"],
+      "enables": ["MODULE_Plugin_VER_1", "plugin ecosystem"],
+      "incompatible": ["plugin-mixed"],
+      "blocks": ["q27", "q28"]
+    },
+    "plugin-mixed": { 
+      "id": "plugin-mixed", "x": 800, "y": 2800, "type": "rejected", 
+      "title": "❌ Разные API", 
+      "description": "Разные способы подключения", 
+      "details": "➕ Гибкость ➖ Хаос, несовместимость", 
+      "children": [], 
+      "criteriaId": 26,
+      "incompatible": ["plugin-unified"]
+    }
+  },
+  "dependencies": {
+    "hard": {
+      "1": { "enables": [11, 12, 26, 29], "description": "Модульность enables UI, плагины, код" },
+      "2": { "enables": [4, 7, 8, 16, 18, 19], "description": "Блоки enable структуру и ссылки" },
+      "3": { "enables": [7, 8, 18], "description": "UUID enables ссылки" },
+      "13": { "enables": [14, 16, 18, 25], "description": "CRDT enables операции и синхронизацию" },
+      "11": { "enables": [12, 20, 21], "description": "Декларативный UI enables рендер" },
+      "26": { "enables": [27, 28], "description": "Плагины enable композиты и состояние" }
+    },
+    "soft": {
+      "21": { "enhances": [22], "description": "Virtual scrolling + Web Workers" },
+      "5": { "enhances": [6], "description": "Drag&Drop + Rich Text UX" }
+    }
+  },
+  "development_phases": {
+    "phase1_foundation": {
+      "priority": 1,
+      "criteria": [1, 2, 3, 13],
+      "nodes": ["modular-arch", "all-blocks", "uuid-v4", "yjs-crdt"],
+      "description": "Несущие стены архитектуры",
+      "estimated_weeks": 4,
+      "parallel": false
+    },
+    "phase2_core": {
+      "priority": 2,
+      "criteria": [11, 12, 4, 7, 8],
+      "nodes": ["declarative-ui", "zero-runtime", "nested-blocks", "refs-uuid", "backlinks-auto"],
+      "description": "Основная функциональность",
+      "depends_on": ["phase1_foundation"],
+      "estimated_weeks": 6,
+      "parallel": true
+    },
+    "phase3_features": {
+      "priority": 3,
+      "criteria": [16, 21, 26, 9, 10],
+      "nodes": ["crdt-only", "virtual-scrolling", "plugin-unified", "json-storage", "offline-full"],
+      "description": "Ключевые возможности",
+      "depends_on": ["phase2_core"],
+      "estimated_weeks": 8,
+      "parallel": true
+    },
+    "phase4_polish": {
+      "priority": 4,
+      "criteria": [14, 15, 17, 18, 19, 20, 22, 23, 24, 25, 27, 28, 29],
+      "description": "Доводка и оптимизация",
+      "depends_on": ["phase3_features"],
+      "estimated_weeks": 10,
+      "parallel": true
+    }
+  },
+  "compatibility": {
+    "modular-arch,monolith-arch": "невозможно",
+    "all-blocks,mixed-model": "невозможно",
+    "uuid-v4,uuid-v7": "переключать",
+    "declarative-ui,imperative-ui": "невозможно",
+    "zero-runtime,stateful-runtime": "невозможно",
+    "yjs-crdt,automerge-crdt": "переключать",
+    "virtual-scrolling,lazy-loading": "объединить",
+    "plugin-unified,plugin-mixed": "невозможно"
+  },
+  "risk_assessment": {
+    "high_risk": {
+      "criteria": [13, 21, 26],
+      "nodes": ["yjs-crdt", "virtual-scrolling", "plugin-unified"],
+      "reason": "Сложная реализация, критично для производительности"
+    },
+    "medium_risk": {
+      "criteria": [11, 12, 16],
+      "nodes": ["declarative-ui", "zero-runtime", "crdt-only"],
+      "reason": "Архитектурная сложность"
+    },
+    "low_risk": {
+      "criteria": [3, 5, 6, 9, 10],
+      "nodes": ["uuid-v4", "drag-drop-native", "markdown-rich", "json-storage", "offline-full"],
+      "reason": "Стандартные решения"
+    }
+  }
+}
