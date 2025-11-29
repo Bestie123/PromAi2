@@ -1,0 +1,318 @@
+{
+  "nodes": [
+    {
+      "id": "root",
+      "type": "root",
+      "title": "🏗️ PromAi PKM Development",
+      "description": "Полный план разработки",
+      "details": "От архитектурных решений к последовательности реализации",
+      "children": ["arch-decisions", "dev-sequence"],
+      "criteriaId": 0
+    },
+    {
+      "id": "arch-decisions",
+      "type": "phase",
+      "title": "📋 Архитектурные решения",
+      "description": "29 критериев из arch1.md",
+      "details": "Уровень 0 - Несущие стены",
+      "children": ["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q10", "q11", "q12", "q13", "q14", "q15", "q16", "q17", "q18", "q19", "q20", "q21", "q22", "q23", "q24", "q25", "q26", "q27", "q28", "q29"],
+      "criteriaId": 0
+    },
+    {
+      "id": "dev-sequence",
+      "type": "phase",
+      "title": "🚀 Последовательность разработки",
+      "description": "Этапы реализации с зависимостями",
+      "details": "От фундамента к фичам",
+      "children": ["phase-0", "phase-1", "phase-2", "phase-3", "phase-4", "phase-5"],
+      "criteriaId": 0
+    },
+    {
+      "id": "q1",
+      "type": "question",
+      "title": "❓ Модульность движка?",
+      "description": "Ядро отделено от UI и плагинов",
+      "details": "Варианты: Модульная | Монолитная",
+      "children": ["modular-arch", "monolith-arch"],
+      "criteriaId": 1
+    },
+    {
+      "id": "modular-arch",
+      "type": "critical",
+      "title": "✅ Модульная",
+      "description": "Ядро легко отделяется",
+      "details": "➕ Тестирование, замена UI ➖ Сложность | 📦 Phase 0",
+      "children": [],
+      "criteriaId": 1,
+      "implementedIn": "phase-0"
+    },
+    {
+      "id": "monolith-arch",
+      "type": "rejected",
+      "title": "❌ Монолитная",
+      "description": "Всё в одном модуле",
+      "details": "➕ Быстрый старт ➖ Спагетти-код",
+      "children": [],
+      "criteriaId": 1
+    },
+    {
+      "id": "q2",
+      "type": "question",
+      "title": "❓ Блочность элементов?",
+      "description": "Всё является блоками",
+      "details": "Варианты: Всё блоки | Смешанная",
+      "children": ["all-blocks", "mixed-model"],
+      "criteriaId": 2
+    },
+    {
+      "id": "all-blocks",
+      "type": "critical",
+      "title": "✅ Всё - блоки",
+      "description": "Единая модель данных",
+      "details": "➕ Единые операции ➖ Сложность | 📦 Phase 0",
+      "children": [],
+      "criteriaId": 2,
+      "implementedIn": "phase-0"
+    },
+    {
+      "id": "mixed-model",
+      "type": "rejected",
+      "title": "❌ Смешанная",
+      "description": "Блоки + особые сущности",
+      "details": "➕ Простота ➖ Ломаются refs",
+      "children": [],
+      "criteriaId": 2
+    },
+    {
+      "id": "q3",
+      "type": "question",
+      "title": "❓ UUID для блоков?",
+      "description": "Уникальные глобальные ID",
+      "details": "Варианты: UUID v4 | UUID v7",
+      "children": ["uuid-v4", "uuid-v7"],
+      "criteriaId": 3
+    },
+    {
+      "id": "uuid-v4",
+      "type": "critical",
+      "title": "🎲 UUID v4",
+      "description": "Случайные UUID",
+      "details": "➕ Проверенные ➖ Нет сортировки | 📦 Phase 0",
+      "children": [],
+      "criteriaId": 3,
+      "implementedIn": "phase-0"
+    },
+    {
+      "id": "uuid-v7",
+      "type": "important",
+      "title": "⏰ UUID v7",
+      "description": "UUID с timestamp",
+      "details": "➕ Сортировка ➖ Новый стандарт",
+      "children": [],
+      "criteriaId": 3
+    },
+    {
+      "id": "phase-0",
+      "type": "phase-node",
+      "title": "Phase 0: Foundation",
+      "description": "4 недели | Несущие стены",
+      "details": "Критерии: 1,2,3,4,9,10,13,14,16,17,24,29",
+      "children": ["mod-arch", "mod-block-core", "mod-crdt", "mod-storage"],
+      "criteriaId": 0
+    },
+    {
+      "id": "mod-arch",
+      "type": "module",
+      "title": "📦 Модульная архитектура",
+      "description": "Структура проекта",
+      "details": "Критерии: 1, 29 | Зависимости: нет",
+      "children": [],
+      "criteriaId": 1
+    },
+    {
+      "id": "mod-block-core",
+      "type": "module",
+      "title": "📦 Блочная система",
+      "description": "Block interface, UUID, Tree",
+      "details": "Критерии: 2, 3, 4 | Зависимости: mod-arch",
+      "children": [],
+      "criteriaId": 2
+    },
+    {
+      "id": "mod-crdt",
+      "type": "module",
+      "title": "📦 CRDT Foundation",
+      "description": "Yjs, Event Sourcing, Transactions",
+      "details": "Критерии: 13,14,16,17 | Зависимости: mod-block-core",
+      "children": [],
+      "criteriaId": 13
+    },
+    {
+      "id": "mod-storage",
+      "type": "module",
+      "title": "📦 Local Storage",
+      "description": "JSON, Offline, E2EE-ready",
+      "details": "Критерии: 9,10,24 | Зависимости: mod-crdt",
+      "children": [],
+      "criteriaId": 9
+    },
+    {
+      "id": "phase-1",
+      "type": "phase-node",
+      "title": "Phase 1: Data Layer",
+      "description": "3 недели | Связи и граф",
+      "details": "Критерии: 7,8,15,18,19,23",
+      "children": ["mod-refs", "mod-graph", "mod-schema"],
+      "criteriaId": 0
+    },
+    {
+      "id": "mod-refs",
+      "type": "module",
+      "title": "📦 References System",
+      "description": "Refs, Backlinks, CRDT refs",
+      "details": "Критерии: 7,8,18 | Зависимости: mod-crdt",
+      "children": [],
+      "criteriaId": 7
+    },
+    {
+      "id": "mod-graph",
+      "type": "module",
+      "title": "📦 Graph Structure",
+      "description": "Плоский граф, Cycle detection",
+      "details": "Критерии: 19,23 | Зависимости: mod-refs",
+      "children": [],
+      "criteriaId": 19
+    },
+    {
+      "id": "mod-schema",
+      "type": "module",
+      "title": "📦 Schema Validation",
+      "description": "JSON Schema, Runtime validator",
+      "details": "Критерии: 15 | Зависимости: mod-block-core",
+      "children": [],
+      "criteriaId": 15
+    },
+    {
+      "id": "phase-2",
+      "type": "phase-node",
+      "title": "Phase 2: UI Foundation",
+      "description": "4 недели | Декларативный рендеринг",
+      "details": "Критерии: 11,12,20,21,22",
+      "children": ["mod-ui-core", "mod-virtual-scroll", "mod-workers"],
+      "criteriaId": 0
+    },
+    {
+      "id": "mod-ui-core",
+      "type": "module",
+      "title": "📦 Declarative UI",
+      "description": "Renderer, State, Components",
+      "details": "Критерии: 11,12,20 | Зависимости: mod-block-core",
+      "children": [],
+      "criteriaId": 11
+    },
+    {
+      "id": "mod-virtual-scroll",
+      "type": "module",
+      "title": "📦 Virtual Scrolling",
+      "description": "100k+ блоков без тормозов",
+      "details": "Критерии: 21 | Зависимости: mod-ui-core",
+      "children": [],
+      "criteriaId": 21
+    },
+    {
+      "id": "mod-workers",
+      "type": "module",
+      "title": "📦 Web Workers",
+      "description": "Search, Indexing, CRDT в Workers",
+      "details": "Критерии: 22 | Зависимости: mod-crdt, mod-ui-core",
+      "children": [],
+      "criteriaId": 22
+    },
+    {
+      "id": "phase-3",
+      "type": "phase-node",
+      "title": "Phase 3: Content Editing",
+      "description": "2 недели | Редактирование",
+      "details": "Критерии: 5,6",
+      "children": ["mod-rich-text", "mod-drag-drop"],
+      "criteriaId": 0
+    },
+    {
+      "id": "mod-rich-text",
+      "type": "module",
+      "title": "📦 Rich Text Editor",
+      "description": "Markdown+, Entity resolver",
+      "details": "Критерии: 6 | Зависимости: mod-ui-core, mod-refs",
+      "children": [],
+      "criteriaId": 6
+    },
+    {
+      "id": "mod-drag-drop",
+      "type": "module",
+      "title": "📦 Drag & Drop",
+      "description": "HTML5 DnD, Order operations",
+      "details": "Критерии: 5 | Зависимости: mod-ui-core, mod-crdt",
+      "children": [],
+      "criteriaId": 5
+    },
+    {
+      "id": "phase-4",
+      "type": "phase-node",
+      "title": "Phase 4: Plugin System",
+      "description": "3 недели | Расширяемость",
+      "details": "Критерии: 26,27,28",
+      "children": ["mod-plugin-core"],
+      "criteriaId": 0
+    },
+    {
+      "id": "mod-plugin-core",
+      "type": "module",
+      "title": "📦 Plugin Infrastructure",
+      "description": "API, Sandbox, State persistence",
+      "details": "Критерии: 26,27,28 | Зависимости: mod-ui-core, mod-crdt",
+      "children": [],
+      "criteriaId": 26
+    },
+    {
+      "id": "phase-5",
+      "type": "phase-node",
+      "title": "Phase 5: Collaboration",
+      "description": "2 недели | Синхронизация",
+      "details": "Критерии: 25",
+      "children": ["mod-sync"],
+      "criteriaId": 0
+    },
+    {
+      "id": "mod-sync",
+      "type": "module",
+      "title": "📦 Sync Engine",
+      "description": "Conflict resolution, Cross-tab",
+      "details": "Критерии: 25 | Зависимости: mod-crdt, mod-storage",
+      "children": [],
+      "criteriaId": 25
+    }
+  ],
+  "compatibility": {},
+  "dependencies": {
+    "phase-0": [],
+    "phase-1": ["phase-0"],
+    "phase-2": ["phase-0"],
+    "phase-3": ["phase-1", "phase-2"],
+    "phase-4": ["phase-2"],
+    "phase-5": ["phase-0"],
+    "mod-arch": [],
+    "mod-block-core": ["mod-arch"],
+    "mod-crdt": ["mod-block-core"],
+    "mod-storage": ["mod-crdt"],
+    "mod-refs": ["mod-crdt"],
+    "mod-graph": ["mod-refs"],
+    "mod-schema": ["mod-block-core"],
+    "mod-ui-core": ["mod-block-core"],
+    "mod-virtual-scroll": ["mod-ui-core"],
+    "mod-workers": ["mod-crdt", "mod-ui-core"],
+    "mod-rich-text": ["mod-ui-core", "mod-refs"],
+    "mod-drag-drop": ["mod-ui-core", "mod-crdt"],
+    "mod-plugin-core": ["mod-ui-core", "mod-crdt"],
+    "mod-sync": ["mod-crdt", "mod-storage"]
+  }
+}
