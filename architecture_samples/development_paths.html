@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromAi PKM - Критические пути разработки</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117; color: #c9d1d9; overflow: hidden;
+        }
+        #canvas { 
+            width: 16000px; height: 10000px; position: relative; 
+            background: radial-gradient(circle at 50% 50%, #161b22 0%, #0d1117 100%);
+            transform-origin: 0 0;
+        }
+        #viewport { 
+            width: 100vw; height: 100vh; overflow: hidden; position: relative;
+            cursor: grab; background: #0d1117;
+        }
+        #viewport.dragging { cursor: grabbing; }
+        
+        .node {
+            position: absolute; background: #21262d; border: 3px solid #30363d;
+            border-radius: 12px; padding: 16px; min-width: 300px; max-width: 350px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease;
+        }
+        .node:hover { transform: scale(1.05); box-shadow: 0 12px 48px rgba(0,0,0,0.6); z-index: 100; }
+        
+        .critical-path { 
+            border-color: #f85149; 
+            background: linear-gradient(135deg, #2d1b1f 0%, #21262d 100%);
+            box-shadow: 0 0 30px rgba(248, 81, 73, 0.3);
+        }
+        .parallel { 
+            border-color: #3fb950; 
+            background: linear-gradient(135deg, #1b2d1f 0%, #21262d 100%);
+        }
+        .flexible { 
+            border-color: #58a6ff; 
+            background: linear-gradient(135deg, #1b2332 0%, #21262d 100%);
+        }
+        
+        .badge {
+            display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px;
+            font-weight: bold; margin-bottom: 8px; margin-right: 4px;
+        }
+        .badge.critical { background: #f85149; color: #fff; }
+        .badge.parallel { background: #3fb950; color: #fff; }
+        .badge.flexible { background: #58a6ff; color: #fff; }
+        .badge.week { background: #8b949e; color: #fff; }
+        
+        .node h3 { font-size: 15px; margin-bottom: 8px; color: #f0f6fc; font-weight: 600; }
+        .node p { font-size: 12px; line-height: 1.5; margin-bottom: 6px; color: #8b949e; }
+        .node .time { font-size: 11px; color: #6e7681; font-style: italic; }
+        .node .blocks { font-size: 11px; color: #f85149; margin-top: 6px; font-weight: bold; }
+        .node .requires { font-size: 11px; color: #f79009; margin-top: 4px; }
+        
+        .connection {
+            position: absolute; height: 3px; transform-origin: left center;
+            z-index: -1; transition: all 0.3s ease;
+        }
+        .connection.critical { background: #f85149; box-shadow: 0 0 10px rgba(248, 81, 73, 0.5); }
+        .connection.parallel { background: #3fb950; }
+        .connection.flexible { background: #58a6ff; }
+        
+        .arrow {
+            position: absolute; width: 0; height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 12px solid #f85149;
+            right: -8px; top: -5px;
+        }
+        .connection.parallel .arrow { border-top-color: #3fb950; }
+        .connection.flexible .arrow { border-top-color: #58a6ff; }
+        
+        .phase-label {
+            position: absolute; font-size: 24px; font-weight: bold;
+            color: #58a6ff; text-shadow: 0 0 20px rgba(88, 166, 255, 0.5);
+            padding: 12px 20px; background: rgba(33, 38, 45, 0.8);
+            border-radius: 8px; border: 2px solid #58a6ff;
+        }
+        
+        .controls {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.95); padding: 16px; border-radius: 8px;
+            border: 1px solid #30363d; max-width: 350px;
+        }
+        .controls button {
+            background: #238636; color: #fff; border: none; padding: 8px 12px;
+            border-radius: 6px; margin-right: 8px; margin-bottom: 8px; cursor: pointer; font-size: 12px;
+        }
+        .controls button:hover { background: #2ea043; }
+        .controls .legend { margin-top: 12px; font-size: 11px; }
+        .controls .legend-item { margin: 6px 0; display: flex; align-items: center; }
+        .controls .legend-box { 
+            width: 20px; height: 20px; border-radius: 4px; margin-right: 8px;
+            display: inline-block;
+        }
+        
+        .zoom-info {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 8px 12px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 12px;
+        }
+        
+        .stats {
+            position: fixed; bottom: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 12px 16px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 12px;
+        }
+        .stats div { margin: 4px 0; }
+        .stats .critical-stat { color: #f85149; }
+        .stats .parallel-stat { color: #3fb950; }
+        .stats .time-stat { color: #58a6ff; }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="resetView()">Сброс</button>
+        <button onclick="focusPhase(1)">Фаза 1</button>
+        <button onclick="focusPhase(2)">Фаза 2</button>
+        <button onclick="focusPhase(3)">Фаза 3</button>
+        <button onclick="focusPhase(4)">Фаза 4</button>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-box" style="background: #f85149;"></span>
+                <span>🔴 Критический путь (блокирует)</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-box" style="background: #3fb950;"></span>
+                <span>🟢 Параллельный (независимый)</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-box" style="background: #58a6ff;"></span>
+                <span>🔵 Гибкий (можно отложить)</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="zoom-info">
+        Зум: <span id="zoomLevel">100%</span>
+    </div>
+    
+    <div class="stats">
+        <div class="critical-stat">🔴 Критический путь: 50-65 дней</div>
+        <div class="parallel-stat">🟢 Параллельные: 18-29 дней</div>
+        <div class="time-stat">⏱️ Общее время MVP: 68-94 дня</div>
+        <div style="color: #8b949e; margin-top: 8px;">Команда: 2-3 разработчика</div>
+    </div>
+    
+    <div id="viewport">
+        <div id="canvas"></div>
+    </div>
+
+    <script>
+        const LAYOUT = {
+            START_X: 500,
+            START_Y: 300,
+            HORIZONTAL_SPACING: 600,
+            VERTICAL_SPACING: 250,
+            PHASE_SPACING: 1500
+        };
+
+        const phases = [
+            {
+                name: "Фаза 1: Фундамент",
+                week: "Week 1-2",
+                time: "21-29 дней",
+                x: 500,
+                y: 100,
+                nodes: [
+                    { id: 1, title: "1. Модульная архитектура", desc: "Ядро отделено от UI и плагинов", time: "2-3 дня", blocks: "ВСЁ", requires: "-", type: "critical-path" },
+                    { id: 29, title: "29. Модульность кода", desc: "Файлы ≤500 строк, функции ≤50", time: "1 день", blocks: "качество", requires: "1", type: "critical-path" },
+                    { id: 2, title: "2. Блочная система", desc: "Всё является блоками", time: "2-3 дня", blocks: "3, 4", requires: "1", type: "critical-path" },
+                    { id: 3, title: "3. UUID для блоков", desc: "Уникальные глобальные ID", time: "1 день", blocks: "4, 7", requires: "2", type: "critical-path" },
+                    { id: 4, title: "4. Вложенные блоки", desc: "Иерархия любой глубины", time: "2-3 дня", blocks: "13", requires: "3", type: "critical-path" },
+                    { id: 9, title: "9. Локальное хранилище", desc: "JSON или SQLite", time: "2-3 дня", blocks: "-", requires: "-", type: "parallel" },
+                    { id: 11, title: "11. Декларативный UI", desc: "JSON-структуры, чистые функции", time: "2-3 дня", blocks: "-", requires: "-", type: "parallel" },
+                    { id: 12, title: "12. Zero runtime logic", desc: "Чистая функция рендера", time: "1-2 дня", blocks: "-", requires: "-", type: "parallel" },
+                    { id: 20, title: "20. Нет глобального состояния", desc: "Локальное состояние", time: "1 день", blocks: "-", requires: "-", type: "parallel" },
+                    { id: 10, title: "10. Полная оффлайн работа", desc: "Все функции без сети", time: "1-2 дня", blocks: "-", requires: "-", type: "parallel" },
+                    { id: 15, title: "15. Schema-first", desc: "JSON Schema + Zod", time: "2-3 дня", blocks: "-", requires: "-", type: "parallel" }
+                ]
+            },
+            {
+                name: "Фаза 2: CRDT и операции",
+                week: "Week 2-3",
+                time: "15-20 дней",
+                x: 3500,
+                y: 100,
+                nodes: [
+                    { id: 13, title: "13. CRDT (Yjs)", desc: "Single source of truth", time: "5-7 дней", blocks: "14, 16, 18, 25", requires: "4", type: "critical-path" },
+                    { id: 16, title: "16. Все через CRDT", desc: "Все изменения только через CRDT", time: "3-4 дня", blocks: "17, 25", requires: "13", type: "critical-path" },
+                    { id: 17, title: "17. Атомарные транзакции", desc: "Целостность данных, undo/redo", time: "3-4 дня", blocks: "undo/redo", requires: "16", type: "critical-path" },
+                    { id: 14, title: "14. Event Sourcing", desc: "Immutable ops log", time: "2-3 дня", blocks: "versioning", requires: "13", type: "critical-path" },
+                    { id: 7, title: "7. Refs по UUID", desc: "Ссылки на блоки", time: "2-3 дня", blocks: "8, 18", requires: "3", type: "parallel" },
+                    { id: 8, title: "8. Backlinks", desc: "Автоматические обратные ссылки", time: "2-3 дня", blocks: "-", requires: "7", type: "parallel" },
+                    { id: 18, title: "18. Refs в CRDT", desc: "First-class ссылки", time: "3-4 дня", blocks: "-", requires: "13, 7", type: "parallel" },
+                    { id: 19, title: "19. Плоский граф", desc: "Блоки ≠ страницы", time: "1-2 дня", blocks: "-", requires: "-", type: "flexible" }
+                ]
+            },
+            {
+                name: "Фаза 3: UI и контент",
+                week: "Week 3-4",
+                time: "17-24 дня",
+                x: 6500,
+                y: 100,
+                nodes: [
+                    { id: 6, title: "6. Rich Text", desc: "Markdown + WYSIWYG", time: "7-10 дней", blocks: "UX", requires: "2, 16", type: "critical-path" },
+                    { id: 21, title: "21. Virtual scrolling", desc: "Работа с 100k+ блоков", time: "5-7 дней", blocks: "performance", requires: "11", type: "critical-path" },
+                    { id: 5, title: "5. Drag & Drop", desc: "Порядок блоков", time: "5-7 дней", blocks: "UX", requires: "4, 21", type: "critical-path" },
+                    { id: 22, title: "22. Web Workers", desc: "Поиск, индексация, CRDT", time: "4-5 дней", blocks: "-", requires: "-", type: "parallel" },
+                    { id: 23, title: "23. Circular Detection", desc: "Предотвращение циклов", time: "2-3 дня", blocks: "-", requires: "-", type: "parallel" },
+                    { id: 24, title: "24. E2EE готовность", desc: "Формат хранения", time: "3-4 дня", blocks: "-", requires: "-", type: "parallel" },
+                    { id: 25, title: "25. Конфликт-менеджмент", desc: "CRDT merge", time: "3-4 дня", blocks: "-", requires: "13, 16", type: "parallel" }
+                ]
+            },
+            {
+                name: "Фаза 4: Плагины",
+                week: "Week 5-6",
+                time: "15-21 день",
+                x: 9500,
+                y: 100,
+                nodes: [
+                    { id: 26, title: "26. Плагинная система", desc: "Единый механизм", time: "7-10 дней", blocks: "27, 28", requires: "1, 2", type: "critical-path" },
+                    { id: 27, title: "27. Композитные блоки", desc: "Кастомные блоки с вложенностью", time: "5-7 дней", blocks: "плагины", requires: "26, 4", type: "critical-path" },
+                    { id: 28, title: "28. Состояние блоков", desc: "JSON состояние для плагинов", time: "3-4 дня", blocks: "виджеты", requires: "26", type: "critical-path" }
+                ]
+            }
+        ];
+
+        let scale = 0.15;
+        let translateX = 100;
+        let translateY = 100;
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        function createNode(node, phaseX, phaseY, index, criticalIndex) {
+            const div = document.createElement('div');
+            div.className = `node ${node.type}`;
+            
+            let x, y;
+            if (node.type === 'critical-path') {
+                x = phaseX + 100;
+                y = phaseY + 300 + (criticalIndex * LAYOUT.VERTICAL_SPACING);
+            } else if (node.type === 'parallel') {
+                x = phaseX + 800;
+                y = phaseY + 300 + ((index - criticalIndex) * LAYOUT.VERTICAL_SPACING);
+            } else {
+                x = phaseX + 1500;
+                y = phaseY + 300 + ((index - criticalIndex) * LAYOUT.VERTICAL_SPACING);
+            }
+            
+            div.style.left = x + 'px';
+            div.style.top = y + 'px';
+            div.dataset.x = x;
+            div.dataset.y = y;
+            div.dataset.id = node.id;
+            
+            const badgeType = node.type === 'critical-path' ? 'critical' : 
+                             node.type === 'parallel' ? 'parallel' : 'flexible';
+            const badgeText = node.type === 'critical-path' ? '🔴 КРИТИЧЕСКИЙ' : 
+                             node.type === 'parallel' ? '🟢 ПАРАЛЛЕЛЬНЫЙ' : '🔵 ГИБКИЙ';
+            
+            div.innerHTML = `
+                <div class="badge ${badgeType}">${badgeText}</div>
+                <h3>${node.title}</h3>
+                <p>${node.desc}</p>
+                <div class="time">⏱️ ${node.time}</div>
+                ${node.blocks !== '-' ? `<div class="blocks">🚫 Блокирует: ${node.blocks}</div>` : ''}
+                ${node.requires !== '-' ? `<div class="requires">📋 Требует: ${node.requires}</div>` : ''}
+            `;
+            
+            return div;
+        }
+
+        function createConnection(from, to, type) {
+            const line = document.createElement('div');
+            line.className = `connection ${type}`;
+            
+            const dx = to.x - from.x;
+            const dy = to.y - from.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            line.style.left = (from.x + 175) + 'px';
+            line.style.top = (from.y + 60) + 'px';
+            line.style.width = length + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            line.appendChild(arrow);
+            
+            return line;
+        }
+
+        function createPhaseLabel(phase) {
+            const label = document.createElement('div');
+            label.className = 'phase-label';
+            label.style.left = phase.x + 'px';
+            label.style.top = phase.y + 'px';
+            label.innerHTML = `
+                <div>${phase.name}</div>
+                <div style="font-size: 14px; color: #8b949e; margin-top: 4px;">${phase.week} • ${phase.time}</div>
+            `;
+            return label;
+        }
+
+        function initCanvas() {
+            const canvas = document.getElementById('canvas');
+            canvas.innerHTML = '';
+            const nodeMap = {};
+            
+            phases.forEach(phase => {
+                canvas.appendChild(createPhaseLabel(phase));
+                
+                let criticalCount = phase.nodes.filter(n => n.type === 'critical-path').length;
+                let criticalIndex = 0;
+                
+                phase.nodes.forEach((node, index) => {
+                    const nodeEl = createNode(node, phase.x, phase.y, index, criticalIndex);
+                    canvas.appendChild(nodeEl);
+                    nodeMap[node.id] = {
+                        x: parseFloat(nodeEl.dataset.x),
+                        y: parseFloat(nodeEl.dataset.y),
+                        type: node.type,
+                        requires: node.requires
+                    };
+                    
+                    if (node.type === 'critical-path') criticalIndex++;
+                });
+            });
+            
+            // Draw connections
+            Object.keys(nodeMap).forEach(id => {
+                const node = nodeMap[id];
+                if (node.requires && node.requires !== '-') {
+                    const deps = node.requires.split(',').map(d => d.trim());
+                    deps.forEach(depId => {
+                        const depNode = nodeMap[depId];
+                        if (depNode) {
+                            const connection = createConnection(depNode, node, node.type);
+                            canvas.appendChild(connection);
+                        }
+                    });
+                }
+            });
+        }
+
+        function updateTransform() {
+            const canvas = document.getElementById('canvas');
+            canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
+        }
+
+        function resetView() {
+            scale = 0.15;
+            translateX = 100;
+            translateY = 100;
+            updateTransform();
+        }
+
+        function focusPhase(phaseNum) {
+            const phase = phases[phaseNum - 1];
+            scale = 0.25;
+            translateX = window.innerWidth / 2 - (phase.x * scale);
+            translateY = window.innerHeight / 2 - ((phase.y + 400) * scale);
+            updateTransform();
+        }
+
+        const viewport = document.getElementById('viewport');
+
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const rect = viewport.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const newScale = Math.max(0.05, Math.min(2, scale * delta));
+            const canvasX = (mouseX - translateX) / scale;
+            const canvasY = (mouseY - translateY) / scale;
+            scale = newScale;
+            translateX = mouseX - canvasX * scale;
+            translateY = mouseY - canvasY * scale;
+            updateTransform();
+        });
+
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                isDragging = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                viewport.classList.add('dragging');
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - lastMouseX;
+                const deltaY = e.clientY - lastMouseY;
+                translateX += deltaX;
+                translateY += deltaY;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                updateTransform();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            viewport.classList.remove('dragging');
+        });
+
+        initCanvas();
+        updateTransform();
+    </script>
+</body>
+</html>
