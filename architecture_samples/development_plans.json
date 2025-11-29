@@ -1,0 +1,291 @@
+{
+  "plans": [
+    {
+      "id": "plan-sequential",
+      "name": "Последовательный план (Waterfall)",
+      "description": "Строгая последовательность - каждый этап после предыдущего",
+      "totalWeeks": 18,
+      "stages": [
+        {
+          "stage": 1,
+          "name": "Foundation",
+          "weeks": 4,
+          "parallel": false,
+          "modules": ["mod-arch", "mod-block-core", "mod-crdt", "mod-storage"],
+          "criteria": [1, 2, 3, 4, 9, 10, 13, 14, 16, 17, 24, 29],
+          "blockers": [],
+          "deliverables": ["Модульная структура", "Блоки с UUID", "CRDT операции", "JSON storage"]
+        },
+        {
+          "stage": 2,
+          "name": "Data Layer",
+          "weeks": 3,
+          "parallel": false,
+          "modules": ["mod-refs", "mod-graph", "mod-schema"],
+          "criteria": [7, 8, 15, 18, 19, 23],
+          "blockers": ["stage-1"],
+          "deliverables": ["References", "Backlinks", "Graph traversal", "Schema validation"]
+        },
+        {
+          "stage": 3,
+          "name": "UI Core",
+          "weeks": 4,
+          "parallel": false,
+          "modules": ["mod-ui-core", "mod-virtual-scroll", "mod-workers"],
+          "criteria": [11, 12, 20, 21, 22],
+          "blockers": ["stage-1"],
+          "deliverables": ["Declarative renderer", "Virtual scroll", "Web Workers"]
+        },
+        {
+          "stage": 4,
+          "name": "Editing",
+          "weeks": 2,
+          "parallel": false,
+          "modules": ["mod-rich-text", "mod-drag-drop"],
+          "criteria": [5, 6],
+          "blockers": ["stage-2", "stage-3"],
+          "deliverables": ["Markdown editor", "Drag & Drop"]
+        },
+        {
+          "stage": 5,
+          "name": "Plugins",
+          "weeks": 3,
+          "parallel": false,
+          "modules": ["mod-plugin-core"],
+          "criteria": [26, 27, 28],
+          "blockers": ["stage-3"],
+          "deliverables": ["Plugin API", "Sandbox", "State persistence"]
+        },
+        {
+          "stage": 6,
+          "name": "Sync",
+          "weeks": 2,
+          "parallel": false,
+          "modules": ["mod-sync"],
+          "criteria": [25],
+          "blockers": ["stage-1"],
+          "deliverables": ["Conflict resolution", "Cross-tab sync"]
+        }
+      ]
+    },
+    {
+      "id": "plan-parallel-aggressive",
+      "name": "Агрессивный параллельный план",
+      "description": "Максимальная параллелизация - несколько команд работают одновременно",
+      "totalWeeks": 10,
+      "stages": [
+        {
+          "stage": 1,
+          "name": "Core Foundation",
+          "weeks": 4,
+          "parallel": false,
+          "modules": ["mod-arch", "mod-block-core"],
+          "criteria": [1, 2, 3, 4, 29],
+          "blockers": [],
+          "deliverables": ["Модульная архитектура", "Блочная система"]
+        },
+        {
+          "stage": 2,
+          "name": "Parallel Development (3 команды)",
+          "weeks": 4,
+          "parallel": true,
+          "teams": [
+            {
+              "team": "Data Team",
+              "modules": ["mod-crdt", "mod-storage", "mod-refs", "mod-graph"],
+              "criteria": [7, 8, 9, 10, 13, 14, 16, 17, 18, 19, 23, 24, 25]
+            },
+            {
+              "team": "UI Team",
+              "modules": ["mod-ui-core", "mod-virtual-scroll", "mod-workers"],
+              "criteria": [11, 12, 20, 21, 22]
+            },
+            {
+              "team": "Schema Team",
+              "modules": ["mod-schema"],
+              "criteria": [15]
+            }
+          ],
+          "blockers": ["stage-1"],
+          "deliverables": ["CRDT + Storage", "Declarative UI", "Schema validation"]
+        },
+        {
+          "stage": 3,
+          "name": "Features (2 команды)",
+          "weeks": 2,
+          "parallel": true,
+          "teams": [
+            {
+              "team": "Editing Team",
+              "modules": ["mod-rich-text", "mod-drag-drop"],
+              "criteria": [5, 6]
+            },
+            {
+              "team": "Plugin Team",
+              "modules": ["mod-plugin-core"],
+              "criteria": [26, 27, 28]
+            }
+          ],
+          "blockers": ["stage-2"],
+          "deliverables": ["Rich text + DnD", "Plugin system"]
+        }
+      ]
+    },
+    {
+      "id": "plan-mvp-iterative",
+      "name": "MVP-итеративный план",
+      "description": "Минимальный MVP за 6 недель, затем итерации",
+      "totalWeeks": 16,
+      "stages": [
+        {
+          "stage": 1,
+          "name": "MVP Core (6 недель)",
+          "weeks": 6,
+          "parallel": false,
+          "modules": ["mod-arch", "mod-block-core", "mod-crdt", "mod-storage", "mod-ui-core"],
+          "criteria": [1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 16, 17, 20, 29],
+          "blockers": [],
+          "deliverables": ["Работающий редактор блоков с CRDT и storage"],
+          "mvpFeatures": [
+            "Создание/редактирование блоков",
+            "Вложенность",
+            "Сохранение в JSON",
+            "Базовый UI"
+          ]
+        },
+        {
+          "stage": 2,
+          "name": "Iteration 1: References & Performance",
+          "weeks": 3,
+          "parallel": true,
+          "modules": ["mod-refs", "mod-graph", "mod-virtual-scroll", "mod-workers"],
+          "criteria": [7, 8, 18, 19, 21, 22, 23],
+          "blockers": ["stage-1"],
+          "deliverables": ["Ссылки, backlinks, производительность"]
+        },
+        {
+          "stage": 3,
+          "name": "Iteration 2: Rich Editing",
+          "weeks": 2,
+          "parallel": false,
+          "modules": ["mod-rich-text", "mod-drag-drop"],
+          "criteria": [5, 6],
+          "blockers": ["stage-2"],
+          "deliverables": ["Markdown, drag & drop"]
+        },
+        {
+          "stage": 4,
+          "name": "Iteration 3: Extensibility",
+          "weeks": 3,
+          "parallel": false,
+          "modules": ["mod-plugin-core", "mod-schema"],
+          "criteria": [15, 26, 27, 28],
+          "blockers": ["stage-2"],
+          "deliverables": ["Plugin система, валидация"]
+        },
+        {
+          "stage": 5,
+          "name": "Iteration 4: Collaboration",
+          "weeks": 2,
+          "parallel": false,
+          "modules": ["mod-sync"],
+          "criteria": [24, 25],
+          "blockers": ["stage-1"],
+          "deliverables": ["Синхронизация, E2EE готовность"]
+        }
+      ]
+    },
+    {
+      "id": "plan-risk-driven",
+      "name": "Risk-Driven план",
+      "description": "Сначала самые рискованные и сложные части",
+      "totalWeeks": 17,
+      "stages": [
+        {
+          "stage": 1,
+          "name": "High Risk: CRDT Architecture",
+          "weeks": 5,
+          "parallel": false,
+          "modules": ["mod-arch", "mod-block-core", "mod-crdt"],
+          "criteria": [1, 2, 3, 4, 13, 14, 16, 17, 29],
+          "risk": "critical",
+          "blockers": [],
+          "deliverables": ["CRDT-based block system"],
+          "rationale": "CRDT - самая сложная часть, если не получится - переделывать всё"
+        },
+        {
+          "stage": 2,
+          "name": "High Risk: Declarative UI + Performance",
+          "weeks": 4,
+          "parallel": false,
+          "modules": ["mod-ui-core", "mod-virtual-scroll", "mod-workers"],
+          "criteria": [11, 12, 20, 21, 22],
+          "risk": "high",
+          "blockers": ["stage-1"],
+          "deliverables": ["Zero-runtime UI с virtual scrolling"],
+          "rationale": "Декларативный UI без runtime logic - архитектурный риск"
+        },
+        {
+          "stage": 3,
+          "name": "Medium Risk: References & Graph",
+          "weeks": 3,
+          "parallel": false,
+          "modules": ["mod-refs", "mod-graph", "mod-storage"],
+          "criteria": [7, 8, 9, 10, 18, 19, 23, 24],
+          "risk": "medium",
+          "blockers": ["stage-1"],
+          "deliverables": ["First-class refs в CRDT, плоский граф"],
+          "rationale": "Refs в CRDT - нетривиально, но есть примеры"
+        },
+        {
+          "stage": 4,
+          "name": "Low Risk: Editing & Plugins",
+          "weeks": 3,
+          "parallel": true,
+          "modules": ["mod-rich-text", "mod-drag-drop", "mod-plugin-core"],
+          "criteria": [5, 6, 26, 27, 28],
+          "risk": "low",
+          "blockers": ["stage-2", "stage-3"],
+          "deliverables": ["Rich text, DnD, plugins"],
+          "rationale": "Стандартные задачи с известными решениями"
+        },
+        {
+          "stage": 5,
+          "name": "Low Risk: Schema & Sync",
+          "weeks": 2,
+          "parallel": true,
+          "modules": ["mod-schema", "mod-sync"],
+          "criteria": [15, 25],
+          "risk": "low",
+          "blockers": ["stage-1"],
+          "deliverables": ["Validation, conflict resolution"],
+          "rationale": "Надстройки над готовой CRDT"
+        }
+      ]
+    }
+  ],
+  "comparison": {
+    "sequential": {
+      "pros": ["Простота управления", "Минимум рисков", "Чёткие вехи"],
+      "cons": ["Долго (18 недель)", "Неэффективное использование команды", "Поздний feedback"]
+    },
+    "parallel-aggressive": {
+      "pros": ["Быстро (10 недель)", "Эффективное использование команды", "Ранний результат"],
+      "cons": ["Нужно 3+ разработчика", "Риск интеграционных проблем", "Сложная координация"]
+    },
+    "mvp-iterative": {
+      "pros": ["Ранний MVP (6 недель)", "Быстрый feedback", "Гибкость приоритетов"],
+      "cons": ["Технический долг", "Возможные переделки", "16 недель до полноты"]
+    },
+    "risk-driven": {
+      "pros": ["Ранняя валидация рисков", "Меньше переделок", "Уверенность в архитектуре"],
+      "cons": ["Поздний видимый результат", "Сложно показать прогресс", "17 недель"]
+    }
+  },
+  "recommendation": {
+    "solo": "plan-mvp-iterative",
+    "small-team": "plan-risk-driven",
+    "large-team": "plan-parallel-aggressive",
+    "enterprise": "plan-sequential"
+  }
+}
