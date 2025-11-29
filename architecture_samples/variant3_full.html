@@ -151,17 +151,34 @@
             
             // Группируем по criteriaId
             Object.keys(data.nodes).forEach(id => {
-                const criteriaId = data.nodes[id].criteriaId;
-                if (!byCriteria[criteriaId]) byCriteria[criteriaId] = [];
-                byCriteria[criteriaId].push(id);
+                const node = data.nodes[id];
+                const criteriaId = node.criteriaId;
+                if (!byCriteria[criteriaId]) byCriteria[criteriaId] = { question: null, answers: [] };
+                
+                if (node.type === 'question') {
+                    byCriteria[criteriaId].question = id;
+                } else {
+                    byCriteria[criteriaId].answers.push(id);
+                }
             });
             
-            // Позиционируем: колонка = criteriaId, строка = индекс в группе
+            // Позиционируем: вопрос сверху, ответы снизу
             Object.keys(byCriteria).sort((a, b) => a - b).forEach((criteriaId, col) => {
-                byCriteria[criteriaId].forEach((id, row) => {
+                const group = byCriteria[criteriaId];
+                
+                // Вопрос в первой строке
+                if (group.question) {
+                    positions[group.question] = {
+                        x: startX + col * columnWidth,
+                        y: startY
+                    };
+                }
+                
+                // Ответы во второй и третьей строках
+                group.answers.forEach((id, idx) => {
                     positions[id] = {
                         x: startX + col * columnWidth,
-                        y: startY + row * rowHeight
+                        y: startY + (idx + 1) * rowHeight
                     };
                 });
             });
