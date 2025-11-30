@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>PromAi PKM - Полное дерево решений</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117; color: #c9d1d9; overflow: hidden;
+        }
+        #canvas { 
+            width: 25000px; height: 15000px; position: relative; 
+            background: radial-gradient(circle at 50% 50%, #161b22 0%, #0d1117 100%);
+            transform-origin: 0 0;
+        }
+        #viewport { 
+            width: 100vw; height: 100vh; overflow: hidden; position: relative;
+            cursor: grab; background: #0d1117;
+        }
+        #viewport.dragging { cursor: grabbing; }
+        
+        .node {
+            position: absolute; background: #21262d; border: 2px solid #30363d;
+            border-radius: 12px; padding: 14px; min-width: 260px; max-width: 300px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease;
+        }
+        .node:hover { transform: scale(1.05); box-shadow: 0 12px 48px rgba(0,0,0,0.6); z-index: 100; }
+        
+        .question { 
+            border-color: #58a6ff; border-width: 3px;
+            background: linear-gradient(135deg, #1b2332 0%, #21262d 100%);
+        }
+        .critical { 
+            border-color: #f85149; border-width: 2px;
+            background: linear-gradient(135deg, #2d1b1f 0%, #21262d 100%);
+        }
+        .parallel { 
+            border-color: #f79009; border-width: 2px;
+            background: linear-gradient(135deg, #2d2419 0%, #21262d 100%);
+        }
+        .rejected { 
+            border-color: #8b949e; border-width: 2px;
+            background: linear-gradient(135deg, #2d2d2d 0%, #21262d 100%); 
+            opacity: 0.5;
+        }
+        
+        .badge {
+            display: inline-block; padding: 3px 7px; border-radius: 5px; font-size: 10px;
+            font-weight: bold; margin-bottom: 6px; margin-right: 3px;
+        }
+        .badge.question { background: #58a6ff; color: #fff; }
+        .badge.critical { background: #f85149; color: #fff; }
+        .badge.parallel { background: #f79009; color: #fff; }
+        .badge.rejected { background: #8b949e; color: #fff; }
+        
+        .node h3 { font-size: 13px; margin-bottom: 6px; color: #f0f6fc; font-weight: 600; }
+        .node p { font-size: 11px; line-height: 1.3; margin-bottom: 5px; color: #8b949e; }
+        .node .info { font-size: 10px; color: #6e7681; margin-top: 4px; }
+        
+        .connection {
+            position: absolute; height: 2px; transform-origin: left center; z-index: -1;
+        }
+        .connection.q-to-answer { background: #58a6ff; }
+        .connection.answer-to-q { background: #f79009; height: 3px; }
+        
+        .arrow {
+            position: absolute; width: 0; height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 8px solid #58a6ff;
+            right: -5px; top: -3px;
+        }
+        .connection.answer-to-q .arrow { border-top-color: #f79009; }
+        
+        .controls {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.95); padding: 14px; border-radius: 8px;
+            border: 1px solid #30363d;
+        }
+        .controls button {
+            background: #238636; color: #fff; border: none; padding: 7px 11px;
+            border-radius: 6px; margin-right: 6px; margin-bottom: 6px; cursor: pointer; font-size: 11px;
+        }
+        .controls button:hover { background: #2ea043; }
+        .controls .legend { margin-top: 10px; font-size: 10px; color: #8b949e; }
+        
+        .zoom-info {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 7px 11px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="resetView()">Сброс</button>
+        <button onclick="centerView()">Центр</button>
+        
+        <div class="legend">
+            🔵 Вопрос → 🔴 Критический / 🟠 Параллельный → 🔵 След. вопрос
+        </div>
+    </div>
+    
+    <div class="zoom-info">
+        Зум: <span id="zoomLevel">100%</span>
+    </div>
+    
+    <div id="viewport">
+        <div id="canvas"></div>
+    </div>
+
+    <script>
+        let scale = 0.12;
+        let translateX = 100;
+        let translateY = 100;
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        fetch('./development_plan.json')
+            .then(response => response.json())
+            .then(data => {
+                initCanvas(data);
+                updateTransform();
+            });
+
+        function initCanvas(planData) {
+            const canvas = document.getElementById('canvas');
+            canvas.innerHTML = '';
+            const nodeMap = {};
+            
+            const critical = planData.levels[0].tracks.critical.criteria;
+            const parallel = planData.levels[0].tracks.parallel.criteria;
+            const allCriteria = [...critical, ...parallel];
+            
+            let yOffset = 300;
+            
+            // Для каждого критерия: Вопрос → Ответы
+            allCriteria.forEach((criterion, idx) => {
+                const questionId = `q${criterion.id}`;
+                const xBase = 500;
+                
+                // Вопрос
+                const qNode = createQuestionNode(criterion);
+                qNode.style.left = xBase + 'px';
+                qNode.style.top = yOffset + 'px';
+                canvas.appendChild(qNode);
+                nodeMap[questionId] = { x: xBase, y: yOffset, data: criterion };
+                
+                // Выбранный ответ (selected)
+                const selectedNode = createAnswerNode(criterion, criterion.solution, criterion.priority);
+                selectedNode.style.left = (xBase + 600) + 'px';
+                selectedNode.style.top = yOffset + 'px';
+                canvas.appendChild(selectedNode);
+                const selectedId = `${criterion.id}_selected`;
+                nodeMap[selectedId] = { x: xBase + 600, y: yOffset, data: criterion };
+                
+                // Связь: Вопрос → Выбранный ответ
+                canvas.appendChild(createConnection(
+                    nodeMap[questionId], 
+                    nodeMap[selectedId], 
+                    'q-to-answer'
+                ));
+                
+                // Альтернативы
+                if (criterion.alternatives && criterion.alternatives.length > 0) {
+                    criterion.alternatives.forEach((alt, altIdx) => {
+                        const altNode = createAnswerNode(criterion, alt, 'rejected');
+                        const altY = yOffset + (altIdx + 1) * 200;
+                        altNode.style.left = (xBase + 600) + 'px';
+                        altNode.style.top = altY + 'px';
+                        canvas.appendChild(altNode);
+                        
+                        // Связь: Вопрос → Альтернатива
+                        canvas.appendChild(createConnection(
+                            nodeMap[questionId], 
+                            { x: xBase + 600, y: altY }, 
+                            'q-to-answer'
+                        ));
+                    });
+                }
+                
+                // Связи: Выбранный ответ → Следующие вопросы (blocks)
+                if (criterion.blocks && criterion.blocks.length > 0) {
+                    criterion.blocks.forEach(blockedQId => {
+                        const blockedCriterion = allCriteria.find(c => `q${c.id}` === blockedQId);
+                        if (blockedCriterion) {
+                            // Найдем позицию следующего вопроса
+                            const nextQId = `q${blockedCriterion.id}`;
+                            // Отложим отрисовку связи до создания всех нод
+                            setTimeout(() => {
+                                if (nodeMap[nextQId]) {
+                                    canvas.appendChild(createConnection(
+                                        nodeMap[selectedId],
+                                        nodeMap[nextQId],
+                                        'answer-to-q'
+                                    ));
+                                }
+                            }, 100);
+                        }
+                    });
+                }
+                
+                yOffset += 400 + (criterion.alternatives ? criterion.alternatives.length * 200 : 0);
+            });
+        }
+
+        function createQuestionNode(criterion) {
+            const div = document.createElement('div');
+            div.className = 'node question';
+            
+            div.innerHTML = `
+                <div class="badge question">❓ ВОПРОС</div>
+                <h3>№${criterion.id} • ${criterion.question}</h3>
+                <p>${criterion.title}</p>
+                <div class="info">Week ${criterion.week || '?'} | ${criterion.time}</div>
+            `;
+            
+            return div;
+        }
+
+        function createAnswerNode(criterion, solution, priority) {
+            const div = document.createElement('div');
+            div.className = `node ${priority}`;
+            
+            const badgeText = priority === 'critical' ? '🔴 КРИТИЧЕСКИЙ' :
+                             priority === 'parallel' ? '🟠 ПАРАЛЛЕЛЬНЫЙ' : '❌ ОТКЛОНЕНО';
+            
+            const reqText = criterion.requires && criterion.requires.length > 0 
+                ? `📋 Требует: ${criterion.requires.length}` : '';
+            const blockText = criterion.blocks && criterion.blocks.length > 0 
+                ? `🚫 Блокирует: №${criterion.blocks.map(b => b.replace('q', '')).join(', №')}` : '';
+            
+            div.innerHTML = `
+                <div class="badge ${priority}">${badgeText}</div>
+                <h3>${solution.name}</h3>
+                <p>${solution.description}</p>
+                <div class="info">${reqText}</div>
+                <div class="info">${blockText}</div>
+            `;
+            
+            return div;
+        }
+
+        function createConnection(from, to, type) {
+            const line = document.createElement('div');
+            line.className = `connection ${type}`;
+            
+            const dx = to.x - from.x;
+            const dy = to.y - from.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            line.style.left = (from.x + 130) + 'px';
+            line.style.top = (from.y + 50) + 'px';
+            line.style.width = length + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            line.appendChild(arrow);
+            
+            return line;
+        }
+
+        function updateTransform() {
+            const canvas = document.getElementById('canvas');
+            canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
+        }
+
+        function resetView() {
+            scale = 0.12;
+            translateX = 100;
+            translateY = 100;
+            updateTransform();
+        }
+
+        function centerView() {
+            translateX = window.innerWidth / 2 - 800;
+            translateY = 100;
+            updateTransform();
+        }
+
+        const viewport = document.getElementById('viewport');
+
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const rect = viewport.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const newScale = Math.max(0.05, Math.min(2, scale * delta));
+            const canvasX = (mouseX - translateX) / scale;
+            const canvasY = (mouseY - translateY) / scale;
+            scale = newScale;
+            translateX = mouseX - canvasX * scale;
+            translateY = mouseY - canvasY * scale;
+            updateTransform();
+        });
+
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                isDragging = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                viewport.classList.add('dragging');
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                translateX += e.clientX - lastMouseX;
+                translateY += e.clientY - lastMouseY;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                updateTransform();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            viewport.classList.remove('dragging');
+        });
+    </script>
+</body>
+</html>
