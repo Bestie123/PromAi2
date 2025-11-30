@@ -608,6 +608,7 @@
             line.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (line.classList.contains('locked')) {
+                    // Снятие фиксации
                     line.classList.remove('locked');
                     unhighlightNodes();
                     setTimeout(() => {
@@ -615,12 +616,21 @@
                         updateNodeArrows(toNode);
                     }, 10);
                 } else {
+                    // Сбор старых highlighted нод перед сменой
+                    const oldHighlightedNodes = Array.from(document.querySelectorAll('.node.arrow-highlighted'));
+                    
+                    // Снятие фиксации со всех стрелок
                     document.querySelectorAll('.connection.locked').forEach(c => c.classList.remove('locked'));
                     unhighlightNodes();
+                    
+                    // Фиксация новой стрелки
                     line.classList.add('locked');
                     line.classList.remove('highlighted');
                     highlightNodes();
+                    
+                    // Пересчет стрелок для старых и новых нод
                     setTimeout(() => {
+                        oldHighlightedNodes.forEach(node => updateNodeArrows(node));
                         updateNodeArrows(fromNode);
                         updateNodeArrows(toNode);
                     }, 10);
