@@ -6,6 +6,7 @@
 
 - **development_plan.json** - Полный план разработки в JSON формате
 - **DEVELOPMENT_PLAN_GUIDE.md** - Подробная документация по плану
+- **JSON_STRUCTURE.md** - Описание структуры JSON для работы AI
 
 ## Структура плана
 

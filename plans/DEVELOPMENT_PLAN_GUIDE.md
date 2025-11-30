@@ -204,6 +204,7 @@
 
 - `development_plan.json` - полный план в JSON формате
 - `DEVELOPMENT_PLAN_GUIDE.md` - эта документация
+- `JSON_STRUCTURE.md` - подробное описание структуры JSON для AI
 
 ## Обновление плана
 
