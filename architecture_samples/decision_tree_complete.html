@@ -58,22 +58,18 @@
         .node p { font-size: 11px; line-height: 1.3; margin-bottom: 5px; color: #8b949e; }
         .node .info { font-size: 10px; color: #6e7681; margin-top: 4px; }
         
-        /* Стрелки между нодами */
         .connection {
             position: absolute; height: 2px; transform-origin: left center; z-index: -1;
+            background: #f79009;
         }
-        .connection.q-to-answer { background: #58a6ff; } /* Синяя: вопрос → ответ */
-        .connection.answer-to-q { background: #f79009; height: 3px; } /* Оранжевая: ответ → вопрос */
         
-        /* Указатель на конце стрелки */
         .arrow {
             position: absolute; width: 0; height: 0;
             border-left: 5px solid transparent;
             border-right: 5px solid transparent;
-            border-top: 8px solid #58a6ff; /* Синий по умолчанию */
+            border-top: 8px solid #f79009;
             right: -5px; top: -3px;
         }
-        .connection.answer-to-q .arrow { border-top-color: #f79009; } /* Оранжевый для answer-to-q */
         
         .controls {
             position: fixed; top: 20px; left: 20px; z-index: 1000;
@@ -160,11 +156,10 @@
                 const selectedId = `${criterion.id}_selected`;
                 nodeMap[selectedId] = { x: xBase + 600, y: yOffset, data: criterion };
                 
-                // Связь: Вопрос → Выбранный ответ (синяя, слева направо)
+                // Связь: Вопрос → Выбранный ответ
                 canvas.appendChild(createConnection(
                     nodeMap[questionId], 
-                    nodeMap[selectedId],
-                    'q-to-answer'
+                    nodeMap[selectedId]
                 ));
                 
                 // Альтернативы
@@ -176,11 +171,10 @@
                         altNode.style.top = altY + 'px';
                         canvas.appendChild(altNode);
                         
-                        // Связь: Вопрос → Альтернатива (синяя, слева направо)
+                        // Связь: Вопрос → Альтернатива
                         canvas.appendChild(createConnection(
                             nodeMap[questionId], 
-                            { x: xBase + 600, y: altY },
-                            'q-to-answer'
+                            { x: xBase + 600, y: altY }
                         ));
                     });
                 }
@@ -193,11 +187,9 @@
                             const nextQId = `q${blockedCriterion.id}`;
                             setTimeout(() => {
                                 if (nodeMap[nextQId]) {
-                                    // Связь: Ответ → Следующий вопрос (оранжевая, справа налево)
                                     canvas.appendChild(createConnection(
                                         nodeMap[selectedId],
-                                        nodeMap[nextQId],
-                                        'answer-to-q'
+                                        nodeMap[nextQId]
                                     ));
                                 }
                             }, 100);
@@ -213,11 +205,9 @@
                             const reqSelectedId = `${reqNum}_selected`;
                             setTimeout(() => {
                                 if (nodeMap[reqSelectedId] && nodeMap[questionId]) {
-                                    // Связь: Зависимость → Текущий вопрос (оранжевая, справа налево)
                                     canvas.appendChild(createConnection(
                                         nodeMap[reqSelectedId],
-                                        nodeMap[questionId],
-                                        'answer-to-q'
+                                        nodeMap[questionId]
                                     ));
                                 }
                             }, 100);
@@ -308,26 +298,14 @@
             return results.length > 0 ? `🔀 Совместимость: ${results.join('; ')}` : '';
         }
 
-        // Создание стрелки между нодами
-        // type: 'q-to-answer' (вопрос→ответ, синяя) или 'answer-to-q' (ответ→вопрос, оранжевая)
-        function createConnection(from, to, type) {
+        function createConnection(from, to) {
             const line = document.createElement('div');
-            line.className = `connection ${type}`;
+            line.className = 'connection';
             
-            let fromX, fromY, toX, toY;
-            if (type === 'q-to-answer') {
-                // Вопрос → Ответ: выход из правого края вопроса, вход в левый край ответа
-                fromX = from.x + 260; // правый край вопроса
-                fromY = from.y + 50;  // центр по вертикали
-                toX = to.x;           // левый край ответа
-                toY = to.y + 50;      // центр по вертикали
-            } else {
-                // Ответ → Вопрос: выход из левого края ответа, вход в верхний край вопроса
-                fromX = from.x;       // левый край ответа
-                fromY = from.y + 50;  // центр по вертикали
-                toX = to.x + 130;     // центр вопроса по горизонтали
-                toY = to.y;           // верхний край вопроса
-            }
+            const fromX = from.x;
+            const toX = to.x;
+            const fromY = from.y + 50;
+            const toY = to.y + 50;
             
             const dx = toX - fromX;
             const dy = toY - fromY;
