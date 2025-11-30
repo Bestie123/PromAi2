@@ -612,7 +612,11 @@
                 }
             });
             
+            // Вариант B: Пересчет позиции стрелок с учетом transform scale
             const updateArrowPosition = () => {
+                const SCALE_HOVER = 1.05;
+                const SCALE_HIGHLIGHTED = 1.08;
+                
                 const nodes = document.querySelectorAll('.node');
                 let fn = null, tn = null;
                 nodes.forEach(node => {
@@ -624,20 +628,45 @@
                 
                 if (!fn || !tn) return;
                 
-                const fScale = fn.classList.contains('arrow-highlighted') ? 1.08 : (fn.matches(':hover') ? 1.05 : 1);
-                const tScale = tn.classList.contains('arrow-highlighted') ? 1.08 : (tn.matches(':hover') ? 1.05 : 1);
+                // Базовые размеры нод
+                let fw = fn.offsetWidth, fh = fn.offsetHeight;
+                let tw = tn.offsetWidth, th = tn.offsetHeight;
+                let fromPosX = from.x, fromPosY = from.y;
+                let toPosX = to.x, toPosY = to.y;
                 
-                const fw = fn.offsetWidth * fScale, fh = fn.offsetHeight * fScale;
-                const tw = tn.offsetWidth * tScale, th = tn.offsetHeight * tScale;
+                // Проверка состояния нод (hover или highlighted)
+                const fromHover = fn.matches(':hover');
+                const fromHighlighted = fn.classList.contains('arrow-highlighted');
+                const toHover = tn.matches(':hover');
+                const toHighlighted = tn.classList.contains('arrow-highlighted');
                 
-                const fOffsetX = (fw - fn.offsetWidth) / 2, fOffsetY = (fh - fn.offsetHeight) / 2;
-                const tOffsetX = (tw - tn.offsetWidth) / 2, tOffsetY = (th - tn.offsetHeight) / 2;
+                // Применение scale для from ноды
+                if (fromHighlighted || fromHover) {
+                    const scale = fromHighlighted ? SCALE_HIGHLIGHTED : SCALE_HOVER;
+                    const offsetX = fw * (scale - 1) / 2;
+                    const offsetY = fh * (scale - 1) / 2;
+                    fromPosX -= offsetX;
+                    fromPosY -= offsetY;
+                    fw *= scale;
+                    fh *= scale;
+                }
                 
-                const fcx = from.x - fOffsetX + fw / 2, fcy = from.y - fOffsetY + fh / 2;
-                const tcx = to.x - tOffsetX + tw / 2, tcy = to.y - tOffsetY + th / 2;
+                // Применение scale для to ноды
+                if (toHighlighted || toHover) {
+                    const scale = toHighlighted ? SCALE_HIGHLIGHTED : SCALE_HOVER;
+                    const offsetX = tw * (scale - 1) / 2;
+                    const offsetY = th * (scale - 1) / 2;
+                    toPosX -= offsetX;
+                    toPosY -= offsetY;
+                    tw *= scale;
+                    th *= scale;
+                }
                 
-                const fi = getRectIntersection(fcx, fcy, tcx, tcy, from.x, from.y, fw, fh);
-                const ti = getRectIntersection(tcx, tcy, fcx, fcy, to.x, to.y, tw, th);
+                const fcx = fromPosX + fw / 2, fcy = fromPosY + fh / 2;
+                const tcx = toPosX + tw / 2, tcy = toPosY + th / 2;
+                
+                const fi = getRectIntersection(fcx, fcy, tcx, tcy, fromPosX, fromPosY, fw, fh);
+                const ti = getRectIntersection(tcx, tcy, fcx, fcy, toPosX, toPosY, tw, th);
                 
                 const dx = tcx - fcx, dy = tcy - fcy;
                 const dist = Math.sqrt(dx * dx + dy * dy);
