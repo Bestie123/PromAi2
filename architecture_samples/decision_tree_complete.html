@@ -314,19 +314,20 @@
             const line = document.createElement('div');
             line.className = `connection ${type}`;
             
-            let fromX, toX;
+            let fromX, fromY, toX, toY;
             if (type === 'q-to-answer') {
                 // Вопрос → Ответ: выход из правого края вопроса, вход в левый край ответа
                 fromX = from.x + 260; // правый край вопроса
+                fromY = from.y + 50;  // центр по вертикали
                 toX = to.x;           // левый край ответа
+                toY = to.y + 50;      // центр по вертикали
             } else {
-                // Ответ → Вопрос: выход из левого края ответа, вход в левый край вопроса
+                // Ответ → Вопрос: выход из левого края ответа, вход в верхний край вопроса
                 fromX = from.x;       // левый край ответа
-                toX = to.x;           // левый край вопроса
+                fromY = from.y + 50;  // центр по вертикали
+                toX = to.x + 130;     // центр вопроса по горизонтали
+                toY = to.y;           // верхний край вопроса
             }
-            
-            const fromY = from.y + 50; // центр по вертикали
-            const toY = to.y + 50;     // центр по вертикали
             
             const dx = toX - fromX;
             const dy = toY - fromY;
