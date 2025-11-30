@@ -624,10 +624,17 @@
                 
                 if (!fn || !tn) return;
                 
-                const fw = fn.offsetWidth, fh = fn.offsetHeight;
-                const tw = tn.offsetWidth, th = tn.offsetHeight;
-                const fcx = from.x + fw / 2, fcy = from.y + fh / 2;
-                const tcx = to.x + tw / 2, tcy = to.y + th / 2;
+                const fScale = fn.classList.contains('arrow-highlighted') ? 1.08 : (fn.matches(':hover') ? 1.05 : 1);
+                const tScale = tn.classList.contains('arrow-highlighted') ? 1.08 : (tn.matches(':hover') ? 1.05 : 1);
+                
+                const fw = fn.offsetWidth * fScale, fh = fn.offsetHeight * fScale;
+                const tw = tn.offsetWidth * tScale, th = tn.offsetHeight * tScale;
+                
+                const fOffsetX = (fw - fn.offsetWidth) / 2, fOffsetY = (fh - fn.offsetHeight) / 2;
+                const tOffsetX = (tw - tn.offsetWidth) / 2, tOffsetY = (th - tn.offsetHeight) / 2;
+                
+                const fcx = from.x - fOffsetX + fw / 2, fcy = from.y - fOffsetY + fh / 2;
+                const tcx = to.x - tOffsetX + tw / 2, tcy = to.y - tOffsetY + th / 2;
                 
                 const fi = getRectIntersection(fcx, fcy, tcx, tcy, from.x, from.y, fw, fh);
                 const ti = getRectIntersection(tcx, tcy, fcx, fcy, to.x, to.y, tw, th);
