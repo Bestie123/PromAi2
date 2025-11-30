@@ -273,8 +273,7 @@
               "blocks": [
                 "q14",
                 "q16",
-                "q18",
-                "q25"
+                "q18"
               ],
               "solution": {
                 "type": "selected",
@@ -696,9 +695,7 @@
                 "modular-arch"
               ],
               "blocks": [
-                "q21",
-                "q12",
-                "q20"
+                "q21"
               ],
               "solution": {
                 "type": "selected",
