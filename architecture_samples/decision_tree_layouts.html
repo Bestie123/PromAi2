@@ -562,20 +562,17 @@
                 });
             };
             
-            // При наведении на стрелку - подсвечиваем стрелку и ноды
+            // При наведении на стрелку - подсвечиваем только стрелку (не трогаем ноды если они locked)
             line.addEventListener('mouseenter', () => {
                 if (!line.classList.contains('locked')) {
                     line.classList.add('highlighted');
-                    highlightNodes();
                 }
             });
             
-            // При уходе курсора - убираем подсветку только стрелки (ноды остаются подсвеченными если locked)
+            // При уходе курсора - убираем подсветку только стрелки (ноды не трогаем)
             line.addEventListener('mouseleave', () => {
                 if (!line.classList.contains('locked')) {
                     line.classList.remove('highlighted');
-                    // Не убираем подсветку нод при hover - только при клике
-                    unhighlightNodes();
                 }
             });
             
@@ -583,16 +580,18 @@
             line.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (line.classList.contains('locked')) {
-                    // Снимаем фиксацию
+                    // Снимаем фиксацию с этой стрелки и её нод
                     line.classList.remove('locked');
                     unhighlightNodes();
                 } else {
-                    // Убираем locked со всех других стрелок и подсветку их нод
+                    // Убираем locked со всех других стрелок
                     document.querySelectorAll('.connection.locked').forEach(c => c.classList.remove('locked'));
+                    // Убираем подсветку ВСЕХ нод перед новой подсветкой
                     unhighlightNodes();
-                    // Фиксируем текущую стрелку и подсвечиваем её ноды
+                    // Фиксируем текущую стрелку
                     line.classList.add('locked');
                     line.classList.remove('highlighted');
+                    // Подсвечиваем только ноды этой стрелки
                     highlightNodes();
                 }
             });
