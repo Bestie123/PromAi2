@@ -157,7 +157,17 @@
 
         function initCanvas(layout) {
             const canvas = document.getElementById('canvas');
-            canvas.innerHTML = '';
+            // Очищаем только ноды, оставляем SVG
+            const nodes = canvas.querySelectorAll('.node');
+            nodes.forEach(n => n.remove());
+            
+            // Пересоздаем SVG для стрелок
+            let svg = document.getElementById('arrows-svg');
+            if (svg) svg.remove();
+            svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.id = 'arrows-svg';
+            canvas.appendChild(svg);
+            
             const nodeMap = {};
             
             const critical = planData.levels[0].tracks.critical.criteria;
@@ -187,11 +197,11 @@
                         criterion.blocks.forEach(blockedQId => {
                             const nextQId = `q${blockedQId.replace('q', '')}`;
                             if (nodeMap[selectedId] && nodeMap[nextQId]) {
-                                canvas.appendChild(createConnection(
+                                createConnection(
                                     nodeMap[selectedId],
                                     nodeMap[nextQId],
                                     'answer-to-q'
-                                ));
+                                );
                             }
                         });
                     }
@@ -204,11 +214,11 @@
                             if (reqNum) {
                                 const reqSelectedId = `${reqNum}_selected`;
                                 if (nodeMap[reqSelectedId] && nodeMap[currentQId]) {
-                                    canvas.appendChild(createConnection(
+                                    createConnection(
                                         nodeMap[reqSelectedId],
                                         nodeMap[currentQId],
                                         'answer-to-q'
-                                    ));
+                                    );
                                 }
                             }
                         });
