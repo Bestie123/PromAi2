@@ -212,10 +212,10 @@
             const div = document.createElement('div');
             div.className = 'node question';
             
-            const reqNums = criterion.requires && criterion.requires.length > 0
-                ? criterion.requires.map(r => planData.nodeMapping ? Object.keys(planData.nodeMapping).find(k => planData.nodeMapping[k].selected === r) : r).filter(Boolean)
+            const reqNums = criterion.requires && criterion.requires.length > 0 && planData && planData.nodeMapping
+                ? criterion.requires.map(r => Object.keys(planData.nodeMapping).find(k => planData.nodeMapping[k].selected === r)).filter(Boolean)
                 : [];
-            const reqText = reqNums.length > 0 ? `📋 Требует: №${reqNums.join(', №')}` : '📋 Не требует зависимостей';
+            const reqText = reqNums.length > 0 ? `📋 Требует: №${reqNums.join(', №')}` : (criterion.requires && criterion.requires.length > 0 ? `📋 Требует: ${criterion.requires.join(', ')}` : '📋 Не требует зависимостей');
             const blockText = criterion.blocks && criterion.blocks.length > 0 
                 ? `🚫 Блокирует: №${criterion.blocks.map(b => b.replace('q', '')).join(', №')}` : '🚫 Ничего не блокирует';
             
@@ -238,10 +238,10 @@
             const badgeText = priority === 'critical' ? '🔴 КРИТИЧЕСКИЙ №' + criterion.id :
                              priority === 'parallel' ? '🟠 ПАРАЛЛЕЛЬНЫЙ №' + criterion.id : '❌ ОТКЛОНЕНО №' + criterion.id;
             
-            const reqNums = criterion.requires && criterion.requires.length > 0
-                ? criterion.requires.map(r => planData.nodeMapping ? Object.keys(planData.nodeMapping).find(k => planData.nodeMapping[k].selected === r) : r).filter(Boolean)
+            const reqNums = criterion.requires && criterion.requires.length > 0 && planData && planData.nodeMapping
+                ? criterion.requires.map(r => Object.keys(planData.nodeMapping).find(k => planData.nodeMapping[k].selected === r)).filter(Boolean)
                 : [];
-            const reqText = reqNums.length > 0 ? `📋 Требует: №${reqNums.join(', №')}` : '📋 Не требует зависимостей';
+            const reqText = reqNums.length > 0 ? `📋 Требует: №${reqNums.join(', №')}` : (criterion.requires && criterion.requires.length > 0 ? `📋 Требует: ${criterion.requires.join(', ')}` : '📋 Не требует зависимостей');
             const blockText = criterion.blocks && criterion.blocks.length > 0 
                 ? `🚫 Блокирует: №${criterion.blocks.map(b => b.replace('q', '')).join(', №')}` : '🚫 Ничего не блокирует';
             
