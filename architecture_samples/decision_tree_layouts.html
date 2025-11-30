@@ -84,23 +84,9 @@
             border-left: 5px solid transparent;
             border-right: 5px solid transparent;
             border-top: 8px solid #58a6ff;
-            right: -8px; top: -3px; transition: all 0.2s;
+            right: -5px; top: 50%; transform: translateY(-50%); transition: all 0.2s;
         }
         .connection.answer-to-q .arrow { border-top-color: #f79009; }
-        .connection:hover .arrow, .connection.highlighted .arrow { 
-            border-left: 7px solid transparent;
-            border-right: 7px solid transparent;
-            border-top: 12px solid #58a6ff;
-            top: -5px;
-        }
-        .connection.answer-to-q:hover .arrow, .connection.answer-to-q.highlighted .arrow { border-top-color: #f79009; }
-        .connection.locked .arrow {
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-top: 14px solid #58a6ff;
-            top: -6px;
-        }
-        .connection.answer-to-q.locked .arrow { border-top-color: #f79009; }
         
         .controls {
             position: fixed; top: 20px; left: 20px; z-index: 1000;
@@ -490,78 +476,49 @@
             return results.length > 0 ? `🔀 Совместимость: ${results.join('; ')}` : '';
         }
 
-        // Создание стрелки между нодами с подсветкой связанных нод
         function createConnection(from, to, type) {
             const line = document.createElement('div');
             line.className = `connection ${type}`;
             
-            // Автоопределение оптимальных точек входа/выхода на основе взаимного расположения нод
             const nodeWidth = 260;
             const nodeHeight = 100;
             
-            // Центры нод
             const fromCenterX = from.x + nodeWidth / 2;
             const fromCenterY = from.y + nodeHeight / 2;
             const toCenterX = to.x + nodeWidth / 2;
             const toCenterY = to.y + nodeHeight / 2;
             
-            // Определяем угол между нодами
-            const connectionAngle = Math.atan2(toCenterY - fromCenterY, toCenterX - fromCenterX);
-            const angleDeg = connectionAngle * 180 / Math.PI;
+            const fromIntersect = getRectIntersection(
+                fromCenterX, fromCenterY, toCenterX, toCenterY,
+                from.x, from.y, nodeWidth, nodeHeight
+            );
             
-            let fromX, fromY, toX, toY;
+            const toIntersect = getRectIntersection(
+                toCenterX, toCenterY, fromCenterX, fromCenterY,
+                to.x, to.y, nodeWidth, nodeHeight
+            );
             
-            // Определяем точку выхода из исходной ноды (НА границе)
-            if (angleDeg >= -45 && angleDeg < 45) {
-                // Выход справа - на правой границе
-                fromX = from.x + nodeWidth;
-                fromY = fromCenterY;
-            } else if (angleDeg >= 45 && angleDeg < 135) {
-                // Выход снизу - на нижней границе
-                fromX = fromCenterX;
-                fromY = from.y + nodeHeight;
-            } else if (angleDeg >= -135 && angleDeg < -45) {
-                // Выход сверху - на верхней границе
-                fromX = fromCenterX;
-                fromY = from.y;
-            } else {
-                // Выход слева - на левой границе
-                fromX = from.x;
-                fromY = fromCenterY;
-            }
+            const dx = toCenterX - fromCenterX;
+            const dy = toCenterY - fromCenterY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const dirX = dx / distance;
+            const dirY = dy / distance;
             
-            // Определяем точку входа в целевую ноду (НА границе, противоположная сторона)
-            const reverseAngleDeg = (angleDeg + 180) % 360 - 180;
+            const fromX = fromIntersect.x + dirX * (-5);
+            const fromY = fromIntersect.y + dirY * (-5);
+            const toX = toIntersect.x - dirX * 5;
+            const toY = toIntersect.y - dirY * 5;
             
-            if (reverseAngleDeg >= -45 && reverseAngleDeg < 45) {
-                // Вход справа - на правой границе
-                toX = to.x + nodeWidth;
-                toY = toCenterY;
-            } else if (reverseAngleDeg >= 45 && reverseAngleDeg < 135) {
-                // Вход снизу - на нижней границе
-                toX = toCenterX;
-                toY = to.y + nodeHeight;
-            } else if (reverseAngleDeg >= -135 && reverseAngleDeg < -45) {
-                // Вход сверху - на верхней границе
-                toX = toCenterX;
-                toY = to.y;
-            } else {
-                // Вход слева - на левой границе
-                toX = to.x;
-                toY = toCenterY;
-            }
-            
-            const deltaX = toX - fromX;
-            const deltaY = toY - fromY;
-            const length = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-            const lineAngle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+            const finalDx = toX - fromX;
+            const finalDy = toY - fromY;
+            const length = Math.sqrt(finalDx * finalDx + finalDy * finalDy);
+            const angle = Math.atan2(finalDy, finalDx) * 180 / Math.PI;
             
             line.style.left = fromX + 'px';
             line.style.top = fromY + 'px';
             line.style.width = length + 'px';
-            line.style.transform = `rotate(${lineAngle}deg)`;
+            line.style.transform = `rotate(${angle}deg)`;
             
-            // Сохраняем координаты нод для поиска
             line.dataset.fromX = from.x;
             line.dataset.fromY = from.y;
             line.dataset.toX = to.x;
@@ -571,62 +528,101 @@
             arrow.className = 'arrow';
             line.appendChild(arrow);
             
-            // Функция подсветки связанных нод
             const highlightNodes = () => {
-                // Находим ноды по координатам
                 const nodes = document.querySelectorAll('.node');
                 nodes.forEach(node => {
                     const nodeX = parseInt(node.style.left);
                     const nodeY = parseInt(node.style.top);
-                    // Проверяем совпадение координат с началом или концом стрелки
                     if ((nodeX === from.x && nodeY === from.y) || (nodeX === to.x && nodeY === to.y)) {
                         node.classList.add('arrow-highlighted');
                     }
                 });
             };
             
-            // Функция снятия подсветки нод
             const unhighlightNodes = () => {
                 document.querySelectorAll('.node.arrow-highlighted').forEach(n => {
                     n.classList.remove('arrow-highlighted');
                 });
             };
             
-            // При наведении на стрелку - подсвечиваем только стрелку (не трогаем ноды если они locked)
             line.addEventListener('mouseenter', () => {
                 if (!line.classList.contains('locked')) {
                     line.classList.add('highlighted');
                 }
             });
             
-            // При уходе курсора - убираем подсветку только стрелки (ноды не трогаем)
             line.addEventListener('mouseleave', () => {
                 if (!line.classList.contains('locked')) {
                     line.classList.remove('highlighted');
                 }
             });
             
-            // При клике - фиксируем/снимаем подсветку стрелки и нод
             line.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (line.classList.contains('locked')) {
-                    // Снимаем фиксацию с этой стрелки и её нод
                     line.classList.remove('locked');
                     unhighlightNodes();
                 } else {
-                    // Убираем locked со всех других стрелок
                     document.querySelectorAll('.connection.locked').forEach(c => c.classList.remove('locked'));
-                    // Убираем подсветку ВСЕХ нод перед новой подсветкой
                     unhighlightNodes();
-                    // Фиксируем текущую стрелку
                     line.classList.add('locked');
                     line.classList.remove('highlighted');
-                    // Подсвечиваем только ноды этой стрелки
                     highlightNodes();
                 }
             });
             
             return line;
+        }
+        
+        function getRectIntersection(cx, cy, tx, ty, rx, ry, rw, rh) {
+            const dx = tx - cx;
+            const dy = ty - cy;
+            
+            let minT = Infinity;
+            let resultX = cx;
+            let resultY = cy;
+            
+            if (dx !== 0) {
+                const t = (rx + rw - cx) / dx;
+                const y = cy + dy * t;
+                if (t > 0 && t < minT && y >= ry && y <= ry + rh) {
+                    minT = t;
+                    resultX = rx + rw;
+                    resultY = y;
+                }
+            }
+            
+            if (dx !== 0) {
+                const t = (rx - cx) / dx;
+                const y = cy + dy * t;
+                if (t > 0 && t < minT && y >= ry && y <= ry + rh) {
+                    minT = t;
+                    resultX = rx;
+                    resultY = y;
+                }
+            }
+            
+            if (dy !== 0) {
+                const t = (ry + rh - cy) / dy;
+                const x = cx + dx * t;
+                if (t > 0 && t < minT && x >= rx && x <= rx + rw) {
+                    minT = t;
+                    resultX = x;
+                    resultY = ry + rh;
+                }
+            }
+            
+            if (dy !== 0) {
+                const t = (ry - cy) / dy;
+                const x = cx + dx * t;
+                if (t > 0 && t < minT && x >= rx && x <= rx + rw) {
+                    minT = t;
+                    resultX = x;
+                    resultY = ry;
+                }
+            }
+            
+            return { x: resultX, y: resultY };
         }
 
         function updateTransform() {
