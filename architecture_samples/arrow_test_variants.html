@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Тест вариантов стрелок</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif;
+            background: #0d1117; 
+            color: #c9d1d9; 
+            padding: 20px;
+        }
+        
+        .variant {
+            margin-bottom: 40px;
+            border: 2px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+            background: #161b22;
+        }
+        
+        h2 {
+            color: #58a6ff;
+            margin-bottom: 15px;
+        }
+        
+        .canvas {
+            position: relative;
+            width: 800px;
+            height: 400px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+        }
+        
+        .node {
+            position: absolute;
+            background: #21262d;
+            border: 2px solid #58a6ff;
+            border-radius: 8px;
+            padding: 10px;
+            width: 150px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .connection {
+            position: absolute;
+            height: 3px;
+            background: #f79009;
+            transform-origin: left center;
+        }
+        
+        .arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 10px solid #f79009;
+            right: -6px;
+            top: -3.5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Тестирование 3 вариантов отрисовки стрелок</h1>
+    
+    <!-- Вариант 1 -->
+    <div class="variant">
+        <h2>Вариант 1: Простой - фиксированные отступы от границ</h2>
+        <p>Стрелка начинается за границей исходной ноды (+10px) и заканчивается перед границей целевой ноды (-10px)</p>
+        <div class="canvas" id="canvas1"></div>
+    </div>
+    
+    <!-- Вариант 2 -->
+    <div class="variant">
+        <h2>Вариант 2: Математический - точное пересечение с прямоугольником</h2>
+        <p>Вычисляется точка пересечения луча (от центра к центру) с границами прямоугольников</p>
+        <div class="canvas" id="canvas2"></div>
+    </div>
+    
+    <!-- Вариант 3 -->
+    <div class="variant">
+        <h2>Вариант 3: Гибридный - определение стороны + точный расчет на границе</h2>
+        <p>Определяется сторона по углу, затем точка рассчитывается на этой стороне</p>
+        <div class="canvas" id="canvas3"></div>
+    </div>
+
+    <script>
+        // Тестовые ноды
+        const nodes = [
+            { x: 50, y: 50, label: 'Нода 1' },
+            { x: 400, y: 150, label: 'Нода 2' },
+            { x: 600, y: 50, label: 'Нода 3' },
+            { x: 200, y: 250, label: 'Нода 4' }
+        ];
+        
+        const nodeWidth = 150;
+        const nodeHeight = 80;
+        
+        // Создаем ноды для всех вариантов
+        [1, 2, 3].forEach(variant => {
+            const canvas = document.getElementById(`canvas${variant}`);
+            nodes.forEach(node => {
+                const div = document.createElement('div');
+                div.className = 'node';
+                div.style.left = node.x + 'px';
+                div.style.top = node.y + 'px';
+                div.textContent = node.label;
+                canvas.appendChild(div);
+            });
+        });
+        
+        // Рисуем стрелки между нодами
+        const connections = [
+            [0, 1], // Нода 1 -> Нода 2
+            [1, 2], // Нода 2 -> Нода 3
+            [0, 3], // Нода 1 -> Нода 4
+            [3, 1]  // Нода 4 -> Нода 2
+        ];
+        
+        // ВАРИАНТ 1: Простой с отступами
+        connections.forEach(([fromIdx, toIdx]) => {
+            const from = nodes[fromIdx];
+            const to = nodes[toIdx];
+            createConnectionVariant1('canvas1', from, to);
+        });
+        
+        // ВАРИАНТ 2: Математический
+        connections.forEach(([fromIdx, toIdx]) => {
+            const from = nodes[fromIdx];
+            const to = nodes[toIdx];
+            createConnectionVariant2('canvas2', from, to);
+        });
+        
+        // ВАРИАНТ 3: Гибридный
+        connections.forEach(([fromIdx, toIdx]) => {
+            const from = nodes[fromIdx];
+            const to = nodes[toIdx];
+            createConnectionVariant3('canvas3', from, to);
+        });
+        
+        // ВАРИАНТ 1: Простой - фиксированные отступы
+        function createConnectionVariant1(canvasId, from, to) {
+            const canvas = document.getElementById(canvasId);
+            
+            const fromCenterX = from.x + nodeWidth / 2;
+            const fromCenterY = from.y + nodeHeight / 2;
+            const toCenterX = to.x + nodeWidth / 2;
+            const toCenterY = to.y + nodeHeight / 2;
+            
+            const angle = Math.atan2(toCenterY - fromCenterY, toCenterX - fromCenterX);
+            const angleDeg = angle * 180 / Math.PI;
+            
+            let fromX, fromY, toX, toY;
+            
+            // Выход из исходной ноды (за границей)
+            if (angleDeg >= -45 && angleDeg < 45) {
+                fromX = from.x + nodeWidth + 10;
+                fromY = fromCenterY;
+            } else if (angleDeg >= 45 && angleDeg < 135) {
+                fromX = fromCenterX;
+                fromY = from.y + nodeHeight + 10;
+            } else if (angleDeg >= -135 && angleDeg < -45) {
+                fromX = fromCenterX;
+                fromY = from.y - 10;
+            } else {
+                fromX = from.x - 10;
+                fromY = fromCenterY;
+            }
+            
+            // Вход в целевую ноду (перед границей)
+            const reverseAngleDeg = (angleDeg + 180) % 360 - 180;
+            
+            if (reverseAngleDeg >= -45 && reverseAngleDeg < 45) {
+                toX = to.x + nodeWidth + 10;
+                toY = toCenterY;
+            } else if (reverseAngleDeg >= 45 && reverseAngleDeg < 135) {
+                toX = toCenterX;
+                toY = to.y + nodeHeight + 10;
+            } else if (reverseAngleDeg >= -135 && reverseAngleDeg < -45) {
+                toX = toCenterX;
+                toY = to.y - 10;
+            } else {
+                toX = to.x - 10;
+                toY = toCenterY;
+            }
+            
+            drawLine(canvas, fromX, fromY, toX, toY);
+        }
+        
+        // ВАРИАНТ 2: Математический - точное пересечение
+        function createConnectionVariant2(canvasId, from, to) {
+            const canvas = document.getElementById(canvasId);
+            
+            const fromCenterX = from.x + nodeWidth / 2;
+            const fromCenterY = from.y + nodeHeight / 2;
+            const toCenterX = to.x + nodeWidth / 2;
+            const toCenterY = to.y + nodeHeight / 2;
+            
+            // Вычисляем пересечение луча с границами
+            const fromIntersect = getRectIntersection(
+                fromCenterX, fromCenterY,
+                toCenterX, toCenterY,
+                from.x, from.y, nodeWidth, nodeHeight
+            );
+            
+            const toIntersect = getRectIntersection(
+                toCenterX, toCenterY,
+                fromCenterX, fromCenterY,
+                to.x, to.y, nodeWidth, nodeHeight
+            );
+            
+            drawLine(canvas, fromIntersect.x, fromIntersect.y, toIntersect.x, toIntersect.y);
+        }
+        
+        function getRectIntersection(cx, cy, tx, ty, rx, ry, rw, rh) {
+            const dx = tx - cx;
+            const dy = ty - cy;
+            
+            let minT = Infinity;
+            let resultX = cx;
+            let resultY = cy;
+            
+            // Правая граница
+            if (dx !== 0) {
+                const t = (rx + rw - cx) / dx;
+                const y = cy + dy * t;
+                if (t > 0 && t < minT && y >= ry && y <= ry + rh) {
+                    minT = t;
+                    resultX = rx + rw;
+                    resultY = y;
+                }
+            }
+            
+            // Левая граница
+            if (dx !== 0) {
+                const t = (rx - cx) / dx;
+                const y = cy + dy * t;
+                if (t > 0 && t < minT && y >= ry && y <= ry + rh) {
+                    minT = t;
+                    resultX = rx;
+                    resultY = y;
+                }
+            }
+            
+            // Нижняя граница
+            if (dy !== 0) {
+                const t = (ry + rh - cy) / dy;
+                const x = cx + dx * t;
+                if (t > 0 && t < minT && x >= rx && x <= rx + rw) {
+                    minT = t;
+                    resultX = x;
+                    resultY = ry + rh;
+                }
+            }
+            
+            // Верхняя граница
+            if (dy !== 0) {
+                const t = (ry - cy) / dy;
+                const x = cx + dx * t;
+                if (t > 0 && t < minT && x >= rx && x <= rx + rw) {
+                    minT = t;
+                    resultX = x;
+                    resultY = ry;
+                }
+            }
+            
+            return { x: resultX, y: resultY };
+        }
+        
+        // ВАРИАНТ 3: Гибридный - сторона + расчет
+        function createConnectionVariant3(canvasId, from, to) {
+            const canvas = document.getElementById(canvasId);
+            
+            const fromCenterX = from.x + nodeWidth / 2;
+            const fromCenterY = from.y + nodeHeight / 2;
+            const toCenterX = to.x + nodeWidth / 2;
+            const toCenterY = to.y + nodeHeight / 2;
+            
+            const angle = Math.atan2(toCenterY - fromCenterY, toCenterX - fromCenterX);
+            const angleDeg = angle * 180 / Math.PI;
+            
+            let fromX, fromY, toX, toY;
+            
+            // Выход - определяем сторону и точку на ней
+            if (angleDeg >= -45 && angleDeg < 45) {
+                // Правая сторона
+                fromX = from.x + nodeWidth;
+                fromY = fromCenterY;
+            } else if (angleDeg >= 45 && angleDeg < 135) {
+                // Нижняя сторона
+                fromX = fromCenterX;
+                fromY = from.y + nodeHeight;
+            } else if (angleDeg >= -135 && angleDeg < -45) {
+                // Верхняя сторона
+                fromX = fromCenterX;
+                fromY = from.y;
+            } else {
+                // Левая сторона
+                fromX = from.x;
+                fromY = fromCenterY;
+            }
+            
+            // Вход - противоположная сторона
+            const reverseAngleDeg = (angleDeg + 180) % 360 - 180;
+            
+            if (reverseAngleDeg >= -45 && reverseAngleDeg < 45) {
+                toX = to.x + nodeWidth;
+                toY = toCenterY;
+            } else if (reverseAngleDeg >= 45 && reverseAngleDeg < 135) {
+                toX = toCenterX;
+                toY = to.y + nodeHeight;
+            } else if (reverseAngleDeg >= -135 && reverseAngleDeg < -45) {
+                toX = toCenterX;
+                toY = to.y;
+            } else {
+                toX = to.x;
+                toY = toCenterY;
+            }
+            
+            drawLine(canvas, fromX, fromY, toX, toY);
+        }
+        
+        // Вспомогательная функция для рисования линии
+        function drawLine(canvas, fromX, fromY, toX, toY) {
+            const line = document.createElement('div');
+            line.className = 'connection';
+            
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            line.style.left = fromX + 'px';
+            line.style.top = fromY + 'px';
+            line.style.width = length + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            line.appendChild(arrow);
+            
+            canvas.appendChild(line);
+        }
+    </script>
+</body>
+</html>
