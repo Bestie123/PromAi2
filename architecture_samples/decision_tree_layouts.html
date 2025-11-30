@@ -511,10 +511,10 @@
             
             let fromX, fromY, toX, toY;
             
-            // Определяем точку выхода из исходной ноды
+            // Определяем точку выхода из исходной ноды (на границе)
             if (angleDeg >= -45 && angleDeg < 45) {
                 // Выход справа
-                fromX = from.x + nodeWidth;
+                fromX = from.x + nodeWidth + 10;
                 fromY = fromCenterY;
             } else if (angleDeg >= 45 && angleDeg < 135) {
                 // Выход снизу
@@ -530,7 +530,7 @@
                 fromY = fromCenterY;
             }
             
-            // Определяем точку входа в целевую ноду (противоположная сторона)
+            // Определяем точку входа в целевую ноду (на границе, противоположная сторона)
             const reverseAngleDeg = (angleDeg + 180) % 360 - 180;
             
             if (reverseAngleDeg >= -45 && reverseAngleDeg < 45) {
