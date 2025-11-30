@@ -2,8 +2,8 @@
   "version": "1.0.0",
   "project": "PromAi PKM",
   "description": "План разработки - Полный анализ всех уровней",
-  "generated": "2025-11-30T02:54:47.095Z",
-  "source": "DEVELOPMENT_PLAN.md",
+  "generated": "2025-11-30T03:00:11.930Z",
+  "source": "DEVELOPMENT_PLAN.md + nodes_data.json",
   "summary": {
     "totalDuration": "548-814 дней (18-27 месяцев)",
     "mvp": {
@@ -55,5 +55,1383 @@
       "path": "№1 → №2 → №26 → №27 ↓ №28"
     }
   ],
-  "levels": []
+  "levels": [
+    {
+      "id": 0,
+      "name": "Несущие стены проекта (MVP)",
+      "description": "29 критериев",
+      "duration": "68-94 дня (10-13 недель)",
+      "tracks": {
+        "critical": {
+          "name": "Критический путь",
+          "duration": "50-65 дней",
+          "weeks": "1-6",
+          "criteria": [
+            {
+              "id": 1,
+              "title": "Ядро отделено от UI и плагинов",
+              "question": "Модульность движка?",
+              "week": 1,
+              "time": "2-3 дня",
+              "priority": "critical",
+              "requires": [],
+              "blocks": [
+                "q2",
+                "q3",
+                "q29"
+              ],
+              "solution": {
+                "type": "selected",
+                "name": "Модульная",
+                "description": "Ядро легко отделяется",
+                "pros": [
+                  "Тестирование, замена UI ➖ Сложность"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "rejected",
+                  "name": "Монолитная",
+                  "description": "Всё в одном модуле",
+                  "pros": [
+                    "Быстрый старт ➖ Спагетти-код"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 29,
+              "title": "Файлы ≤500 строк, функции ≤50",
+              "question": "Модульность кода?",
+              "week": 1,
+              "time": "1 день",
+              "priority": "critical",
+              "requires": [
+                "modular-arch"
+              ],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "Модульный",
+                "description": "Максимальная модульность",
+                "pros": [
+                  "Читаемость, AI-friendly ➖ Много файлов"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "rejected",
+                  "name": "Монолитный",
+                  "description": "Большие файлы и функции",
+                  "pros": [
+                    "Меньше файлов ➖ Невозможность рефакторинга"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 2,
+              "title": "Всё является блоками",
+              "question": "Блочность элементов?",
+              "week": 1,
+              "time": "2-3 дня",
+              "priority": "critical",
+              "requires": [
+                "modular-arch"
+              ],
+              "blocks": [
+                "q3",
+                "q4"
+              ],
+              "solution": {
+                "type": "selected",
+                "name": "Всё - блоки",
+                "description": "Единая модель данных",
+                "pros": [
+                  "Единые операции ➖ Сложность"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "rejected",
+                  "name": "Смешанная",
+                  "description": "Блоки + особые сущности",
+                  "pros": [
+                    "Простота ➖ Ломаются refs"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 3,
+              "title": "Уникальные глобальные ID",
+              "question": "UUID для блоков?",
+              "week": 1,
+              "time": "1 день",
+              "priority": "critical",
+              "requires": [
+                "all-blocks"
+              ],
+              "blocks": [
+                "q4",
+                "q7"
+              ],
+              "solution": {
+                "type": "selected",
+                "name": "UUID v4",
+                "description": "Случайные UUID",
+                "pros": [
+                  "Проверенные ➖ Нет сортировки"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "alternative",
+                  "name": "UUID v7",
+                  "description": "UUID с timestamp",
+                  "pros": [
+                    "Сортировка ➖ Новый стандарт"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 4,
+              "title": "Иерархия любой глубины",
+              "question": "Вложенные блоки?",
+              "week": 1,
+              "time": "2-3 дня",
+              "priority": "critical",
+              "requires": [
+                "uuid-v4"
+              ],
+              "blocks": [
+                "q13"
+              ],
+              "solution": {
+                "type": "selected",
+                "name": "Вложенные",
+                "description": "Иерархия любой глубины",
+                "pros": [
+                  "Естественная структура ➖ Сложность"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "rejected",
+                  "name": "Только плоские",
+                  "description": "Нет вложенности",
+                  "pros": [
+                    "Простота ➖ Невозможно документы"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 13,
+              "title": "Single source of truth",
+              "question": "Какую CRDT?",
+              "week": 2,
+              "time": "5-7 дней",
+              "priority": "critical",
+              "requires": [
+                "nested-blocks"
+              ],
+              "blocks": [
+                "q14",
+                "q16"
+              ],
+              "solution": {
+                "type": "selected",
+                "name": "Yjs",
+                "description": "Быстрая, популярная CRDT",
+                "pros": [
+                  "Производительность, WebRTC ➖ Сложность API"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "alternative",
+                  "name": "⚡ Automerge",
+                  "description": "Функциональная CRDT",
+                  "pros": [
+                    "Простота API ➖ Медленнее Yjs"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 16,
+              "title": "Все изменения только через CRDT-операции",
+              "question": "Все через CRDT?",
+              "week": null,
+              "time": "3-4 дня",
+              "priority": "critical",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "Только CRDT",
+                "description": "Все изменения через CRDT",
+                "pros": [
+                  "Будущая коллаборация ➖ Сложность API"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "alternative",
+                  "name": "Гибрид",
+                  "description": "CRDT + прямые изменения",
+                  "pros": [
+                    "Простота ➖ Полный рефакторинг потом"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 17,
+              "title": "Целостность данных, undo/redo",
+              "question": "Атомарные транзакции?",
+              "week": null,
+              "time": "3-4 дня",
+              "priority": "critical",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "Атомарные",
+                "description": "Все или ничего",
+                "pros": [
+                  "Нормальный undo/redo ➖ Сложность реализации"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "rejected",
+                  "name": "Простые",
+                  "description": "Одна операция = одно действие",
+                  "pros": [
+                    "Простота ➖ Полублоки после undo"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 14,
+              "title": "Immutable ops log с первого дня",
+              "question": "Event Sourcing?",
+              "week": null,
+              "time": "2-3 дня",
+              "priority": "critical",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "Отдельный лог",
+                "description": "Операции в отдельном файле",
+                "pros": [
+                  "Полный аудит, versioning ➖ Дублирование"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "alternative",
+                  "name": "В CRDT",
+                  "description": "Лог как часть CRDT",
+                  "pros": [
+                    "Нет дублирования ➖ Сложность реплея"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 6,
+              "title": "Markdown-подобный + сущности",
+              "question": "Rich Text?",
+              "week": null,
+              "time": "7-10 дней",
+              "priority": "critical",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "Markdown+",
+                "description": "Markdown + ссылки/блоки",
+                "pros": [
+                  "Простота, читаемость ➖ Кривая обучения"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "alternative",
+                  "name": "WYSIWYG",
+                  "description": "Визуальный редактор",
+                  "pros": [
+                    "Удобство ➖ Сложность реализации"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 21,
+              "title": "Работа с 100к+ блоков",
+              "question": "Virtual scrolling?",
+              "week": null,
+              "time": "5-7 дней",
+              "priority": "critical",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "Virtual scrolling",
+                "description": "Рендер только видимых элементов",
+                "pros": [
+                  "100к+ блоков без тормозов ➖ Сложность"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "alternative",
+                  "name": "⚡ Lazy loading",
+                  "description": "Ленивая загрузка по требованию",
+                  "pros": [
+                    "Простота ➖ Привычка «всё в DOM»"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 5,
+              "title": "Порядок дочерних блоков",
+              "question": "Drag & Drop порядка?",
+              "week": null,
+              "time": "5-7 дней",
+              "priority": "critical",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "Нативный",
+                "description": "Использование HTML5 DnD API",
+                "pros": [
+                  "Производительность ➖ Сложность API"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "alternative",
+                  "name": "Библиотека",
+                  "description": "Использование готовой библиотеки",
+                  "pros": [
+                    "Простота ➖ Зависимость"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 26,
+              "title": "Все пользовательские блоки как плагины",
+              "question": "Плагинная система?",
+              "week": null,
+              "time": "7-10 дней",
+              "priority": "critical",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "Единая система",
+                "description": "Единый механизм для всех блоков",
+                "pros": [
+                  "Предсказуемость, безопасность ➖ Ограничения"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "rejected",
+                  "name": "Разные API",
+                  "description": "Разные способы подключения",
+                  "pros": [
+                    "Гибкость ➖ Хаос, несовместимость"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 27,
+              "title": "Кастомные блоки, содержащие другие",
+              "question": "Композитные блоки?",
+              "week": null,
+              "time": "5-7 дней",
+              "priority": "critical",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "Поддержка",
+                "description": "Сложные структуры (карточки, дашборды)",
+                "pros": [
+                  "Мощные возможности ➖ Сложность реализации"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "alternative",
+                  "name": "Только простые",
+                  "description": "Обычные блоки без вложенности",
+                  "pros": [
+                    "Простота ➖ Ограниченные возможности"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 28,
+              "title": "Каждый блок может сохранять состояние",
+              "question": "Состояние блоков?",
+              "week": null,
+              "time": "3-4 дня",
+              "priority": "critical",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "JSON состояние",
+                "description": "Плагины сохраняют настройки",
+                "pros": [
+                  "Виджеты работают корректно ➖ Усложнение модели"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "alternative",
+                  "name": "Простое",
+                  "description": "Минимальное состояние",
+                  "pros": [
+                    "Простота модели ➖ Ограниченные плагины"
+                  ],
+                  "cons": []
+                }
+              ]
+            }
+          ]
+        },
+        "parallel": {
+          "name": "Параллельные задачи",
+          "duration": "18-29 дней",
+          "weeks": "1-4",
+          "criteria": [
+            {
+              "id": 9,
+              "title": "Открытый читаемый формат",
+              "question": "Локальные данные?",
+              "week": null,
+              "time": "2-3 дня",
+              "priority": "parallel",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "JSON",
+                "description": "Человекочитаемые файлы",
+                "pros": [
+                  "Прозрачность, скрипты ➖ Медленные запросы"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "alternative",
+                  "name": "⚡ SQLite",
+                  "description": "Реляционная БД",
+                  "pros": [
+                    "Быстрые запросы ➖ Нечитаемый формат"
+                  ],
+                  "cons": []
+                },
+                {
+                  "type": "alternative",
+                  "name": "Гибрид",
+                  "description": "JSON + SQLite индексы",
+                  "pros": [
+                    "Лучшее из двух миров ➖ Сложность"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 11,
+              "title": "100% декларативный рендер",
+              "question": "Декларативный UI?",
+              "week": null,
+              "time": "2-3 дня",
+              "priority": "parallel",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "Декларативный",
+                "description": "JSON-структуры, чистые функции",
+                "pros": [
+                  "Предсказуемость, отладка ➖ Сложность"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "rejected",
+                  "name": "Императивный",
+                  "description": "Обычный код с мутациями",
+                  "pros": [
+                    "Простота ➖ Необъяснимые баги"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 12,
+              "title": "Чистая функция рендера",
+              "question": "Zero runtime logic?",
+              "week": null,
+              "time": "1-2 дня",
+              "priority": "parallel",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "Чистые функции",
+                "description": "Никакой runtime логики в рендере",
+                "pros": [
+                  "Нет race conditions ➖ Сложность реализации"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "rejected",
+                  "name": "Stateful",
+                  "description": "Логика в рендере",
+                  "pros": [
+                    "Простота ➖ Глюки через 30-40 плагинов"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 20,
+              "title": "Отсутствие глобального mutable состояния",
+              "question": "Глобальное состояние?",
+              "week": null,
+              "time": "1 день",
+              "priority": "parallel",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "Локальное",
+                "description": "Никакого глобального mutable состояния",
+                "pros": [
+                  "Предсказуемость, отладка ➖ Сложность"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "rejected",
+                  "name": "Глобальное",
+                  "description": "Общее mutable состояние",
+                  "pros": [
+                    "Простота ➖ Race conditions, баги"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 10,
+              "title": "Полная оффлайн-работа",
+              "question": "Оффлайн работа?",
+              "week": null,
+              "time": "1-2 дня",
+              "priority": "parallel",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "Полная",
+                "description": "Все функции без сети",
+                "pros": [
+                  "Must-have для PKM ➖ Сложность синхронизации"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "alternative",
+                  "name": "⚡ Частичная",
+                  "description": "Основные функции оффлайн",
+                  "pros": [
+                    "Простота ➖ Ограниченная аудитория"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 15,
+              "title": "Runtime валидация схем",
+              "question": "Schema-first?",
+              "week": null,
+              "time": "2-3 дня",
+              "priority": "parallel",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "JSON Schema",
+                "description": "Стандартная валидация",
+                "pros": [
+                  "Стандарт, языконезависимость ➖ Ограниченная выразительность"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "alternative",
+                  "name": "TypeScript",
+                  "description": "Типы как схемы",
+                  "pros": [
+                    "Интеграция с кодом ➖ Нет runtime валидации"
+                  ],
+                  "cons": []
+                },
+                {
+                  "type": "alternative",
+                  "name": "Zod",
+                  "description": "TypeScript-first валидация",
+                  "pros": [
+                    "Runtime + compile-time ➖ Дополнительная зависимость"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 7,
+              "title": "Любой блок ссылается на любой",
+              "question": "Refs по UUID?",
+              "week": null,
+              "time": "2-3 дня",
+              "priority": "parallel",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "По UUID",
+                "description": "Прямые ссылки по уникальному ID",
+                "pros": [
+                  "Надёжность ➖ Нечитаемость"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "alternative",
+                  "name": "По алиасу",
+                  "description": "Человекочитаемые ссылки",
+                  "pros": [
+                    "Удобство ➖ Конфликты имён"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 8,
+              "title": "Мгновенный доступ к обратным ссылкам",
+              "question": "Backlinks?",
+              "week": null,
+              "time": "2-3 дня",
+              "priority": "parallel",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "Автоматические",
+                "description": "Автоматическое обновление",
+                "pros": [
+                  "Магия двусторонних связей ➖ Производительность"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "rejected",
+                  "name": "Ручные",
+                  "description": "Пользователь создаёт сам",
+                  "pros": [
+                    "Полный контроль ➖ Мёртвые ссылки"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 18,
+              "title": "References и backlinks first-class в CRDT",
+              "question": "Refs в CRDT?",
+              "week": null,
+              "time": "3-4 дня",
+              "priority": "parallel",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "First-class",
+                "description": "Ссылки как основные объекты CRDT",
+                "pros": [
+                  "Быстрые запросы, транслюзия ➖ Сложность"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "alternative",
+                  "name": "Вторичные",
+                  "description": "Ссылки хранятся в тексте",
+                  "pros": [
+                    "Простота ➖ Медленные ссылки"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 19,
+              "title": "Блоки ≠ страницы",
+              "question": "Плоский граф?",
+              "week": null,
+              "time": "1-2 дня",
+              "priority": "parallel",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "Плоский граф",
+                "description": "Все блоки равноправны",
+                "pros": [
+                  "Гибкие transclusion и queries ➖ Сложность навигации"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "rejected",
+                  "name": "Иерархия страниц",
+                  "description": "Блоки принадлежат страницам",
+                  "pros": [
+                    "Простая навигация ➖ Невозможно транслюзию"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 22,
+              "title": "Тяжёлые операции в отдельном потоке",
+              "question": "Web Workers?",
+              "week": null,
+              "time": "4-5 дней",
+              "priority": "parallel",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "Все операции",
+                "description": "Поиск, индексация, CRDT",
+                "pros": [
+                  "UI остаётся отзывчивым ➖ Сложность API"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "alternative",
+                  "name": "Только поиск",
+                  "description": "Поиск и индексация в Workers",
+                  "pros": [
+                    "Простота ➖ UI будет зависать"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 23,
+              "title": "Circular Reference Detection",
+              "question": "Обнаружение циклов?",
+              "week": null,
+              "time": "2-3 дня",
+              "priority": "parallel",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "При рендере",
+                "description": "Проверка при отображении",
+                "pros": [
+                  "Надёжность ➖ Накладные расходы"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "alternative",
+                  "name": "При создании",
+                  "description": "Предотвращение циклов",
+                  "pros": [
+                    "Проактивность ➖ Ограничения UX"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 24,
+              "title": "Формат хранения готов к шифрованию",
+              "question": "E2EE готовность?",
+              "week": null,
+              "time": "3-4 дня",
+              "priority": "parallel",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "С первого дня",
+                "description": "Архитектура готова к E2EE",
+                "pros": [
+                  "Никаких breaking changes ➖ Усложнение"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "alternative",
+                  "name": "Потом",
+                  "description": "Добавим позже",
+                  "pros": [
+                    "Простота старта ➖ Невозможная миграция"
+                  ],
+                  "cons": []
+                }
+              ]
+            },
+            {
+              "id": 25,
+              "title": "При синхронизации",
+              "question": "Конфликт-менеджмент?",
+              "week": null,
+              "time": "3-4 дня",
+              "priority": "parallel",
+              "requires": [],
+              "blocks": [],
+              "solution": {
+                "type": "selected",
+                "name": "CRDT merge",
+                "description": "Автоматическое слияние",
+                "pros": [
+                  "Оффлайн-first без потери ➖ Не все конфликты разрешимы"
+                ],
+                "cons": []
+              },
+              "alternatives": [
+                {
+                  "type": "rejected",
+                  "name": "Ручное",
+                  "description": "Пользователь разрешает конфликты",
+                  "pros": [
+                    "Полный контроль ➖ Потеря данных"
+                  ],
+                  "cons": []
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 1,
+      "name": "Core UX и \"магия\" (после MVP, 3-6 месяцев)",
+      "tasks": [
+        {
+          "title": "Live update без задержек",
+          "requires": [
+            "№13",
+            "№16"
+          ],
+          "time": "5-7 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Undo/Redo (≥1000 шагов)",
+          "requires": [
+            "№17"
+          ],
+          "time": "3-5 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Автосохранение + snapshots",
+          "requires": [
+            "№9",
+            "№14"
+          ],
+          "time": "2-3 дня",
+          "priority": "flexible"
+        },
+        {
+          "title": "Коллапс/разворот блоков",
+          "requires": [
+            "№4"
+          ],
+          "time": "2-3 дня",
+          "priority": "flexible"
+        },
+        {
+          "title": "Live preview WYSIWYG",
+          "requires": [
+            "№6"
+          ],
+          "time": "5-7 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Transclusion/Embed блоков",
+          "requires": [
+            "№7",
+            "№8"
+          ],
+          "time": "7-10 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Full-text search (WASM-Tantivy)",
+          "requires": [
+            "№22"
+          ],
+          "time": "10-14 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Cross-Tab Sync",
+          "requires": [
+            "№13",
+            "№25"
+          ],
+          "time": "3-5 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Персистентные алиасы",
+          "requires": [
+            "№7"
+          ],
+          "time": "2-3 дня",
+          "priority": "flexible"
+        },
+        {
+          "title": "WYSIWYG-редактор",
+          "requires": [
+            "№6"
+          ],
+          "time": "14-21 день",
+          "priority": "flexible"
+        },
+        {
+          "title": "Списки с вложенностью",
+          "requires": [
+            "№4",
+            "№6"
+          ],
+          "time": "3-5 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Вставка медиа",
+          "requires": [
+            "№2",
+            "№9"
+          ],
+          "time": "5-7 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Таблицы с расширенными возможностями",
+          "requires": [
+            "№6"
+          ],
+          "time": "10-14 дней",
+          "priority": "flexible"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Продуктивность и рост базы (6-18 месяцев)",
+      "tasks": [
+        {
+          "title": "Graph view",
+          "requires": [
+            "№7",
+            "№8"
+          ],
+          "time": "14-21 день",
+          "priority": "flexible"
+        },
+        {
+          "title": "Timeline/Roadmap view",
+          "requires": [
+            "№2"
+          ],
+          "time": "7-10 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Горячие клавиши",
+          "requires": [
+            "№11"
+          ],
+          "time": "5-7 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Экспорт/импорт",
+          "requires": [
+            "№9",
+            "№15"
+          ],
+          "time": "7-10 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Теги и Properties",
+          "requires": [
+            "№2",
+            "№15"
+          ],
+          "time": "5-7 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Query Language",
+          "requires": [
+            "№2",
+            "№7"
+          ],
+          "time": "14-21 день",
+          "priority": "flexible"
+        },
+        {
+          "title": "Kanban-доски",
+          "requires": [
+            "Query Language"
+          ],
+          "time": "7-10 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Templates",
+          "requires": [
+            "№2"
+          ],
+          "time": "5-7 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Block-level versioning",
+          "requires": [
+            "№14"
+          ],
+          "time": "10-14 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Code blocks с исполнением",
+          "requires": [
+            "№26",
+            "№28"
+          ],
+          "time": "14-21 день",
+          "priority": "flexible"
+        },
+        {
+          "title": "Аннотации PDF/видео",
+          "requires": [
+            "№2",
+            "№26"
+          ],
+          "time": "14-21 день",
+          "priority": "flexible"
+        },
+        {
+          "title": "Plugin API + магазин",
+          "requires": [
+            "№26",
+            "№27",
+            "№28"
+          ],
+          "time": "21-30 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Namespaces/Workspaces",
+          "requires": [
+            "№2",
+            "№19"
+          ],
+          "time": "10-14 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Режим \"только чтение\"",
+          "requires": [
+            "№11"
+          ],
+          "time": "3-5 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Программный доступ к базе",
+          "requires": [
+            "№9",
+            "№15"
+          ],
+          "time": "7-10 дней",
+          "priority": "flexible"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Безопасность и экосистема плагинов (12-24 месяца)",
+      "tasks": [
+        {
+          "title": "Плагины - отдельные файлы",
+          "requires": [
+            "№26"
+          ],
+          "time": "5-7 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Sandbox + permissions",
+          "requires": [
+            "№26"
+          ],
+          "time": "10-14 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Error Boundaries",
+          "requires": [
+            "№26"
+          ],
+          "time": "3-5 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Автотесты для плагинов",
+          "requires": [
+            "№26",
+            "№15"
+          ],
+          "time": "7-10 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Интерактивные блоки",
+          "requires": [
+            "№26",
+            "№28"
+          ],
+          "time": "10-14 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Модальные окна из плагинов",
+          "requires": [
+            "№26"
+          ],
+          "time": "5-7 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Скриптовое API",
+          "requires": [
+            "№26"
+          ],
+          "time": "14-21 день",
+          "priority": "flexible"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Nice-to-have и \"вау-фичи\" (1-3 года)",
+      "tasks": [
+        {
+          "title": "Темы (светлая/тёмная)",
+          "requires": [
+            "№11"
+          ],
+          "time": "3-5 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Zoom/фокус на блоке",
+          "requires": [
+            "№4",
+            "№21"
+          ],
+          "time": "5-7 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Вкладки/split-view",
+          "requires": [
+            "№11"
+          ],
+          "time": "7-10 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Whiteboards/Infinite canvas",
+          "requires": [
+            "№2",
+            "№7"
+          ],
+          "time": "21-30 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Spatial mode (2D/3D)",
+          "requires": [
+            "№2",
+            "№7"
+          ],
+          "time": "30-45 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Custom renderers",
+          "requires": [
+            "№26",
+            "№28"
+          ],
+          "time": "14-21 день",
+          "priority": "flexible"
+        },
+        {
+          "title": "Плагины на WebAssembly",
+          "requires": [
+            "№26"
+          ],
+          "time": "14-21 день",
+          "priority": "flexible"
+        },
+        {
+          "title": "Multi-Window Sync",
+          "requires": [
+            "№13",
+            "№25"
+          ],
+          "time": "10-14 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "JIT Compilation",
+          "requires": [
+            "№22"
+          ],
+          "time": "21-30 дней",
+          "priority": "flexible"
+        },
+        {
+          "title": "Plugin-to-plugin communication",
+          "requires": [
+            "№26"
+          ],
+          "time": "14-21 день",
+          "priority": "flexible"
+        }
+      ]
+    }
+  ],
+  "compatibility": {
+    "modular-arch,monolith-arch": "невозможно",
+    "all-blocks,mixed-model": "невозможно",
+    "uuid-v4,uuid-v7": "переключать",
+    "nested-blocks,flat-only": "невозможно",
+    "drag-drop-native,drag-drop-lib": "объединить",
+    "markdown-rich,wysiwyg-rich": "объединить",
+    "refs-uuid,refs-alias": "объединить",
+    "backlinks-auto,backlinks-manual": "объединить",
+    "json-storage,sqlite-storage": "переключать",
+    "json-storage,hybrid-storage": "объединить",
+    "sqlite-storage,hybrid-storage": "объединить",
+    "offline-full,offline-partial": "объединить",
+    "declarative-ui,imperative-ui": "невозможно",
+    "zero-runtime,stateful-runtime": "невозможно",
+    "yjs-crdt,automerge-crdt": "переключать",
+    "event-sourcing-separate,event-sourcing-crdt": "невозможно",
+    "json-schema,typescript-schema": "объединить",
+    "json-schema,zod-schema": "объединить",
+    "typescript-schema,zod-schema": "объединить",
+    "crdt-only,crdt-hybrid": "объединить",
+    "atomic-transactions,simple-ops": "объединить",
+    "refs-crdt-first,refs-crdt-secondary": "объединить",
+    "flat-graph,page-hierarchy": "невозможно",
+    "no-global-state,global-state": "невозможно",
+    "virtual-scrolling,lazy-loading": "объединить",
+    "web-workers-all,web-workers-search": "объединить",
+    "circular-render,circular-creation": "объединить",
+    "e2ee-ready,e2ee-later": "невозможно",
+    "crdt-merge,manual-merge": "невозможно",
+    "plugin-unified,plugin-mixed": "невозможно",
+    "composite-blocks,simple-blocks": "объединить",
+    "block-state-json,block-state-simple": "объединить",
+    "modular-code,monolith-code": "невозможно"
+  }
 }
