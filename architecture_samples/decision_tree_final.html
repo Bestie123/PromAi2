@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>PromAi PKM - Дерево решений с путями</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117; color: #c9d1d9; overflow: hidden;
+        }
+        #canvas { 
+            width: 20000px; height: 12000px; position: relative; 
+            background: radial-gradient(circle at 50% 50%, #161b22 0%, #0d1117 100%);
+            transform-origin: 0 0;
+        }
+        #viewport { 
+            width: 100vw; height: 100vh; overflow: hidden; position: relative;
+            cursor: grab; background: #0d1117;
+        }
+        #viewport.dragging { cursor: grabbing; }
+        
+        .node {
+            position: absolute; background: #21262d; border: 2px solid #30363d;
+            border-radius: 12px; padding: 16px; min-width: 280px; max-width: 320px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease;
+        }
+        .node:hover { transform: scale(1.05); box-shadow: 0 12px 48px rgba(0,0,0,0.6); z-index: 100; }
+        
+        .question { 
+            border-color: #58a6ff; border-width: 3px;
+            background: linear-gradient(135deg, #1b2332 0%, #21262d 100%);
+        }
+        .critical { 
+            border-color: #f85149; border-width: 3px;
+            background: linear-gradient(135deg, #2d1b1f 0%, #21262d 100%);
+        }
+        .parallel { 
+            border-color: #f79009; border-width: 3px;
+            background: linear-gradient(135deg, #2d2419 0%, #21262d 100%);
+        }
+        .flexible { border-color: #3fb950; background: linear-gradient(135deg, #1b2d1f 0%, #21262d 100%); }
+        .rejected { border-color: #8b949e; background: linear-gradient(135deg, #2d2d2d 0%, #21262d 100%); opacity: 0.6; }
+        
+        .badge {
+            display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px;
+            font-weight: bold; margin-bottom: 8px; margin-right: 4px;
+        }
+        .badge.question { background: #58a6ff; color: #fff; }
+        .badge.critical { background: #f85149; color: #fff; }
+        .badge.parallel { background: #f79009; color: #fff; }
+        .badge.flexible { background: #3fb950; color: #fff; }
+        .badge.rejected { background: #8b949e; color: #fff; }
+        
+        .node h3 { font-size: 14px; margin-bottom: 8px; color: #f0f6fc; font-weight: 600; }
+        .node p { font-size: 12px; line-height: 1.4; margin-bottom: 6px; color: #8b949e; }
+        .details { font-size: 11px; color: #6e7681; }
+        .node .blocks { font-size: 11px; color: #f85149; margin-top: 6px; font-weight: bold; }
+        .node .requires { font-size: 11px; color: #f79009; margin-top: 4px; }
+        .node .week { font-size: 11px; color: #58a6ff; margin-top: 4px; font-weight: bold; }
+        
+        .connection {
+            position: absolute; height: 2px; transform-origin: left center; z-index: -1;
+        }
+        .connection.to-answer { background: #58a6ff; }
+        .connection.to-question { background: #f79009; }
+        .connection.critical-path { background: #f85149; height: 3px; }
+        
+        .arrow {
+            position: absolute; width: 0; height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 10px solid #58a6ff;
+            right: -6px; top: -4px;
+        }
+        .connection.to-question .arrow { border-top-color: #f79009; }
+        .connection.critical-path .arrow { border-top-color: #f85149; }
+        
+        .controls {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.95); padding: 16px; border-radius: 8px;
+            border: 1px solid #30363d; max-width: 400px;
+        }
+        .controls button {
+            background: #238636; color: #fff; border: none; padding: 8px 12px;
+            border-radius: 6px; margin-right: 8px; margin-bottom: 8px; cursor: pointer; font-size: 12px;
+        }
+        .controls button:hover { background: #2ea043; }
+        .controls .legend { margin-top: 12px; font-size: 11px; }
+        .controls .legend-item { margin: 6px 0; }
+        
+        .zoom-info {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 8px 12px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="resetView()">Сброс</button>
+        <button onclick="centerView()">Центр</button>
+        <button onclick="showCriticalPath()">Критический путь</button>
+        
+        <div class="legend">
+            <div class="legend-item">🔵 Вопрос → 🔴 Критический → 🟠 Параллельный</div>
+            <div class="legend-item">📋 Требует | 🚫 Блокирует</div>
+        </div>
+    </div>
+    
+    <div class="zoom-info">
+        Зум: <span id="zoomLevel">100%</span>
+    </div>
+    
+    <div id="viewport">
+        <div id="canvas"></div>
+    </div>
+
+    <script>
+        const LAYOUT = {
+            QUESTION_SPACING_X: 1200,
+            ANSWER_SPACING_Y: 400,
+            LEVEL_SPACING_X: 800
+        };
+
+        let scale = 0.15;
+        let translateX = 100;
+        let translateY = 100;
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        fetch('../plans/development_plan.json')
+            .then(response => response.json())
+            .then(data => {
+                initCanvas(data);
+                updateTransform();
+            });
+
+        function initCanvas(planData) {
+            const canvas = document.getElementById('canvas');
+            canvas.innerHTML = '';
+            const nodeMap = {};
+            
+            const critical = planData.levels[0].tracks.critical.criteria;
+            const parallel = planData.levels[0].tracks.parallel.criteria;
+            
+            // Критический путь - вертикально
+            critical.forEach((c, i) => {
+                const node = createCriterionNode(c, 'critical');
+                node.style.left = '500px';
+                node.style.top = (300 + i * 350) + 'px';
+                canvas.appendChild(node);
+                nodeMap[c.id] = { x: 500, y: 300 + i * 350, data: c };
+            });
+            
+            // Параллельный путь - справа
+            parallel.forEach((c, i) => {
+                const node = createCriterionNode(c, 'parallel');
+                node.style.left = '1500px';
+                node.style.top = (300 + i * 300) + 'px';
+                canvas.appendChild(node);
+                nodeMap[c.id] = { x: 1500, y: 300 + i * 300, data: c };
+            });
+            
+            // Рисуем связи
+            [...critical, ...parallel].forEach(c => {
+                if (c.requires && c.requires.length > 0) {
+                    c.requires.forEach(reqId => {
+                        const fromNode = findNodeByRequireId(nodeMap, reqId);
+                        const toNode = nodeMap[c.id];
+                        if (fromNode && toNode) {
+                            const conn = createConnection(fromNode, toNode, c.priority);
+                            canvas.appendChild(conn);
+                        }
+                    });
+                }
+            });
+        }
+
+        function findNodeByRequireId(nodeMap, requireId) {
+            for (let id in nodeMap) {
+                const node = nodeMap[id];
+                const mapping = {
+                    'modular-arch': 1, 'modular-code': 29, 'all-blocks': 2,
+                    'uuid-v4': 3, 'nested-blocks': 4, 'yjs-crdt': 13,
+                    'crdt-only': 16, 'declarative-ui': 11, 'json-storage': 9,
+                    'refs-uuid': 7, 'plugin-unified': 26, 'virtual-scrolling': 21
+                };
+                if (mapping[requireId] == id) return node;
+            }
+            return null;
+        }
+
+        function createCriterionNode(criterion, type) {
+            const div = document.createElement('div');
+            div.className = `node ${type}`;
+            
+            const badgeText = type === 'critical' ? '🔴 КРИТИЧЕСКИЙ' : '🟠 ПАРАЛЛЕЛЬНЫЙ';
+            const titleWithNum = `№${criterion.id} • ${criterion.question}`;
+            
+            let extraInfo = '';
+            if (criterion.week) extraInfo += `<div class="week">Week ${criterion.week}</div>`;
+            
+            const reqNums = criterion.requires.map(r => {
+                const mapping = {
+                    'modular-arch': 1, 'modular-code': 29, 'all-blocks': 2,
+                    'uuid-v4': 3, 'nested-blocks': 4, 'yjs-crdt': 13,
+                    'crdt-only': 16, 'declarative-ui': 11, 'json-storage': 9,
+                    'refs-uuid': 7, 'plugin-unified': 26, 'virtual-scrolling': 21
+                };
+                return mapping[r] || r;
+            }).filter(Boolean);
+            
+            const blockNums = criterion.blocks.map(b => b.replace('q', '')).filter(Boolean);
+            
+            if (reqNums.length > 0) {
+                extraInfo += `<div class="requires">📋 Требует: №${reqNums.join(', №')}</div>`;
+            }
+            if (blockNums.length > 0) {
+                extraInfo += `<div class="blocks">🚫 Блокирует: №${blockNums.join(', №')}</div>`;
+            }
+            
+            div.innerHTML = `
+                <div class="badge ${type}">${badgeText}</div>
+                <h3>${titleWithNum}</h3>
+                <p>${criterion.solution.name}</p>
+                <div class="details">${criterion.time}</div>
+                ${extraInfo}
+            `;
+            
+            return div;
+        }
+
+        function createConnection(from, to, type) {
+            const line = document.createElement('div');
+            line.className = `connection ${type === 'critical' ? 'critical-path' : 'to-question'}`;
+            
+            const dx = to.x - from.x;
+            const dy = to.y - from.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            line.style.left = (from.x + 160) + 'px';
+            line.style.top = (from.y + 60) + 'px';
+            line.style.width = length + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            line.appendChild(arrow);
+            
+            return line;
+        }
+
+        function updateTransform() {
+            const canvas = document.getElementById('canvas');
+            canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
+        }
+
+        function resetView() {
+            scale = 0.15;
+            translateX = 100;
+            translateY = 100;
+            updateTransform();
+        }
+
+        function centerView() {
+            translateX = window.innerWidth / 2 - 1000;
+            translateY = window.innerHeight / 2 - 500;
+            updateTransform();
+        }
+
+        function showCriticalPath() {
+            scale = 0.2;
+            translateX = window.innerWidth / 2 - 500;
+            translateY = 100;
+            updateTransform();
+        }
+
+        const viewport = document.getElementById('viewport');
+
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const rect = viewport.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const newScale = Math.max(0.05, Math.min(2, scale * delta));
+            const canvasX = (mouseX - translateX) / scale;
+            const canvasY = (mouseY - translateY) / scale;
+            scale = newScale;
+            translateX = mouseX - canvasX * scale;
+            translateY = mouseY - canvasY * scale;
+            updateTransform();
+        });
+
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                isDragging = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                viewport.classList.add('dragging');
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                translateX += e.clientX - lastMouseX;
+                translateY += e.clientY - lastMouseY;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                updateTransform();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            viewport.classList.remove('dragging');
+        });
+    </script>
+</body>
+</html>
