@@ -73,6 +73,7 @@
         .connection {
             position: absolute; height: 2px; transform-origin: left center; z-index: -1;
             cursor: pointer; pointer-events: auto; transition: all 0.2s;
+            padding: 10px 0;
         }
         .connection.q-to-answer { background: #58a6ff; }
         .connection.answer-to-q { background: #f79009; height: 3px; }
@@ -567,7 +568,7 @@
                 
                 if (lastTouchDistance > 0) {
                     const delta = distance / lastTouchDistance;
-                    const newScale = Math.max(0.05, Math.min(2, scale * delta));
+                    const newScale = Math.max(0.05, Math.min(5, scale * delta));
                     
                     const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
                     const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
