@@ -247,7 +247,7 @@
                 const selectedId = `${criterion.id}_selected`;
                 nodeMap[selectedId] = { x: xBase + 600, y: yOffset };
                 
-                canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
+                createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer');
                 
                 if (criterion.alternatives && criterion.alternatives.length > 0) {
                     criterion.alternatives.forEach((alt, altIdx) => {
@@ -256,7 +256,7 @@
                         altNode.style.left = (xBase + 600) + 'px';
                         altNode.style.top = altY + 'px';
                         canvas.appendChild(altNode);
-                        canvas.appendChild(createConnection(nodeMap[questionId], { x: xBase + 600, y: altY }, 'q-to-answer'));
+                        createConnection(nodeMap[questionId], { x: xBase + 600, y: altY }, 'q-to-answer');
                     });
                 }
                 
@@ -284,7 +284,7 @@
                 const selectedId = `${criterion.id}_selected`;
                 nodeMap[selectedId] = { x: xOffset, y: yBase + 250 };
                 
-                canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
+                createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer');
                 
                 if (criterion.alternatives && criterion.alternatives.length > 0) {
                     criterion.alternatives.forEach((alt, altIdx) => {
@@ -293,7 +293,7 @@
                         altNode.style.left = altX + 'px';
                         altNode.style.top = (yBase + 250) + 'px';
                         canvas.appendChild(altNode);
-                        canvas.appendChild(createConnection(nodeMap[questionId], { x: altX, y: yBase + 250 }, 'q-to-answer'));
+                        createConnection(nodeMap[questionId], { x: altX, y: yBase + 250 }, 'q-to-answer');
                     });
                 }
                 
@@ -321,7 +321,7 @@
                 const selectedId = `${criterion.id}_selected`;
                 nodeMap[selectedId] = { x: xBase + 400, y: yOffset };
                 
-                canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
+                createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer');
                 
                 if (criterion.alternatives && criterion.alternatives.length > 0) {
                     criterion.alternatives.forEach((alt, altIdx) => {
@@ -330,7 +330,7 @@
                         altNode.style.left = (xBase + 400) + 'px';
                         altNode.style.top = altY + 'px';
                         canvas.appendChild(altNode);
-                        canvas.appendChild(createConnection(nodeMap[questionId], { x: xBase + 400, y: altY }, 'q-to-answer'));
+                        createConnection(nodeMap[questionId], { x: xBase + 400, y: altY }, 'q-to-answer');
                     });
                 }
                 
@@ -363,7 +363,7 @@
                 const selectedId = `${criterion.id}_selected`;
                 nodeMap[selectedId] = { x: xBase + 500, y: yOffset };
                 
-                canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
+                createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer');
                 
                 yOffset += 300;
             });
@@ -387,7 +387,7 @@
                 const selectedId = `${criterion.id}_selected`;
                 nodeMap[selectedId] = { x: xBase + 500, y: yOffset };
                 
-                canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
+                createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer');
                 
                 yOffset += 300;
             });
