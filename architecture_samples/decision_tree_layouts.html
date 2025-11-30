@@ -197,6 +197,24 @@
                             }
                         });
                     }
+                    
+                    // Стрелки от зависимостей к текущему вопросу
+                    if (criterion.requires && criterion.requires.length > 0) {
+                        const currentQId = `q${criterion.id}`;
+                        criterion.requires.forEach(reqId => {
+                            const reqNum = planData.nodeMapping ? Object.keys(planData.nodeMapping).find(k => planData.nodeMapping[k].selected === reqId) : null;
+                            if (reqNum) {
+                                const reqSelectedId = `${reqNum}_selected`;
+                                if (nodeMap[reqSelectedId] && nodeMap[currentQId]) {
+                                    canvas.appendChild(createConnection(
+                                        nodeMap[reqSelectedId],
+                                        nodeMap[currentQId],
+                                        'answer-to-q'
+                                    ));
+                                }
+                            }
+                        });
+                    }
                 });
             }, 100);
         }
