@@ -598,19 +598,32 @@
                 }
             });
             
+            // Функция пересчета всех стрелок связанных с нодой
+            const updateNodeArrows = (node) => {
+                if (node && node.arrowUpdateFunctions) {
+                    node.arrowUpdateFunctions.forEach(fn => fn());
+                }
+            };
+            
             line.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (line.classList.contains('locked')) {
                     line.classList.remove('locked');
                     unhighlightNodes();
-                    setTimeout(updateArrowPosition, 10);
+                    setTimeout(() => {
+                        updateNodeArrows(fromNode);
+                        updateNodeArrows(toNode);
+                    }, 10);
                 } else {
                     document.querySelectorAll('.connection.locked').forEach(c => c.classList.remove('locked'));
                     unhighlightNodes();
                     line.classList.add('locked');
                     line.classList.remove('highlighted');
                     highlightNodes();
-                    setTimeout(updateArrowPosition, 10);
+                    setTimeout(() => {
+                        updateNodeArrows(fromNode);
+                        updateNodeArrows(toNode);
+                    }, 10);
                 }
             });
             
@@ -686,6 +699,12 @@
                 line.style.width = len + 'px';
                 line.style.transform = `rotate(${ang}deg)`;
             };
+            
+            // Сохранение ссылки на функцию обновления для этой стрелки
+            if (!fromNode.arrowUpdateFunctions) fromNode.arrowUpdateFunctions = [];
+            if (!toNode.arrowUpdateFunctions) toNode.arrowUpdateFunctions = [];
+            fromNode.arrowUpdateFunctions.push(updateArrowPosition);
+            toNode.arrowUpdateFunctions.push(updateArrowPosition);
             
             if (fromNode) {
                 fromNode.addEventListener('mouseenter', updateArrowPosition);
