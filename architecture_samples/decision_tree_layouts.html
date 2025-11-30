@@ -213,18 +213,20 @@
                         });
                     }
                     
+                    // Стрелки от зависимостей к текущему вопросу
                     if (criterion.requires && criterion.requires.length > 0) {
+                        const currentQId = `q${criterion.id}`;
                         criterion.requires.forEach(reqId => {
-                            const reqCriterion = allCriteria.find(c => {
-                                const mapping = planData.nodeMapping && planData.nodeMapping[c.id];
-                                return mapping && mapping.selected === reqId;
-                            });
-                            if (reqCriterion && nodeMap[`${reqCriterion.id}_selected`] && nodeMap[`q${criterion.id}`]) {
-                                canvas.appendChild(createConnection(
-                                    nodeMap[`${reqCriterion.id}_selected`],
-                                    nodeMap[`q${criterion.id}`],
-                                    'answer-to-q'
-                                ));
+                            const reqNum = planData.nodeMapping ? Object.keys(planData.nodeMapping).find(k => planData.nodeMapping[k].selected === reqId) : null;
+                            if (reqNum) {
+                                const reqSelectedId = `${reqNum}_selected`;
+                                if (nodeMap[reqSelectedId] && nodeMap[currentQId]) {
+                                    canvas.appendChild(createConnection(
+                                        nodeMap[reqSelectedId],
+                                        nodeMap[currentQId],
+                                        'answer-to-q'
+                                    ));
+                                }
                             }
                         });
                     }
