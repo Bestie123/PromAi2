@@ -383,17 +383,116 @@
                 });
             };
             
+            const updateNodeArrows = (node) => {
+                if (node && node.arrowUpdateFunctions) {
+                    node.arrowUpdateFunctions.forEach(fn => fn());
+                }
+            };
+            
+            const updateArrowPosition = () => {
+                const SCALE_HIGHLIGHTED = 1.08;
+                
+                const nodes = document.querySelectorAll('.node');
+                let fn = null, tn = null;
+                nodes.forEach(node => {
+                    const x = parseInt(node.style.left);
+                    const y = parseInt(node.style.top);
+                    if (x === from.x && y === from.y) fn = node;
+                    if (x === to.x && y === to.y) tn = node;
+                });
+                
+                if (!fn || !tn) return;
+                
+                let fw = fn.offsetWidth, fh = fn.offsetHeight;
+                let tw = tn.offsetWidth, th = tn.offsetHeight;
+                let fromPosX = from.x, fromPosY = from.y;
+                let toPosX = to.x, toPosY = to.y;
+                
+                const fromHighlighted = fn.classList.contains('arrow-highlighted');
+                const toHighlighted = tn.classList.contains('arrow-highlighted');
+                
+                if (fromHighlighted) {
+                    const offsetX = fw * (SCALE_HIGHLIGHTED - 1) / 2;
+                    const offsetY = fh * (SCALE_HIGHLIGHTED - 1) / 2;
+                    fromPosX -= offsetX;
+                    fromPosY -= offsetY;
+                    fw *= SCALE_HIGHLIGHTED;
+                    fh *= SCALE_HIGHLIGHTED;
+                }
+                
+                if (toHighlighted) {
+                    const offsetX = tw * (SCALE_HIGHLIGHTED - 1) / 2;
+                    const offsetY = th * (SCALE_HIGHLIGHTED - 1) / 2;
+                    toPosX -= offsetX;
+                    toPosY -= offsetY;
+                    tw *= SCALE_HIGHLIGHTED;
+                    th *= SCALE_HIGHLIGHTED;
+                }
+                
+                const fcx = fromPosX + fw / 2, fcy = fromPosY + fh / 2;
+                const tcx = toPosX + tw / 2, tcy = toPosY + th / 2;
+                
+                const fi = getRectIntersection(fcx, fcy, tcx, tcy, fromPosX, fromPosY, fw, fh);
+                const ti = getRectIntersection(tcx, tcy, fcx, fcy, toPosX, toPosY, tw, th);
+                
+                const dx = tcx - fcx, dy = tcy - fcy;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const dirX = dx / dist, dirY = dy / dist;
+                
+                const fx = fi.x + dirX * (-5), fy = fi.y + dirY * (-5);
+                const tx = ti.x - dirX * 5, ty = ti.y - dirY * 5;
+                
+                const fdx = tx - fx, fdy = ty - fy;
+                const len = Math.sqrt(fdx * fdx + fdy * fdy);
+                const ang = Math.atan2(fdy, fdx) * 180 / Math.PI;
+                
+                line.style.left = fx + 'px';
+                line.style.top = fy + 'px';
+                line.style.width = len + 'px';
+                line.style.transform = `rotate(${ang}deg)`;
+            };
+            
+            if (!fromNode) fromNode = null;
+            if (!toNode) toNode = null;
+            
+            const nodes = document.querySelectorAll('.node');
+            nodes.forEach(node => {
+                const x = parseInt(node.style.left);
+                const y = parseInt(node.style.top);
+                if (x === from.x && y === from.y) fromNode = node;
+                if (x === to.x && y === to.y) toNode = node;
+            });
+            
+            if (fromNode) {
+                if (!fromNode.arrowUpdateFunctions) fromNode.arrowUpdateFunctions = [];
+                fromNode.arrowUpdateFunctions.push(updateArrowPosition);
+            }
+            if (toNode) {
+                if (!toNode.arrowUpdateFunctions) toNode.arrowUpdateFunctions = [];
+                toNode.arrowUpdateFunctions.push(updateArrowPosition);
+            }
+            
             line.addEventListener('touchstart', (e) => {
                 e.stopPropagation();
                 if (line.classList.contains('locked')) {
                     line.classList.remove('locked');
                     unhighlightNodes();
+                    setTimeout(() => {
+                        updateNodeArrows(fromNode);
+                        updateNodeArrows(toNode);
+                    }, 10);
                 } else {
+                    const oldHighlightedNodes = Array.from(document.querySelectorAll('.node.arrow-highlighted'));
                     document.querySelectorAll('.connection.locked').forEach(c => c.classList.remove('locked'));
                     unhighlightNodes();
                     line.classList.add('locked');
                     line.classList.remove('highlighted');
                     highlightNodes();
+                    setTimeout(() => {
+                        oldHighlightedNodes.forEach(node => updateNodeArrows(node));
+                        updateNodeArrows(fromNode);
+                        updateNodeArrows(toNode);
+                    }, 10);
                 }
             });
             
