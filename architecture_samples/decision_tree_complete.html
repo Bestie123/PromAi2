@@ -60,16 +60,18 @@
         
         .connection {
             position: absolute; height: 2px; transform-origin: left center; z-index: -1;
-            background: #f79009;
         }
+        .connection.q-to-answer { background: #58a6ff; }
+        .connection.answer-to-q { background: #f79009; height: 3px; }
         
         .arrow {
             position: absolute; width: 0; height: 0;
             border-left: 5px solid transparent;
             border-right: 5px solid transparent;
-            border-top: 8px solid #f79009;
+            border-top: 8px solid #58a6ff;
             right: -5px; top: -3px;
         }
+        .connection.answer-to-q .arrow { border-top-color: #f79009; }
         
         .controls {
             position: fixed; top: 20px; left: 20px; z-index: 1000;
@@ -159,7 +161,8 @@
                 // Связь: Вопрос → Выбранный ответ
                 canvas.appendChild(createConnection(
                     nodeMap[questionId], 
-                    nodeMap[selectedId]
+                    nodeMap[selectedId], 
+                    'q-to-answer'
                 ));
                 
                 // Альтернативы
@@ -174,7 +177,8 @@
                         // Связь: Вопрос → Альтернатива
                         canvas.appendChild(createConnection(
                             nodeMap[questionId], 
-                            { x: xBase + 600, y: altY }
+                            { x: xBase + 600, y: altY }, 
+                            'q-to-answer'
                         ));
                     });
                 }
@@ -189,7 +193,8 @@
                                 if (nodeMap[nextQId]) {
                                     canvas.appendChild(createConnection(
                                         nodeMap[selectedId],
-                                        nodeMap[nextQId]
+                                        nodeMap[nextQId],
+                                        'answer-to-q'
                                     ));
                                 }
                             }, 100);
@@ -207,7 +212,8 @@
                                 if (nodeMap[reqSelectedId] && nodeMap[questionId]) {
                                     canvas.appendChild(createConnection(
                                         nodeMap[reqSelectedId],
-                                        nodeMap[questionId]
+                                        nodeMap[questionId],
+                                        'answer-to-q'
                                     ));
                                 }
                             }, 100);
@@ -298,12 +304,21 @@
             return results.length > 0 ? `🔀 Совместимость: ${results.join('; ')}` : '';
         }
 
-        function createConnection(from, to) {
+        function createConnection(from, to, type) {
             const line = document.createElement('div');
-            line.className = 'connection';
+            line.className = `connection ${type}`;
             
-            const fromX = from.x;
-            const toX = to.x;
+            let fromX, toX;
+            if (type === 'answer-to-q') {
+                // От ответа к вопросу: выход из левой границы, вход в левую границу
+                fromX = from.x;
+                toX = to.x;
+            } else {
+                // От вопроса к ответу: выход из правой границы, вход в левую границу
+                fromX = from.x + 260;
+                toX = to.x;
+            }
+            
             const fromY = from.y + 50;
             const toY = to.y + 50;
             
