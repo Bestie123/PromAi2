@@ -498,8 +498,6 @@
             // Автоопределение оптимальных точек входа/выхода на основе взаимного расположения нод
             const nodeWidth = 260;
             const nodeHeight = 100;
-            const dx = to.x - from.x;
-            const dy = to.y - from.y;
             
             // Центры нод
             const fromCenterX = from.x + nodeWidth / 2;
@@ -508,8 +506,8 @@
             const toCenterY = to.y + nodeHeight / 2;
             
             // Определяем угол между нодами
-            const angle = Math.atan2(toCenterY - fromCenterY, toCenterX - fromCenterX);
-            const angleDeg = angle * 180 / Math.PI;
+            const connectionAngle = Math.atan2(toCenterY - fromCenterY, toCenterX - fromCenterX);
+            const angleDeg = connectionAngle * 180 / Math.PI;
             
             let fromX, fromY, toX, toY;
             
@@ -553,10 +551,10 @@
                 toY = toCenterY;
             }
             
-            const dx = toX - fromX;
-            const dy = toY - fromY;
-            const length = Math.sqrt(dx * dx + dy * dy);
-            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            const deltaX = toX - fromX;
+            const deltaY = toY - fromY;
+            const length = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const lineAngle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
             
             line.style.left = fromX + 'px';
             line.style.top = fromY + 'px';
