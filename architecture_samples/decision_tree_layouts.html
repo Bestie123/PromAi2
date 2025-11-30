@@ -69,7 +69,7 @@
             border-left: 5px solid transparent;
             border-right: 5px solid transparent;
             border-top: 8px solid #58a6ff;
-            right: -8px; top: -3px;
+            right: 0px; top: -3px;
         }
         .connection.answer-to-q .arrow { border-top-color: #f79009; }
         
@@ -461,26 +461,21 @@
             return results.length > 0 ? `🔀 Совместимость: ${results.join('; ')}` : '';
         }
 
-        // Создание стрелки между нодами
         function createConnection(from, to, type) {
             const line = document.createElement('div');
             line.className = `connection ${type}`;
             
-            let fromX, fromY, toX, toY;
+            let fromX, toX;
             if (type === 'answer-to-q') {
-                // Ответ → Вопрос: выход из левого края ответа, вход в верхний край вопроса
                 fromX = from.x;
-                fromY = from.y + 50;
-                toX = to.x + 130;
-                toY = to.y - 10;
+                toX = to.x;
             } else {
-                // Вопрос → Ответ: выход из правого края вопроса, вход в левый край ответа
                 fromX = from.x + 260;
-                fromY = from.y + 50;
-                toX = to.x - 10;
-                toY = to.y + 50;
+                toX = to.x;
             }
             
+            const fromY = from.y + 50;
+            const toY = to.y + 50;
             const dx = toX - fromX;
             const dy = toY - fromY;
             const length = Math.sqrt(dx * dx + dy * dy);
