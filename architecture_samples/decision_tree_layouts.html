@@ -30,7 +30,13 @@
         .node.arrow-highlighted { 
             transform: scale(1.08); 
             box-shadow: 0 0 20px rgba(88, 166, 255, 0.6); 
-            z-index: 101; 
+            z-index: 101;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        /* Анимация пульсации для выделенных нод */
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(88, 166, 255, 0.6); }
+            50% { box-shadow: 0 0 30px rgba(88, 166, 255, 0.9); }
         }
         
         .question { 
@@ -491,11 +497,22 @@
             
             let fromX, fromY, toX, toY;
             if (type === 'answer-to-q') {
-                // Ответ → Вопрос: выход из левого края ответа, вход в верхний край вопроса
-                fromX = from.x;
-                fromY = from.y + 50;
-                toX = to.x + 130;
-                toY = to.y - 10;
+                // Ответ → Вопрос: определяем направление стрелки
+                const goingUp = to.y < from.y; // Стрелка идет вверх
+                
+                if (goingUp) {
+                    // Стрелка вверх: выход из верхнего края ответа, вход в нижний край вопроса
+                    fromX = from.x + 130;
+                    fromY = from.y - 10;
+                    toX = to.x + 130;
+                    toY = to.y + 110; // Вход в низ ноды (высота ноды ~100px)
+                } else {
+                    // Стрелка вниз: выход из левого края ответа, вход в верхний край вопроса
+                    fromX = from.x;
+                    fromY = from.y + 50;
+                    toX = to.x + 130;
+                    toY = to.y - 10;
+                }
             } else {
                 // Вопрос → Ответ: выход из правого края вопроса, вход в левый край ответа
                 fromX = from.x + 260;
