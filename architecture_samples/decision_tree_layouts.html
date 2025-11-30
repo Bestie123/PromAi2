@@ -569,6 +569,7 @@
             arrow.className = 'arrow';
             line.appendChild(arrow);
             
+            // Функция подсветки связанных нод
             const highlightNodes = () => {
                 const nodes = document.querySelectorAll('.node');
                 nodes.forEach(node => {
@@ -580,12 +581,14 @@
                 });
             };
             
+            // Функция снятия подсветки нод
             const unhighlightNodes = () => {
                 document.querySelectorAll('.node.arrow-highlighted').forEach(n => {
                     n.classList.remove('arrow-highlighted');
                 });
             };
             
+            // Hover эффект для стрелки
             line.addEventListener('mouseenter', () => {
                 if (!line.classList.contains('locked')) {
                     line.classList.add('highlighted');
@@ -598,14 +601,18 @@
                 }
             });
             
+            // Клик на стрелку: фиксация подсветки нод
             line.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (line.classList.contains('locked')) {
+                    // Снять фиксацию
                     line.classList.remove('locked');
                     unhighlightNodes();
                 } else {
+                    // Снять фиксацию с других стрелок
                     document.querySelectorAll('.connection.locked').forEach(c => c.classList.remove('locked'));
                     unhighlightNodes();
+                    // Зафиксировать текущую стрелку
                     line.classList.add('locked');
                     line.classList.remove('highlighted');
                     highlightNodes();
@@ -790,6 +797,14 @@
                 lastMouseX = e.clientX;
                 lastMouseY = e.clientY;
                 viewport.classList.add('dragging');
+            }
+        });
+        
+        // Клик на пустое место: снять все фиксации стрелок
+        viewport.addEventListener('click', (e) => {
+            if (e.target === viewport || e.target.id === 'canvas') {
+                document.querySelectorAll('.connection.locked').forEach(c => c.classList.remove('locked'));
+                document.querySelectorAll('.node.arrow-highlighted').forEach(n => n.classList.remove('arrow-highlighted'));
             }
         });
 
