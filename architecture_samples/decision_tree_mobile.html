@@ -366,65 +366,6 @@
             arrow.className = 'arrow';
             line.appendChild(arrow);
             
-            const updateArrowPosition = () => {
-                const nodes = document.querySelectorAll('.node');
-                let fromNode = null, toNode = null;
-                
-                nodes.forEach(node => {
-                    const nodeX = parseInt(node.style.left);
-                    const nodeY = parseInt(node.style.top);
-                    if (nodeX === from.x && nodeY === from.y) fromNode = node;
-                    if (nodeX === to.x && nodeY === to.y) toNode = node;
-                });
-                
-                if (!fromNode || !toNode) return;
-                
-                const fromRect = fromNode.getBoundingClientRect();
-                const toRect = toNode.getBoundingClientRect();
-                const canvasRect = canvas.getBoundingClientRect();
-                
-                const fromWidth = fromRect.width / scale;
-                const fromHeight = fromRect.height / scale;
-                const toWidth = toRect.width / scale;
-                const toHeight = toRect.height / scale;
-                
-                const fromCenterX = from.x + fromWidth / 2;
-                const fromCenterY = from.y + fromHeight / 2;
-                const toCenterX = to.x + toWidth / 2;
-                const toCenterY = to.y + toHeight / 2;
-                
-                const fromIntersect = getRectIntersection(
-                    fromCenterX, fromCenterY, toCenterX, toCenterY,
-                    from.x, from.y, fromWidth, fromHeight
-                );
-                
-                const toIntersect = getRectIntersection(
-                    toCenterX, toCenterY, fromCenterX, fromCenterY,
-                    to.x, to.y, toWidth, toHeight
-                );
-                
-                const dx = toCenterX - fromCenterX;
-                const dy = toCenterY - fromCenterY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                const dirX = dx / distance;
-                const dirY = dy / distance;
-                
-                const fromX = fromIntersect.x + dirX * (-5);
-                const fromY = fromIntersect.y + dirY * (-5);
-                const toX = toIntersect.x - dirX * 5;
-                const toY = toIntersect.y - dirY * 5;
-                
-                const finalDx = toX - fromX;
-                const finalDy = toY - fromY;
-                const length = Math.sqrt(finalDx * finalDx + finalDy * finalDy);
-                const angle = Math.atan2(finalDy, finalDx) * 180 / Math.PI;
-                
-                line.style.left = fromX + 'px';
-                line.style.top = fromY + 'px';
-                line.style.width = length + 'px';
-                line.style.transform = `rotate(${angle}deg)`;
-            };
-            
             const highlightNodes = () => {
                 const nodes = document.querySelectorAll('.node');
                 nodes.forEach(node => {
@@ -432,20 +373,14 @@
                     const nodeY = parseInt(node.style.top);
                     if ((nodeX === from.x && nodeY === from.y) || (nodeX === to.x && nodeY === to.y)) {
                         node.classList.add('arrow-highlighted');
-                        if (!node.arrowUpdateFunctions) node.arrowUpdateFunctions = [];
-                        if (!node.arrowUpdateFunctions.includes(updateArrowPosition)) {
-                            node.arrowUpdateFunctions.push(updateArrowPosition);
-                        }
                     }
                 });
-                updateArrowPosition();
             };
             
             const unhighlightNodes = () => {
                 document.querySelectorAll('.node.arrow-highlighted').forEach(n => {
                     n.classList.remove('arrow-highlighted');
                 });
-                updateArrowPosition();
             };
             
             line.addEventListener('touchstart', (e) => {
