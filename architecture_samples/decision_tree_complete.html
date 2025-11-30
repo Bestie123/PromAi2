@@ -161,8 +161,7 @@
                 // Связь: Вопрос → Выбранный ответ
                 canvas.appendChild(createConnection(
                     nodeMap[questionId], 
-                    nodeMap[selectedId], 
-                    'q-to-answer'
+                    nodeMap[selectedId]
                 ));
                 
                 // Альтернативы
@@ -177,8 +176,7 @@
                         // Связь: Вопрос → Альтернатива
                         canvas.appendChild(createConnection(
                             nodeMap[questionId], 
-                            { x: xBase + 600, y: altY }, 
-                            'q-to-answer'
+                            { x: xBase + 600, y: altY }
                         ));
                     });
                 }
@@ -193,8 +191,7 @@
                                 if (nodeMap[nextQId]) {
                                     canvas.appendChild(createConnection(
                                         nodeMap[selectedId],
-                                        nodeMap[nextQId],
-                                        'answer-to-q'
+                                        nodeMap[nextQId]
                                     ));
                                 }
                             }, 100);
@@ -212,8 +209,7 @@
                                 if (nodeMap[reqSelectedId] && nodeMap[questionId]) {
                                     canvas.appendChild(createConnection(
                                         nodeMap[reqSelectedId],
-                                        nodeMap[questionId],
-                                        'answer-to-q'
+                                        nodeMap[questionId]
                                     ));
                                 }
                             }, 100);
@@ -304,11 +300,10 @@
             return results.length > 0 ? `🔀 Совместимость: ${results.join('; ')}` : '';
         }
 
-        function createConnection(from, to, type) {
+        function createConnection(from, to) {
             const line = document.createElement('div');
-            line.className = `connection ${type}`;
+            line.className = 'connection';
             
-            // Все стрелки выходят из левого края и входят в левый край
             const fromX = from.x;
             const toX = to.x;
             const fromY = from.y + 50;
