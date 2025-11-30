@@ -510,22 +510,33 @@
             const line = document.createElement('div');
             line.className = `connection ${type}`;
             
-            const nodeWidth = 300;
-            const nodeHeight = 150;
+            const nodes = document.querySelectorAll('.node');
+            let fromNode = null, toNode = null;
+            nodes.forEach(node => {
+                const x = parseInt(node.style.left);
+                const y = parseInt(node.style.top);
+                if (x === from.x && y === from.y) fromNode = node;
+                if (x === to.x && y === to.y) toNode = node;
+            });
             
-            const fromCenterX = from.x + nodeWidth / 2;
-            const fromCenterY = from.y + nodeHeight / 2;
-            const toCenterX = to.x + nodeWidth / 2;
-            const toCenterY = to.y + nodeHeight / 2;
+            const fromWidth = fromNode ? fromNode.offsetWidth : 280;
+            const fromHeight = fromNode ? fromNode.offsetHeight : 120;
+            const toWidth = toNode ? toNode.offsetWidth : 280;
+            const toHeight = toNode ? toNode.offsetHeight : 120;
+            
+            const fromCenterX = from.x + fromWidth / 2;
+            const fromCenterY = from.y + fromHeight / 2;
+            const toCenterX = to.x + toWidth / 2;
+            const toCenterY = to.y + toHeight / 2;
             
             const fromIntersect = getRectIntersection(
                 fromCenterX, fromCenterY, toCenterX, toCenterY,
-                from.x, from.y, nodeWidth, nodeHeight
+                from.x, from.y, fromWidth, fromHeight
             );
             
             const toIntersect = getRectIntersection(
                 toCenterX, toCenterY, fromCenterX, fromCenterY,
-                to.x, to.y, nodeWidth, nodeHeight
+                to.x, to.y, toWidth, toHeight
             );
             
             const dx = toCenterX - fromCenterX;
