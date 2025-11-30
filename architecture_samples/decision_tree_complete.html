@@ -69,7 +69,7 @@
             border-left: 5px solid transparent;
             border-right: 5px solid transparent;
             border-top: 8px solid #58a6ff;
-            right: -5px; top: -3px;
+            right: -5px; top: 50%; transform: translateY(-50%);
         }
         .connection.answer-to-q .arrow { border-top-color: #f79009; }
         
@@ -308,24 +308,39 @@
             const line = document.createElement('div');
             line.className = `connection ${type}`;
             
-            let fromX, toX;
-            if (type === 'answer-to-q') {
-                // От ответа к вопросу: выход из левой границы, вход в левую границу
-                fromX = from.x;
-                toX = to.x;
-            } else {
-                // От вопроса к ответу: выход из правой границы, вход в левую границу
-                fromX = from.x + 260;
-                toX = to.x;
-            }
+            const nodeWidth = 260;
+            const nodeHeight = 100;
             
-            const fromY = from.y + 50;
-            const toY = to.y + 50;
+            const fromCenterX = from.x + nodeWidth / 2;
+            const fromCenterY = from.y + nodeHeight / 2;
+            const toCenterX = to.x + nodeWidth / 2;
+            const toCenterY = to.y + nodeHeight / 2;
             
-            const dx = toX - fromX;
-            const dy = toY - fromY;
-            const length = Math.sqrt(dx * dx + dy * dy);
-            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            const fromIntersect = getRectIntersection(
+                fromCenterX, fromCenterY, toCenterX, toCenterY,
+                from.x, from.y, nodeWidth, nodeHeight
+            );
+            
+            const toIntersect = getRectIntersection(
+                toCenterX, toCenterY, fromCenterX, fromCenterY,
+                to.x, to.y, nodeWidth, nodeHeight
+            );
+            
+            const dx = toCenterX - fromCenterX;
+            const dy = toCenterY - fromCenterY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const dirX = dx / distance;
+            const dirY = dy / distance;
+            
+            const fromX = fromIntersect.x + dirX * (-5);
+            const fromY = fromIntersect.y + dirY * (-5);
+            const toX = toIntersect.x - dirX * 5;
+            const toY = toIntersect.y - dirY * 5;
+            
+            const finalDx = toX - fromX;
+            const finalDy = toY - fromY;
+            const length = Math.sqrt(finalDx * finalDx + finalDy * finalDy);
+            const angle = Math.atan2(finalDy, finalDx) * 180 / Math.PI;
             
             line.style.left = fromX + 'px';
             line.style.top = fromY + 'px';
@@ -337,6 +352,57 @@
             line.appendChild(arrow);
             
             return line;
+        }
+        
+        function getRectIntersection(cx, cy, tx, ty, rx, ry, rw, rh) {
+            const dx = tx - cx;
+            const dy = ty - cy;
+            
+            let minT = Infinity;
+            let resultX = cx;
+            let resultY = cy;
+            
+            if (dx !== 0) {
+                const t = (rx + rw - cx) / dx;
+                const y = cy + dy * t;
+                if (t > 0 && t < minT && y >= ry && y <= ry + rh) {
+                    minT = t;
+                    resultX = rx + rw;
+                    resultY = y;
+                }
+            }
+            
+            if (dx !== 0) {
+                const t = (rx - cx) / dx;
+                const y = cy + dy * t;
+                if (t > 0 && t < minT && y >= ry && y <= ry + rh) {
+                    minT = t;
+                    resultX = rx;
+                    resultY = y;
+                }
+            }
+            
+            if (dy !== 0) {
+                const t = (ry + rh - cy) / dy;
+                const x = cx + dx * t;
+                if (t > 0 && t < minT && x >= rx && x <= rx + rw) {
+                    minT = t;
+                    resultX = x;
+                    resultY = ry + rh;
+                }
+            }
+            
+            if (dy !== 0) {
+                const t = (ry - cy) / dy;
+                const x = cx + dx * t;
+                if (t > 0 && t < minT && x >= rx && x <= rx + rw) {
+                    minT = t;
+                    resultX = x;
+                    resultY = ry;
+                }
+            }
+            
+            return { x: resultX, y: resultY };
         }
 
         function updateTransform() {
