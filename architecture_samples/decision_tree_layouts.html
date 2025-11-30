@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>PromAi PKM - Варианты отображения диаграммы</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117; color: #c9d1d9; overflow: hidden;
+        }
+        #canvas { 
+            width: 25000px; height: 15000px; position: relative; 
+            background: radial-gradient(circle at 50% 50%, #161b22 0%, #0d1117 100%);
+            transform-origin: 0 0;
+        }
+        #viewport { 
+            width: 100vw; height: 100vh; overflow: hidden; position: relative;
+            cursor: grab; background: #0d1117;
+        }
+        #viewport.dragging { cursor: grabbing; }
+        
+        .node {
+            position: absolute; background: #21262d; border: 2px solid #30363d;
+            border-radius: 12px; padding: 14px; min-width: 260px; max-width: 300px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease;
+        }
+        .node:hover { transform: scale(1.05); box-shadow: 0 12px 48px rgba(0,0,0,0.6); z-index: 100; }
+        
+        .question { 
+            border-color: #58a6ff; border-width: 3px;
+            background: linear-gradient(135deg, #1b2332 0%, #21262d 100%);
+        }
+        .critical { 
+            border-color: #f85149; border-width: 2px;
+            background: linear-gradient(135deg, #2d1b1f 0%, #21262d 100%);
+        }
+        .parallel { 
+            border-color: #f79009; border-width: 2px;
+            background: linear-gradient(135deg, #2d2419 0%, #21262d 100%);
+        }
+        .rejected { 
+            border-color: #8b949e; border-width: 2px;
+            background: linear-gradient(135deg, #2d2d2d 0%, #21262d 100%); 
+            opacity: 0.5;
+        }
+        
+        .badge {
+            display: inline-block; padding: 3px 7px; border-radius: 5px; font-size: 10px;
+            font-weight: bold; margin-bottom: 6px; margin-right: 3px;
+        }
+        .badge.question { background: #58a6ff; color: #fff; }
+        .badge.critical { background: #f85149; color: #fff; }
+        .badge.parallel { background: #f79009; color: #fff; }
+        .badge.rejected { background: #8b949e; color: #fff; }
+        
+        .node h3 { font-size: 13px; margin-bottom: 6px; color: #f0f6fc; font-weight: 600; }
+        .node p { font-size: 11px; line-height: 1.3; margin-bottom: 5px; color: #8b949e; }
+        .node .info { font-size: 10px; color: #6e7681; margin-top: 4px; }
+        
+        .connection {
+            position: absolute; height: 2px; transform-origin: left center; z-index: -1;
+        }
+        .connection.q-to-answer { background: #58a6ff; }
+        .connection.answer-to-q { background: #f79009; height: 3px; }
+        
+        .arrow {
+            position: absolute; width: 0; height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 8px solid #58a6ff;
+            right: 0px; top: -3px;
+        }
+        .connection.answer-to-q .arrow { border-top-color: #f79009; }
+        
+        .controls {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.95); padding: 14px; border-radius: 8px;
+            border: 1px solid #30363d; max-width: 300px;
+        }
+        .controls button {
+            background: #238636; color: #fff; border: none; padding: 7px 11px;
+            border-radius: 6px; margin-right: 6px; margin-bottom: 6px; cursor: pointer; font-size: 11px;
+        }
+        .controls button:hover { background: #2ea043; }
+        .controls button.active { background: #1f6feb; }
+        .controls .legend { margin-top: 10px; font-size: 10px; color: #8b949e; }
+        .controls h4 { font-size: 12px; margin-bottom: 8px; color: #f0f6fc; }
+        
+        .zoom-info {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 7px 11px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h4>Варианты отображения:</h4>
+        <button onclick="setLayout('horizontal')" id="btn-horizontal" class="active">Горизонтальный</button>
+        <button onclick="setLayout('vertical')" id="btn-vertical">Вертикальный</button>
+        <button onclick="setLayout('compact')" id="btn-compact">Компактный</button>
+        <button onclick="setLayout('tree')" id="btn-tree">Древовидный</button>
+        
+        <div style="margin: 10px 0; border-top: 1px solid #30363d; padding-top: 10px;">
+            <button onclick="resetView()">Сброс</button>
+            <button onclick="centerView()">Центр</button>
+        </div>
+        
+        <div class="legend">
+            🔵 Вопрос → 🔴 Критический / 🟠 Параллельный → 🔵 След. вопрос
+        </div>
+    </div>
+    
+    <div class="zoom-info">
+        Зум: <span id="zoomLevel">100%</span> | Layout: <span id="layoutName">Горизонтальный</span>
+    </div>
+    
+    <div id="viewport">
+        <div id="canvas"></div>
+    </div>
+
+    <script>
+        let scale = 0.12;
+        let translateX = 100;
+        let translateY = 100;
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+        let currentLayout = 'horizontal';
+        let planData = null;
+
+        fetch('./development_plan.json')
+            .then(response => response.json())
+            .then(data => {
+                planData = data;
+                initCanvas(currentLayout);
+                updateTransform();
+            });
+
+        function setLayout(layout) {
+            currentLayout = layout;
+            document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${layout}`).classList.add('active');
+            
+            const names = {
+                horizontal: 'Горизонтальный',
+                vertical: 'Вертикальный',
+                compact: 'Компактный',
+                tree: 'Древовидный'
+            };
+            document.getElementById('layoutName').textContent = names[layout];
+            
+            if (planData) {
+                initCanvas(layout);
+                resetView();
+            }
+        }
+
+        function initCanvas(layout) {
+            const canvas = document.getElementById('canvas');
+            canvas.innerHTML = '';
+            const nodeMap = {};
+            
+            const critical = planData.levels[0].tracks.critical.criteria;
+            const parallel = planData.levels[0].tracks.parallel.criteria;
+            const allCriteria = [...critical, ...parallel];
+            
+            switch(layout) {
+                case 'horizontal':
+                    layoutHorizontal(canvas, allCriteria, nodeMap);
+                    break;
+                case 'vertical':
+                    layoutVertical(canvas, allCriteria, nodeMap);
+                    break;
+                case 'compact':
+                    layoutCompact(canvas, allCriteria, nodeMap);
+                    break;
+                case 'tree':
+                    layoutTree(canvas, allCriteria, nodeMap);
+                    break;
+            }
+            
+            // Отложенная отрисовка связей answer-to-q
+            setTimeout(() => {
+                allCriteria.forEach(criterion => {
+                    if (criterion.blocks && criterion.blocks.length > 0) {
+                        const selectedId = `${criterion.id}_selected`;
+                        criterion.blocks.forEach(blockedQId => {
+                            const nextQId = `q${blockedQId.replace('q', '')}`;
+                            if (nodeMap[selectedId] && nodeMap[nextQId]) {
+                                canvas.appendChild(createConnection(
+                                    nodeMap[selectedId],
+                                    nodeMap[nextQId],
+                                    'answer-to-q'
+                                ));
+                            }
+                        });
+                    }
+                });
+            }, 100);
+        }
+
+        // Layout 1: Горизонтальный (вопрос слева, ответы справа)
+        function layoutHorizontal(canvas, criteria, nodeMap) {
+            let yOffset = 300;
+            criteria.forEach(criterion => {
+                const questionId = `q${criterion.id}`;
+                const xBase = 500;
+                
+                const qNode = createQuestionNode(criterion);
+                qNode.style.left = xBase + 'px';
+                qNode.style.top = yOffset + 'px';
+                canvas.appendChild(qNode);
+                nodeMap[questionId] = { x: xBase, y: yOffset };
+                
+                const selectedNode = createAnswerNode(criterion, criterion.solution, criterion.priority);
+                selectedNode.style.left = (xBase + 600) + 'px';
+                selectedNode.style.top = yOffset + 'px';
+                canvas.appendChild(selectedNode);
+                const selectedId = `${criterion.id}_selected`;
+                nodeMap[selectedId] = { x: xBase + 600, y: yOffset };
+                
+                canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
+                
+                if (criterion.alternatives && criterion.alternatives.length > 0) {
+                    criterion.alternatives.forEach((alt, altIdx) => {
+                        const altNode = createAnswerNode(criterion, alt, 'rejected');
+                        const altY = yOffset + (altIdx + 1) * 200;
+                        altNode.style.left = (xBase + 600) + 'px';
+                        altNode.style.top = altY + 'px';
+                        canvas.appendChild(altNode);
+                        canvas.appendChild(createConnection(nodeMap[questionId], { x: xBase + 600, y: altY }, 'q-to-answer'));
+                    });
+                }
+                
+                yOffset += 400 + (criterion.alternatives ? criterion.alternatives.length * 200 : 0);
+            });
+        }
+
+        // Layout 2: Вертикальный (вопрос сверху, ответы снизу)
+        function layoutVertical(canvas, criteria, nodeMap) {
+            let xOffset = 500;
+            criteria.forEach(criterion => {
+                const questionId = `q${criterion.id}`;
+                const yBase = 300;
+                
+                const qNode = createQuestionNode(criterion);
+                qNode.style.left = xOffset + 'px';
+                qNode.style.top = yBase + 'px';
+                canvas.appendChild(qNode);
+                nodeMap[questionId] = { x: xOffset, y: yBase };
+                
+                const selectedNode = createAnswerNode(criterion, criterion.solution, criterion.priority);
+                selectedNode.style.left = xOffset + 'px';
+                selectedNode.style.top = (yBase + 250) + 'px';
+                canvas.appendChild(selectedNode);
+                const selectedId = `${criterion.id}_selected`;
+                nodeMap[selectedId] = { x: xOffset, y: yBase + 250 };
+                
+                canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
+                
+                if (criterion.alternatives && criterion.alternatives.length > 0) {
+                    criterion.alternatives.forEach((alt, altIdx) => {
+                        const altNode = createAnswerNode(criterion, alt, 'rejected');
+                        const altX = xOffset + (altIdx + 1) * 350;
+                        altNode.style.left = altX + 'px';
+                        altNode.style.top = (yBase + 250) + 'px';
+                        canvas.appendChild(altNode);
+                        canvas.appendChild(createConnection(nodeMap[questionId], { x: altX, y: yBase + 250 }, 'q-to-answer'));
+                    });
+                }
+                
+                xOffset += 700 + (criterion.alternatives ? criterion.alternatives.length * 350 : 0);
+            });
+        }
+
+        // Layout 3: Компактный (минимальные отступы)
+        function layoutCompact(canvas, criteria, nodeMap) {
+            let yOffset = 200;
+            criteria.forEach(criterion => {
+                const questionId = `q${criterion.id}`;
+                const xBase = 400;
+                
+                const qNode = createQuestionNode(criterion);
+                qNode.style.left = xBase + 'px';
+                qNode.style.top = yOffset + 'px';
+                canvas.appendChild(qNode);
+                nodeMap[questionId] = { x: xBase, y: yOffset };
+                
+                const selectedNode = createAnswerNode(criterion, criterion.solution, criterion.priority);
+                selectedNode.style.left = (xBase + 400) + 'px';
+                selectedNode.style.top = yOffset + 'px';
+                canvas.appendChild(selectedNode);
+                const selectedId = `${criterion.id}_selected`;
+                nodeMap[selectedId] = { x: xBase + 400, y: yOffset };
+                
+                canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
+                
+                if (criterion.alternatives && criterion.alternatives.length > 0) {
+                    criterion.alternatives.forEach((alt, altIdx) => {
+                        const altNode = createAnswerNode(criterion, alt, 'rejected');
+                        const altY = yOffset + (altIdx + 1) * 120;
+                        altNode.style.left = (xBase + 400) + 'px';
+                        altNode.style.top = altY + 'px';
+                        canvas.appendChild(altNode);
+                        canvas.appendChild(createConnection(nodeMap[questionId], { x: xBase + 400, y: altY }, 'q-to-answer'));
+                    });
+                }
+                
+                yOffset += 250 + (criterion.alternatives ? criterion.alternatives.length * 120 : 0);
+            });
+        }
+
+        // Layout 4: Древовидный (группировка по приоритетам)
+        function layoutTree(canvas, criteria, nodeMap) {
+            const critical = criteria.filter(c => c.priority === 'critical');
+            const parallel = criteria.filter(c => c.priority === 'parallel');
+            
+            let yOffset = 300;
+            
+            // Критические слева
+            critical.forEach(criterion => {
+                const questionId = `q${criterion.id}`;
+                const xBase = 500;
+                
+                const qNode = createQuestionNode(criterion);
+                qNode.style.left = xBase + 'px';
+                qNode.style.top = yOffset + 'px';
+                canvas.appendChild(qNode);
+                nodeMap[questionId] = { x: xBase, y: yOffset };
+                
+                const selectedNode = createAnswerNode(criterion, criterion.solution, criterion.priority);
+                selectedNode.style.left = (xBase + 500) + 'px';
+                selectedNode.style.top = yOffset + 'px';
+                canvas.appendChild(selectedNode);
+                const selectedId = `${criterion.id}_selected`;
+                nodeMap[selectedId] = { x: xBase + 500, y: yOffset };
+                
+                canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
+                
+                yOffset += 300;
+            });
+            
+            // Параллельные справа
+            yOffset = 300;
+            parallel.forEach(criterion => {
+                const questionId = `q${criterion.id}`;
+                const xBase = 2000;
+                
+                const qNode = createQuestionNode(criterion);
+                qNode.style.left = xBase + 'px';
+                qNode.style.top = yOffset + 'px';
+                canvas.appendChild(qNode);
+                nodeMap[questionId] = { x: xBase, y: yOffset };
+                
+                const selectedNode = createAnswerNode(criterion, criterion.solution, criterion.priority);
+                selectedNode.style.left = (xBase + 500) + 'px';
+                selectedNode.style.top = yOffset + 'px';
+                canvas.appendChild(selectedNode);
+                const selectedId = `${criterion.id}_selected`;
+                nodeMap[selectedId] = { x: xBase + 500, y: yOffset };
+                
+                canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
+                
+                yOffset += 300;
+            });
+        }
+
+        function createQuestionNode(criterion) {
+            const div = document.createElement('div');
+            div.className = 'node question';
+            div.innerHTML = `
+                <div class="badge question">❓ ВОПРОС</div>
+                <h3>№${criterion.id} • ${criterion.question}</h3>
+                <p>${criterion.title}</p>
+                <div class="info">Week ${criterion.week || '?'} | ${criterion.time}</div>
+            `;
+            return div;
+        }
+
+        function createAnswerNode(criterion, solution, priority) {
+            const div = document.createElement('div');
+            div.className = `node ${priority}`;
+            const badgeText = priority === 'critical' ? '🔴 КРИТИЧЕСКИЙ' :
+                             priority === 'parallel' ? '🟠 ПАРАЛЛЕЛЬНЫЙ' : '❌ ОТКЛОНЕНО';
+            const reqText = criterion.requires && criterion.requires.length > 0 
+                ? `📋 Требует: ${criterion.requires.length}` : '';
+            const blockText = criterion.blocks && criterion.blocks.length > 0 
+                ? `🚫 Блокирует: №${criterion.blocks.map(b => b.replace('q', '')).join(', №')}` : '';
+            
+            div.innerHTML = `
+                <div class="badge ${priority}">${badgeText}</div>
+                <h3>${solution.name}</h3>
+                <p>${solution.description}</p>
+                <div class="info">${reqText}</div>
+                <div class="info">${blockText}</div>
+            `;
+            return div;
+        }
+
+        function createConnection(from, to, type) {
+            const line = document.createElement('div');
+            line.className = `connection ${type}`;
+            
+            let fromX, toX;
+            if (type === 'answer-to-q') {
+                fromX = from.x;
+                toX = to.x;
+            } else {
+                fromX = from.x + 260;
+                toX = to.x;
+            }
+            
+            const fromY = from.y + 50;
+            const toY = to.y + 50;
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            line.style.left = fromX + 'px';
+            line.style.top = fromY + 'px';
+            line.style.width = length + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            line.appendChild(arrow);
+            
+            return line;
+        }
+
+        function updateTransform() {
+            const canvas = document.getElementById('canvas');
+            canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
+        }
+
+        function resetView() {
+            scale = 0.12;
+            translateX = 100;
+            translateY = 100;
+            updateTransform();
+        }
+
+        function centerView() {
+            translateX = window.innerWidth / 2 - 800;
+            translateY = 100;
+            updateTransform();
+        }
+
+        const viewport = document.getElementById('viewport');
+
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const rect = viewport.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const newScale = Math.max(0.05, Math.min(2, scale * delta));
+            const canvasX = (mouseX - translateX) / scale;
+            const canvasY = (mouseY - translateY) / scale;
+            scale = newScale;
+            translateX = mouseX - canvasX * scale;
+            translateY = mouseY - canvasY * scale;
+            updateTransform();
+        });
+
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                isDragging = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                viewport.classList.add('dragging');
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                translateX += e.clientX - lastMouseX;
+                translateY += e.clientY - lastMouseY;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                updateTransform();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            viewport.classList.remove('dragging');
+        });
+    </script>
+</body>
+</html>
