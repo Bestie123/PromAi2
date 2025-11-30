@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Transform Scale со смещением стрелок - варианты</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif;
+            background: #0d1117; 
+            color: #c9d1d9; 
+            padding: 20px;
+        }
+        
+        .variant {
+            margin-bottom: 60px;
+            border: 2px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+            background: #161b22;
+        }
+        
+        h2 { color: #58a6ff; margin-bottom: 15px; }
+        
+        .canvas {
+            position: relative;
+            width: 800px;
+            height: 300px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+        }
+        
+        .node {
+            position: absolute;
+            background: #21262d;
+            border: 2px solid #58a6ff;
+            border-radius: 8px;
+            padding: 14px;
+            width: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .node:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.6);
+        }
+        
+        .connection {
+            position: absolute;
+            height: 3px;
+            background: #f79009;
+            transform-origin: left center;
+            transition: all 0.3s ease;
+        }
+        
+        .arrow {
+            position: absolute;
+            width: 0; height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 10px solid #f79009;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+<body>
+    <h1>Transform Scale (1.1x) со смещением стрелок - варианты расчета</h1>
+    
+    <div class="variant">
+        <h2>Вариант A: Умножение размеров на scale</h2>
+        <p>offsetWidth/Height * 1.1 при hover</p>
+        <div class="canvas" id="canvas-a"></div>
+    </div>
+    
+    <div class="variant">
+        <h2>Вариант B: Смещение позиции на (scale-1)/2</h2>
+        <p>Учет смещения центра при scale: offset = size * (1.1 - 1) / 2</p>
+        <div class="canvas" id="canvas-b"></div>
+    </div>
+    
+    <div class="variant">
+        <h2>Вариант C: getBoundingClientRect() с учетом transform</h2>
+        <p>Использование реальных размеров после трансформации</p>
+        <div class="canvas" id="canvas-c"></div>
+    </div>
+    
+    <div class="variant">
+        <h2>Вариант D: Смещение стрелки на scale процент</h2>
+        <p>Стрелка двигается пропорционально scale</p>
+        <div class="canvas" id="canvas-d"></div>
+    </div>
+    
+    <div class="variant">
+        <h2>Вариант E: Комбинированный (размер + позиция)</h2>
+        <p>Размер * scale + смещение позиции</p>
+        <div class="canvas" id="canvas-e"></div>
+    </div>
+
+    <script>
+        const nodes = [
+            { x: 50, y: 100, label: 'Нода 1' },
+            { x: 300, y: 100, label: 'Нода 2' },
+            { x: 550, y: 100, label: 'Нода 3' }
+        ];
+        
+        const SCALE = 1.1;
+        
+        ['a', 'b', 'c', 'd', 'e'].forEach(variant => {
+            const canvas = document.getElementById(`canvas-${variant}`);
+            
+            nodes.forEach(node => {
+                const div = document.createElement('div');
+                div.className = 'node';
+                div.style.left = node.x + 'px';
+                div.style.top = node.y + 'px';
+                div.textContent = node.label;
+                canvas.appendChild(div);
+                
+                div.addEventListener('mouseenter', () => updateArrows(canvas, variant));
+                div.addEventListener('mouseleave', () => updateArrows(canvas, variant));
+            });
+            
+            createConnection(canvas, nodes[0], nodes[1], variant);
+            createConnection(canvas, nodes[1], nodes[2], variant);
+        });
+        
+        function createConnection(canvas, from, to, variant) {
+            const line = document.createElement('div');
+            line.className = 'connection';
+            line.dataset.fromX = from.x;
+            line.dataset.fromY = from.y;
+            line.dataset.toX = to.x;
+            line.dataset.toY = to.y;
+            
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            line.appendChild(arrow);
+            
+            canvas.appendChild(line);
+            updateArrow(canvas, line, variant);
+        }
+        
+        function updateArrows(canvas, variant) {
+            canvas.querySelectorAll('.connection').forEach(line => {
+                updateArrow(canvas, line, variant);
+            });
+        }
+        
+        function updateArrow(canvas, line, variant) {
+            const fromX = parseInt(line.dataset.fromX);
+            const fromY = parseInt(line.dataset.fromY);
+            const toX = parseInt(line.dataset.toX);
+            const toY = parseInt(line.dataset.toY);
+            
+            let fromNode = null, toNode = null;
+            canvas.querySelectorAll('.node').forEach(node => {
+                const x = parseInt(node.style.left);
+                const y = parseInt(node.style.top);
+                if (x === fromX && y === fromY) fromNode = node;
+                if (x === toX && y === toY) toNode = node;
+            });
+            
+            if (!fromNode || !toNode) return;
+            
+            let fromWidth, fromHeight, toWidth, toHeight;
+            let fromPosX = fromX, fromPosY = fromY;
+            let toPosX = toX, toPosY = toY;
+            
+            const fromHover = fromNode.matches(':hover');
+            const toHover = toNode.matches(':hover');
+            
+            switch(variant) {
+                case 'a': // Умножение размеров на scale
+                    fromWidth = fromNode.offsetWidth * (fromHover ? SCALE : 1);
+                    fromHeight = fromNode.offsetHeight * (fromHover ? SCALE : 1);
+                    toWidth = toNode.offsetWidth * (toHover ? SCALE : 1);
+                    toHeight = toNode.offsetHeight * (toHover ? SCALE : 1);
+                    break;
+                    
+                case 'b': // Смещение позиции
+                    fromWidth = fromNode.offsetWidth;
+                    fromHeight = fromNode.offsetHeight;
+                    toWidth = toNode.offsetWidth;
+                    toHeight = toNode.offsetHeight;
+                    if (fromHover) {
+                        const offset = fromWidth * (SCALE - 1) / 2;
+                        fromPosX -= offset;
+                        fromPosY -= offset;
+                        fromWidth *= SCALE;
+                        fromHeight *= SCALE;
+                    }
+                    if (toHover) {
+                        const offset = toWidth * (SCALE - 1) / 2;
+                        toPosX -= offset;
+                        toPosY -= offset;
+                        toWidth *= SCALE;
+                        toHeight *= SCALE;
+                    }
+                    break;
+                    
+                case 'c': // getBoundingClientRect
+                    const fromRect = fromNode.getBoundingClientRect();
+                    const toRect = toNode.getBoundingClientRect();
+                    const canvasRect = canvas.getBoundingClientRect();
+                    fromWidth = fromRect.width;
+                    fromHeight = fromRect.height;
+                    toWidth = toRect.width;
+                    toHeight = toRect.height;
+                    fromPosX = fromRect.left - canvasRect.left;
+                    fromPosY = fromRect.top - canvasRect.top;
+                    toPosX = toRect.left - canvasRect.left;
+                    toPosY = toRect.top - canvasRect.top;
+                    break;
+                    
+                case 'd': // Смещение стрелки пропорционально
+                    fromWidth = fromNode.offsetWidth;
+                    fromHeight = fromNode.offsetHeight;
+                    toWidth = toNode.offsetWidth;
+                    toHeight = toNode.offsetHeight;
+                    const scaleOffset = (SCALE - 1) * 50; // 50 = половина размера
+                    if (fromHover) {
+                        fromPosX -= scaleOffset;
+                        fromPosY -= scaleOffset;
+                    }
+                    if (toHover) {
+                        toPosX -= scaleOffset;
+                        toPosY -= scaleOffset;
+                    }
+                    break;
+                    
+                case 'e': // Комбинированный
+                    fromWidth = fromNode.offsetWidth;
+                    fromHeight = fromNode.offsetHeight;
+                    toWidth = toNode.offsetWidth;
+                    toHeight = toNode.offsetHeight;
+                    if (fromHover) {
+                        const offsetX = fromWidth * (SCALE - 1) / 2;
+                        const offsetY = fromHeight * (SCALE - 1) / 2;
+                        fromPosX -= offsetX;
+                        fromPosY -= offsetY;
+                        fromWidth *= SCALE;
+                        fromHeight *= SCALE;
+                    }
+                    if (toHover) {
+                        const offsetX = toWidth * (SCALE - 1) / 2;
+                        const offsetY = toHeight * (SCALE - 1) / 2;
+                        toPosX -= offsetX;
+                        toPosY -= offsetY;
+                        toWidth *= SCALE;
+                        toHeight *= SCALE;
+                    }
+                    break;
+            }
+            
+            const fromCenterX = fromPosX + fromWidth / 2;
+            const fromCenterY = fromPosY + fromHeight / 2;
+            const toCenterX = toPosX + toWidth / 2;
+            const toCenterY = toPosY + toHeight / 2;
+            
+            const fromIntersect = getRectIntersection(
+                fromCenterX, fromCenterY, toCenterX, toCenterY,
+                fromPosX, fromPosY, fromWidth, fromHeight
+            );
+            
+            const toIntersect = getRectIntersection(
+                toCenterX, toCenterY, fromCenterX, fromCenterY,
+                toPosX, toPosY, toWidth, toHeight
+            );
+            
+            const dx = toCenterX - fromCenterX;
+            const dy = toCenterY - fromCenterY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const dirX = dx / distance;
+            const dirY = dy / distance;
+            
+            const startX = fromIntersect.x + dirX * (-5);
+            const startY = fromIntersect.y + dirY * (-5);
+            const endX = toIntersect.x - dirX * 5;
+            const endY = toIntersect.y - dirY * 5;
+            
+            const finalDx = endX - startX;
+            const finalDy = endY - startY;
+            const length = Math.sqrt(finalDx * finalDx + finalDy * finalDy);
+            const angle = Math.atan2(finalDy, finalDx) * 180 / Math.PI;
+            
+            line.style.left = startX + 'px';
+            line.style.top = startY + 'px';
+            line.style.width = length + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+        }
+        
+        function getRectIntersection(cx, cy, tx, ty, rx, ry, rw, rh) {
+            const dx = tx - cx;
+            const dy = ty - cy;
+            
+            let minT = Infinity;
+            let resultX = cx;
+            let resultY = cy;
+            
+            if (dx !== 0) {
+                const t = (rx + rw - cx) / dx;
+                const y = cy + dy * t;
+                if (t > 0 && t < minT && y >= ry && y <= ry + rh) {
+                    minT = t;
+                    resultX = rx + rw;
+                    resultY = y;
+                }
+            }
+            
+            if (dx !== 0) {
+                const t = (rx - cx) / dx;
+                const y = cy + dy * t;
+                if (t > 0 && t < minT && y >= ry && y <= ry + rh) {
+                    minT = t;
+                    resultX = rx;
+                    resultY = y;
+                }
+            }
+            
+            if (dy !== 0) {
+                const t = (ry + rh - cy) / dy;
+                const x = cx + dx * t;
+                if (t > 0 && t < minT && x >= rx && x <= rx + rw) {
+                    minT = t;
+                    resultX = x;
+                    resultY = ry + rh;
+                }
+            }
+            
+            if (dy !== 0) {
+                const t = (ry - cy) / dy;
+                const x = cx + dx * t;
+                if (t > 0 && t < minT && x >= rx && x <= rx + rw) {
+                    minT = t;
+                    resultX = x;
+                    resultY = ry;
+                }
+            }
+            
+            return { x: resultX, y: resultY };
+        }
+    </script>
+</body>
+</html>
