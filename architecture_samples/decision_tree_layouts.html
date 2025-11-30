@@ -578,10 +578,6 @@
 
         viewport.addEventListener('mousedown', (e) => {
             if (e.button === 0) {
-                // Если клик не по стрелке - убираем все locked
-                if (!e.target.closest('.connection')) {
-                    document.querySelectorAll('.connection.locked').forEach(c => c.classList.remove('locked'));
-                }
                 isDragging = true;
                 lastMouseX = e.clientX;
                 lastMouseY = e.clientY;
