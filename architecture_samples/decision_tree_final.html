@@ -179,17 +179,30 @@
         }
 
         function findNodeByRequireId(nodeMap, requireId) {
-            for (let id in nodeMap) {
-                const node = nodeMap[id];
-                const mapping = {
-                    'modular-arch': 1, 'modular-code': 29, 'all-blocks': 2,
-                    'uuid-v4': 3, 'nested-blocks': 4, 'yjs-crdt': 13,
-                    'crdt-only': 16, 'declarative-ui': 11, 'json-storage': 9,
-                    'refs-uuid': 7, 'plugin-unified': 26, 'virtual-scrolling': 21
-                };
-                if (mapping[requireId] == id) return node;
-            }
-            return null;
+            const mapping = {
+                'modular-arch': 1, 'modular-code': 29, 'all-blocks': 2,
+                'uuid-v4': 3, 'nested-blocks': 4, 'yjs-crdt': 13,
+                'crdt-only': 16, 'declarative-ui': 11, 'json-storage': 9,
+                'refs-uuid': 7, 'plugin-unified': 26, 'virtual-scrolling': 21,
+                'uuid-v7': 3, 'automerge-crdt': 13, 'event-sourcing-separate': 14,
+                'atomic-transactions': 17, 'markdown-rich': 6, 'wysiwyg-rich': 6,
+                'drag-drop-native': 5, 'drag-drop-lib': 5, 'sqlite-storage': 9,
+                'hybrid-storage': 9, 'offline-full': 10, 'offline-partial': 10,
+                'imperative-ui': 11, 'zero-runtime': 12, 'stateful-runtime': 12,
+                'no-global-state': 20, 'global-state': 20, 'json-schema': 15,
+                'typescript-schema': 15, 'zod-schema': 15, 'refs-alias': 7,
+                'backlinks-auto': 8, 'backlinks-manual': 8, 'refs-crdt-first': 18,
+                'refs-crdt-secondary': 18, 'flat-graph': 19, 'page-hierarchy': 19,
+                'web-workers-all': 22, 'web-workers-search': 22, 'circular-render': 23,
+                'circular-creation': 23, 'e2ee-ready': 24, 'e2ee-later': 24,
+                'crdt-merge': 25, 'manual-merge': 25, 'composite-blocks': 27,
+                'simple-blocks': 27, 'block-state-json': 28, 'block-state-simple': 28,
+                'monolith-code': 29, 'monolith-arch': 1, 'mixed-model': 2,
+                'flat-only': 4, 'simple-ops': 17, 'event-sourcing-crdt': 14,
+                'crdt-hybrid': 16, 'lazy-loading': 21, 'plugin-mixed': 26
+            };
+            const criterionId = mapping[requireId];
+            return criterionId ? nodeMap[criterionId] : null;
         }
 
         function createCriterionNode(criterion, type) {
@@ -202,15 +215,29 @@
             let extraInfo = '';
             if (criterion.week) extraInfo += `<div class="week">Week ${criterion.week}</div>`;
             
-            const reqNums = criterion.requires.map(r => {
-                const mapping = {
-                    'modular-arch': 1, 'modular-code': 29, 'all-blocks': 2,
-                    'uuid-v4': 3, 'nested-blocks': 4, 'yjs-crdt': 13,
-                    'crdt-only': 16, 'declarative-ui': 11, 'json-storage': 9,
-                    'refs-uuid': 7, 'plugin-unified': 26, 'virtual-scrolling': 21
-                };
-                return mapping[r] || r;
-            }).filter(Boolean);
+            const mapping = {
+                'modular-arch': 1, 'modular-code': 29, 'all-blocks': 2,
+                'uuid-v4': 3, 'nested-blocks': 4, 'yjs-crdt': 13,
+                'crdt-only': 16, 'declarative-ui': 11, 'json-storage': 9,
+                'refs-uuid': 7, 'plugin-unified': 26, 'virtual-scrolling': 21,
+                'uuid-v7': 3, 'automerge-crdt': 13, 'event-sourcing-separate': 14,
+                'atomic-transactions': 17, 'markdown-rich': 6, 'wysiwyg-rich': 6,
+                'drag-drop-native': 5, 'drag-drop-lib': 5, 'sqlite-storage': 9,
+                'hybrid-storage': 9, 'offline-full': 10, 'offline-partial': 10,
+                'imperative-ui': 11, 'zero-runtime': 12, 'stateful-runtime': 12,
+                'no-global-state': 20, 'global-state': 20, 'json-schema': 15,
+                'typescript-schema': 15, 'zod-schema': 15, 'refs-alias': 7,
+                'backlinks-auto': 8, 'backlinks-manual': 8, 'refs-crdt-first': 18,
+                'refs-crdt-secondary': 18, 'flat-graph': 19, 'page-hierarchy': 19,
+                'web-workers-all': 22, 'web-workers-search': 22, 'circular-render': 23,
+                'circular-creation': 23, 'e2ee-ready': 24, 'e2ee-later': 24,
+                'crdt-merge': 25, 'manual-merge': 25, 'composite-blocks': 27,
+                'simple-blocks': 27, 'block-state-json': 28, 'block-state-simple': 28,
+                'monolith-code': 29, 'monolith-arch': 1, 'mixed-model': 2,
+                'flat-only': 4, 'simple-ops': 17, 'event-sourcing-crdt': 14,
+                'crdt-hybrid': 16, 'lazy-loading': 21, 'plugin-mixed': 26
+            };
+            const reqNums = criterion.requires.map(r => mapping[r] || r).filter(Boolean);
             
             const blockNums = criterion.blocks.map(b => b.replace('q', '')).filter(Boolean);
             
