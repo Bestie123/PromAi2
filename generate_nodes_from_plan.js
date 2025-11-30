@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 /**
  * Генератор nodes_data.json из development_plan.json
- * Создает структуру для интерактивных диаграмм
  */
 
 const fs = require('fs');
@@ -14,56 +13,54 @@ console.log('🔄 Читаю development_plan.json...');
 const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
 
 const nodes = [];
-
-// Генерируем узлы для каждого критерия
 const allCriteria = [
   ...plan.levels[0].tracks.critical.criteria,
   ...plan.levels[0].tracks.parallel.criteria
 ];
 
 allCriteria.forEach(criterion => {
-  const criteriaId = criterion.id;
+  const id = criterion.id;
+  const mapping = plan.nodeMapping[id];
   
   // Узел вопроса
   nodes.push({
-    id: `q${criteriaId}`,
+    id: mapping.question,
     type: 'question',
     title: `❓ ${criterion.question}`,
     description: criterion.title,
     details: `Варианты: ${criterion.solution.name} | ${criterion.alternatives.map(a => a.name).join(' | ')}`,
-    children: [
-      `${criterion.solution.name.toLowerCase().replace(/\s+/g, '-')}`,
-      ...criterion.alternatives.map(a => a.name.toLowerCase().replace(/[⚡📦✏️🏷️🔄⚙️⏳🔷📝🔍]/g, '').trim().replace(/\s+/g, '-'))
-    ],
-    criteriaId
+    children: [mapping.selected, ...mapping.alternatives],
+    criteriaId: id
   });
   
   // Узел выбранного решения
-  const solutionId = criterion.solution.name.toLowerCase().replace(/\s+/g, '-');
+  const emoji = criterion.solution.name.includes('v4') ? '🎲' : criterion.solution.name.includes('Markdown') ? '📝' : '✅';
   nodes.push({
-    id: solutionId,
+    id: mapping.selected,
     type: criterion.priority === 'critical' ? 'critical' : 'important',
-    title: `✅ ${criterion.solution.name}`,
+    title: `${emoji} ${criterion.solution.name}`,
     description: criterion.solution.description,
-    details: `➕ ${criterion.solution.pros.join(', ')} ➖ ${criterion.solution.cons.join(', ')}${criterion.week ? ` | Week ${criterion.week}` : ''}${criterion.requires.length ? ` | Требует: ${criterion.requires.join(', ')}` : ''}${criterion.blocks.length ? ` | Блокирует: ${criterion.blocks.join(', ')}` : ''}`,
+    details: `➕ ${criterion.solution.pros.join(', ')} ➖ ${criterion.solution.cons.join(', ')}${criterion.week ? ` | Week ${criterion.week}` : ''}${criterion.requires.length ? ` | Требует: ${criterion.requires.join(', ')}` : ''}`,
     children: [],
-    criteriaId,
+    criteriaId: id,
     week: criterion.week,
     dependencies: criterion.requires,
     blocks: criterion.blocks
   });
   
   // Узлы альтернатив
-  criterion.alternatives.forEach(alt => {
-    const altId = alt.name.toLowerCase().replace(/[⚡📦✏️🏷️🔄⚙️⏳🔷📝🔍❌]/g, '').trim().replace(/\s+/g, '-');
+  criterion.alternatives.forEach((alt, idx) => {
+    const altId = mapping.alternatives[idx];
+    const altEmoji = alt.type === 'rejected' ? '❌' : alt.name.includes('SQLite') ? '⚡' : alt.name.includes('v7') ? '⏰' : alt.name.includes('Библиотека') ? '📦' : alt.name.includes('WYSIWYG') ? '✏️' : alt.name.includes('алиасу') ? '🏷️' : '🔄';
+    
     nodes.push({
       id: altId,
-      type: alt.type === 'rejected' ? 'rejected' : 'important',
-      title: `${alt.type === 'rejected' ? '❌' : '🔄'} ${alt.name}`,
+      type: alt.type === 'rejected' ? 'rejected' : alt.type === 'alternative' ? 'important' : 'flexible',
+      title: `${altEmoji} ${alt.name}`,
       description: alt.description,
       details: `➕ ${alt.pros.join(', ')} ➖ ${alt.cons.join(', ')}`,
       children: [],
-      criteriaId
+      criteriaId: id
     });
   });
 });
