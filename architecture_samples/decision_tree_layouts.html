@@ -511,43 +511,43 @@
             
             let fromX, fromY, toX, toY;
             
-            // Определяем точку выхода из исходной ноды
+            // Определяем точку выхода из исходной ноды (НА границе)
             if (angleDeg >= -45 && angleDeg < 45) {
-                // Выход справа
+                // Выход справа - на правой границе
                 fromX = from.x + nodeWidth;
                 fromY = fromCenterY;
             } else if (angleDeg >= 45 && angleDeg < 135) {
-                // Выход снизу
+                // Выход снизу - на нижней границе
                 fromX = fromCenterX;
-                fromY = from.y + nodeHeight + 10;
+                fromY = from.y + nodeHeight;
             } else if (angleDeg >= -135 && angleDeg < -45) {
-                // Выход сверху
+                // Выход сверху - на верхней границе
                 fromX = fromCenterX;
-                fromY = from.y - 10;
+                fromY = from.y;
             } else {
-                // Выход слева
-                fromX = from.x - 10;
+                // Выход слева - на левой границе
+                fromX = from.x;
                 fromY = fromCenterY;
             }
             
-            // Определяем точку входа в целевую ноду (противоположная сторона)
+            // Определяем точку входа в целевую ноду (НА границе, противоположная сторона)
             const reverseAngleDeg = (angleDeg + 180) % 360 - 180;
             
             if (reverseAngleDeg >= -45 && reverseAngleDeg < 45) {
-                // Вход справа
-                toX = to.x + nodeWidth + 10;
+                // Вход справа - на правой границе
+                toX = to.x + nodeWidth;
                 toY = toCenterY;
             } else if (reverseAngleDeg >= 45 && reverseAngleDeg < 135) {
-                // Вход снизу
+                // Вход снизу - на нижней границе
                 toX = toCenterX;
-                toY = to.y + nodeHeight + 10;
+                toY = to.y + nodeHeight;
             } else if (reverseAngleDeg >= -135 && reverseAngleDeg < -45) {
-                // Вход сверху
+                // Вход сверху - на верхней границе
                 toX = toCenterX;
-                toY = to.y - 10;
+                toY = to.y;
             } else {
-                // Вход слева
-                toX = to.x - 10;
+                // Вход слева - на левой границе
+                toX = to.x;
                 toY = toCenterY;
             }
             
