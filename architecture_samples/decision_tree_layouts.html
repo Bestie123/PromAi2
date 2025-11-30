@@ -603,12 +603,14 @@
                 if (line.classList.contains('locked')) {
                     line.classList.remove('locked');
                     unhighlightNodes();
+                    setTimeout(updateArrowPosition, 10);
                 } else {
                     document.querySelectorAll('.connection.locked').forEach(c => c.classList.remove('locked'));
                     unhighlightNodes();
                     line.classList.add('locked');
                     line.classList.remove('highlighted');
                     highlightNodes();
+                    setTimeout(updateArrowPosition, 10);
                 }
             });
             
