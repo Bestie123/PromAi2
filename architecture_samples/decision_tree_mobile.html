@@ -28,6 +28,7 @@
             box-shadow: 0 4px 16px rgba(0,0,0,0.4); transition: all 0.2s ease;
         }
         .node.active { 
+            transform: scale(1.15);
             box-shadow: 0 0 20px rgba(88, 166, 255, 0.8); 
             z-index: 101;
         }
@@ -65,7 +66,7 @@
         
         .connection {
             position: absolute; height: 2px; transform-origin: left center; z-index: -1;
-            pointer-events: none;
+            cursor: pointer;
         }
         .connection.q-to-answer { background: #58a6ff; }
         .connection.answer-to-q { background: #f79009; height: 3px; }
@@ -469,6 +470,12 @@
             const arrow = document.createElement('div');
             arrow.className = 'arrow';
             line.appendChild(arrow);
+            
+            line.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.connection').forEach(c => c.classList.remove('active'));
+                line.classList.add('active');
+            });
             
             return line;
         }
