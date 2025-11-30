@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Варианты стиля стрелок (Тип 2 - Математический)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif;
+            background: #0d1117; 
+            color: #c9d1d9; 
+            padding: 20px;
+        }
+        
+        .variant {
+            margin-bottom: 40px;
+            border: 2px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+            background: #161b22;
+        }
+        
+        h2 {
+            color: #58a6ff;
+            margin-bottom: 15px;
+        }
+        
+        .canvas {
+            position: relative;
+            width: 800px;
+            height: 400px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+        }
+        
+        .node {
+            position: absolute;
+            background: #21262d;
+            border: 2px solid #58a6ff;
+            border-radius: 8px;
+            padding: 10px;
+            width: 150px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .connection {
+            position: absolute;
+            transform-origin: left center;
+        }
+        
+        /* Вариант A: Тонкая линия */
+        .variant-a .connection {
+            height: 2px;
+            background: #f79009;
+        }
+        .variant-a .arrow {
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 8px solid #f79009;
+            right: -5px;
+            top: -3px;
+        }
+        
+        /* Вариант B: Средняя линия */
+        .variant-b .connection {
+            height: 3px;
+            background: #f79009;
+        }
+        .variant-b .arrow {
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 10px solid #f79009;
+            right: -6px;
+            top: -3.5px;
+        }
+        
+        /* Вариант C: Толстая линия */
+        .variant-c .connection {
+            height: 4px;
+            background: #f79009;
+        }
+        .variant-c .arrow {
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-top: 12px solid #f79009;
+            right: -7px;
+            top: -4px;
+        }
+        
+        /* Вариант D: С тенью */
+        .variant-d .connection {
+            height: 3px;
+            background: #f79009;
+            box-shadow: 0 0 8px rgba(247, 144, 9, 0.5);
+        }
+        .variant-d .arrow {
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 10px solid #f79009;
+            right: -6px;
+            top: -3.5px;
+            filter: drop-shadow(0 0 4px rgba(247, 144, 9, 0.5));
+        }
+        
+        /* Вариант E: Градиент */
+        .variant-e .connection {
+            height: 3px;
+            background: linear-gradient(90deg, #f79009 0%, #ff6b35 100%);
+        }
+        .variant-e .arrow {
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 10px solid #ff6b35;
+            right: -6px;
+            top: -3.5px;
+        }
+        
+        /* Вариант F: Пунктирная */
+        .variant-f .connection {
+            height: 3px;
+            background: repeating-linear-gradient(
+                90deg,
+                #f79009 0px,
+                #f79009 10px,
+                transparent 10px,
+                transparent 15px
+            );
+        }
+        .variant-f .arrow {
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 10px solid #f79009;
+            right: -6px;
+            top: -3.5px;
+        }
+        
+        .arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Варианты стиля стрелок (Математический расчет)</h1>
+    
+    <!-- Вариант A -->
+    <div class="variant variant-a">
+        <h2>Вариант A: Тонкая линия (2px) + маленькая стрелка</h2>
+        <div class="canvas" id="canvas-a"></div>
+    </div>
+    
+    <!-- Вариант B -->
+    <div class="variant variant-b">
+        <h2>Вариант B: Средняя линия (3px) + средняя стрелка</h2>
+        <div class="canvas" id="canvas-b"></div>
+    </div>
+    
+    <!-- Вариант C -->
+    <div class="variant variant-c">
+        <h2>Вариант C: Толстая линия (4px) + большая стрелка</h2>
+        <div class="canvas" id="canvas-c"></div>
+    </div>
+    
+    <!-- Вариант D -->
+    <div class="variant variant-d">
+        <h2>Вариант D: Средняя линия + свечение/тень</h2>
+        <div class="canvas" id="canvas-d"></div>
+    </div>
+    
+    <!-- Вариант E -->
+    <div class="variant variant-e">
+        <h2>Вариант E: Градиент (оранжевый → красный)</h2>
+        <div class="canvas" id="canvas-e"></div>
+    </div>
+    
+    <!-- Вариант F -->
+    <div class="variant variant-f">
+        <h2>Вариант F: Пунктирная линия</h2>
+        <div class="canvas" id="canvas-f"></div>
+    </div>
+
+    <script>
+        // Тестовые ноды
+        const nodes = [
+            { x: 50, y: 50, label: 'Нода 1' },
+            { x: 400, y: 150, label: 'Нода 2' },
+            { x: 600, y: 50, label: 'Нода 3' },
+            { x: 200, y: 250, label: 'Нода 4' }
+        ];
+        
+        const nodeWidth = 150;
+        const nodeHeight = 80;
+        
+        // Создаем ноды для всех вариантов
+        ['a', 'b', 'c', 'd', 'e', 'f'].forEach(variant => {
+            const canvas = document.getElementById(`canvas-${variant}`);
+            nodes.forEach(node => {
+                const div = document.createElement('div');
+                div.className = 'node';
+                div.style.left = node.x + 'px';
+                div.style.top = node.y + 'px';
+                div.textContent = node.label;
+                canvas.appendChild(div);
+            });
+        });
+        
+        // Рисуем стрелки между нодами
+        const connections = [
+            [0, 1], // Нода 1 -> Нода 2
+            [1, 2], // Нода 2 -> Нода 3
+            [0, 3], // Нода 1 -> Нода 4
+            [3, 1]  // Нода 4 -> Нода 2
+        ];
+        
+        // Рисуем для всех вариантов
+        ['a', 'b', 'c', 'd', 'e', 'f'].forEach(variant => {
+            connections.forEach(([fromIdx, toIdx]) => {
+                const from = nodes[fromIdx];
+                const to = nodes[toIdx];
+                createConnection(`canvas-${variant}`, from, to);
+            });
+        });
+        
+        // Математический расчет пересечения
+        function createConnection(canvasId, from, to) {
+            const canvas = document.getElementById(canvasId);
+            
+            const fromCenterX = from.x + nodeWidth / 2;
+            const fromCenterY = from.y + nodeHeight / 2;
+            const toCenterX = to.x + nodeWidth / 2;
+            const toCenterY = to.y + nodeHeight / 2;
+            
+            // Вычисляем пересечение луча с границами
+            const fromIntersect = getRectIntersection(
+                fromCenterX, fromCenterY,
+                toCenterX, toCenterY,
+                from.x, from.y, nodeWidth, nodeHeight
+            );
+            
+            const toIntersect = getRectIntersection(
+                toCenterX, toCenterY,
+                fromCenterX, fromCenterY,
+                to.x, to.y, nodeWidth, nodeHeight
+            );
+            
+            drawLine(canvas, fromIntersect.x, fromIntersect.y, toIntersect.x, toIntersect.y);
+        }
+        
+        function getRectIntersection(cx, cy, tx, ty, rx, ry, rw, rh) {
+            const dx = tx - cx;
+            const dy = ty - cy;
+            
+            let minT = Infinity;
+            let resultX = cx;
+            let resultY = cy;
+            
+            // Правая граница
+            if (dx !== 0) {
+                const t = (rx + rw - cx) / dx;
+                const y = cy + dy * t;
+                if (t > 0 && t < minT && y >= ry && y <= ry + rh) {
+                    minT = t;
+                    resultX = rx + rw;
+                    resultY = y;
+                }
+            }
+            
+            // Левая граница
+            if (dx !== 0) {
+                const t = (rx - cx) / dx;
+                const y = cy + dy * t;
+                if (t > 0 && t < minT && y >= ry && y <= ry + rh) {
+                    minT = t;
+                    resultX = rx;
+                    resultY = y;
+                }
+            }
+            
+            // Нижняя граница
+            if (dy !== 0) {
+                const t = (ry + rh - cy) / dy;
+                const x = cx + dx * t;
+                if (t > 0 && t < minT && x >= rx && x <= rx + rw) {
+                    minT = t;
+                    resultX = x;
+                    resultY = ry + rh;
+                }
+            }
+            
+            // Верхняя граница
+            if (dy !== 0) {
+                const t = (ry - cy) / dy;
+                const x = cx + dx * t;
+                if (t > 0 && t < minT && x >= rx && x <= rx + rw) {
+                    minT = t;
+                    resultX = x;
+                    resultY = ry;
+                }
+            }
+            
+            return { x: resultX, y: resultY };
+        }
+        
+        // Вспомогательная функция для рисования линии
+        function drawLine(canvas, fromX, fromY, toX, toY) {
+            const line = document.createElement('div');
+            line.className = 'connection';
+            
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            line.style.left = fromX + 'px';
+            line.style.top = fromY + 'px';
+            line.style.width = length + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            line.appendChild(arrow);
+            
+            canvas.appendChild(line);
+        }
+    </script>
+</body>
+</html>
