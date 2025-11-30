@@ -26,6 +26,12 @@
             box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease;
         }
         .node:hover { transform: scale(1.05); box-shadow: 0 12px 48px rgba(0,0,0,0.6); z-index: 100; }
+        /* Подсветка нод при наведении/клике на стрелку */
+        .node.arrow-highlighted { 
+            transform: scale(1.08); 
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.6); 
+            z-index: 101; 
+        }
         
         .question { 
             border-color: #58a6ff; border-width: 3px;
@@ -478,7 +484,7 @@
             return results.length > 0 ? `🔀 Совместимость: ${results.join('; ')}` : '';
         }
 
-        // Создание стрелки между нодами
+        // Создание стрелки между нодами с подсветкой связанных нод
         function createConnection(from, to, type) {
             const line = document.createElement('div');
             line.className = `connection ${type}`;
@@ -508,32 +514,68 @@
             line.style.width = length + 'px';
             line.style.transform = `rotate(${angle}deg)`;
             
+            // Сохраняем координаты нод для поиска
+            line.dataset.fromX = from.x;
+            line.dataset.fromY = from.y;
+            line.dataset.toX = to.x;
+            line.dataset.toY = to.y;
+            
             const arrow = document.createElement('div');
             arrow.className = 'arrow';
             line.appendChild(arrow);
             
-            // Обработчики для подсветки и фиксации
+            // Функция подсветки связанных нод
+            const highlightNodes = () => {
+                // Находим ноды по координатам
+                const nodes = document.querySelectorAll('.node');
+                nodes.forEach(node => {
+                    const nodeX = parseInt(node.style.left);
+                    const nodeY = parseInt(node.style.top);
+                    // Проверяем совпадение координат с началом или концом стрелки
+                    if ((nodeX === from.x && nodeY === from.y) || (nodeX === to.x && nodeY === to.y)) {
+                        node.classList.add('arrow-highlighted');
+                    }
+                });
+            };
+            
+            // Функция снятия подсветки нод
+            const unhighlightNodes = () => {
+                document.querySelectorAll('.node.arrow-highlighted').forEach(n => {
+                    n.classList.remove('arrow-highlighted');
+                });
+            };
+            
+            // При наведении на стрелку - подсвечиваем стрелку и ноды
             line.addEventListener('mouseenter', () => {
                 if (!line.classList.contains('locked')) {
                     line.classList.add('highlighted');
+                    highlightNodes();
                 }
             });
             
+            // При уходе курсора - убираем подсветку стрелки и нод
             line.addEventListener('mouseleave', () => {
                 if (!line.classList.contains('locked')) {
                     line.classList.remove('highlighted');
+                    unhighlightNodes();
                 }
             });
             
+            // При клике - фиксируем/снимаем подсветку стрелки и нод
             line.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (line.classList.contains('locked')) {
+                    // Снимаем фиксацию
                     line.classList.remove('locked');
+                    unhighlightNodes();
                 } else {
-                    // Убираем locked со всех других стрелок
+                    // Убираем locked со всех других стрелок и подсветку их нод
                     document.querySelectorAll('.connection.locked').forEach(c => c.classList.remove('locked'));
+                    unhighlightNodes();
+                    // Фиксируем текущую стрелку и подсвечиваем её ноды
                     line.classList.add('locked');
                     line.classList.remove('highlighted');
+                    highlightNodes();
                 }
             });
             
