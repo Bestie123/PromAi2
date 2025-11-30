@@ -452,27 +452,25 @@
                 line.style.transform = `rotate(${ang}deg)`;
             };
             
-            if (!fromNode) fromNode = null;
-            if (!toNode) toNode = null;
-            
-            const nodes = document.querySelectorAll('.node');
-            nodes.forEach(node => {
-                const x = parseInt(node.style.left);
-                const y = parseInt(node.style.top);
-                if (x === from.x && y === from.y) fromNode = node;
-                if (x === to.x && y === to.y) toNode = node;
-            });
-            
-            if (fromNode) {
-                if (!fromNode.arrowUpdateFunctions) fromNode.arrowUpdateFunctions = [];
-                fromNode.arrowUpdateFunctions.push(updateArrowPosition);
-            }
-            if (toNode) {
-                if (!toNode.arrowUpdateFunctions) toNode.arrowUpdateFunctions = [];
-                toNode.arrowUpdateFunctions.push(updateArrowPosition);
-            }
-            
             line.addEventListener('touchstart', (e) => {
+                const nodes = document.querySelectorAll('.node');
+                let fromNode = null, toNode = null;
+                nodes.forEach(node => {
+                    const x = parseInt(node.style.left);
+                    const y = parseInt(node.style.top);
+                    if (x === from.x && y === from.y) fromNode = node;
+                    if (x === to.x && y === to.y) toNode = node;
+                });
+                
+                if (fromNode && !fromNode.arrowUpdateFunctions) fromNode.arrowUpdateFunctions = [];
+                if (toNode && !toNode.arrowUpdateFunctions) toNode.arrowUpdateFunctions = [];
+                if (fromNode && !fromNode.arrowUpdateFunctions.includes(updateArrowPosition)) {
+                    fromNode.arrowUpdateFunctions.push(updateArrowPosition);
+                }
+                if (toNode && !toNode.arrowUpdateFunctions.includes(updateArrowPosition)) {
+                    toNode.arrowUpdateFunctions.push(updateArrowPosition);
+                }
+                
                 e.stopPropagation();
                 if (line.classList.contains('locked')) {
                     line.classList.remove('locked');
