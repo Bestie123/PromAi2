@@ -612,6 +612,52 @@
                 }
             });
             
+            const updateArrowPosition = () => {
+                const nodes = document.querySelectorAll('.node');
+                let fn = null, tn = null;
+                nodes.forEach(node => {
+                    const x = parseInt(node.style.left);
+                    const y = parseInt(node.style.top);
+                    if (x === from.x && y === from.y) fn = node;
+                    if (x === to.x && y === to.y) tn = node;
+                });
+                
+                if (!fn || !tn) return;
+                
+                const fw = fn.offsetWidth, fh = fn.offsetHeight;
+                const tw = tn.offsetWidth, th = tn.offsetHeight;
+                const fcx = from.x + fw / 2, fcy = from.y + fh / 2;
+                const tcx = to.x + tw / 2, tcy = to.y + th / 2;
+                
+                const fi = getRectIntersection(fcx, fcy, tcx, tcy, from.x, from.y, fw, fh);
+                const ti = getRectIntersection(tcx, tcy, fcx, fcy, to.x, to.y, tw, th);
+                
+                const dx = tcx - fcx, dy = tcy - fcy;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const dirX = dx / dist, dirY = dy / dist;
+                
+                const fx = fi.x + dirX * (-5), fy = fi.y + dirY * (-5);
+                const tx = ti.x - dirX * 5, ty = ti.y - dirY * 5;
+                
+                const fdx = tx - fx, fdy = ty - fy;
+                const len = Math.sqrt(fdx * fdx + fdy * fdy);
+                const ang = Math.atan2(fdy, fdx) * 180 / Math.PI;
+                
+                line.style.left = fx + 'px';
+                line.style.top = fy + 'px';
+                line.style.width = len + 'px';
+                line.style.transform = `rotate(${ang}deg)`;
+            };
+            
+            if (fromNode) {
+                fromNode.addEventListener('mouseenter', updateArrowPosition);
+                fromNode.addEventListener('mouseleave', updateArrowPosition);
+            }
+            if (toNode) {
+                toNode.addEventListener('mouseenter', updateArrowPosition);
+                toNode.addEventListener('mouseleave', updateArrowPosition);
+            }
+            
             return line;
         }
         
