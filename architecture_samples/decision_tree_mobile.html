@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>PromAi PKM - Дерево решений (Mobile)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0d1117; color: #c9d1d9; overflow: hidden;
+            touch-action: none;
+        }
+        #canvas { 
+            width: 15000px; height: 10000px; position: relative; 
+            background: radial-gradient(circle at 50% 50%, #161b22 0%, #0d1117 100%);
+            transform-origin: 0 0;
+        }
+        #viewport { 
+            width: 100vw; height: 100vh; overflow: hidden; position: relative;
+            cursor: grab; background: #0d1117;
+        }
+        #viewport.dragging { cursor: grabbing; }
+        
+        .node {
+            position: absolute; background: #21262d; border: 2px solid #30363d;
+            border-radius: 8px; padding: 12px; min-width: 200px; max-width: 250px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4); transition: all 0.2s ease;
+        }
+        .node.active { 
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.8); 
+            z-index: 101;
+        }
+        
+        .question { 
+            border-color: #58a6ff; border-width: 2px;
+            background: linear-gradient(135deg, #1b2332 0%, #21262d 100%);
+        }
+        .critical { 
+            border-color: #f85149; border-width: 2px;
+            background: linear-gradient(135deg, #2d1b1f 0%, #21262d 100%);
+        }
+        .parallel { 
+            border-color: #f79009; border-width: 2px;
+            background: linear-gradient(135deg, #2d2419 0%, #21262d 100%);
+        }
+        .rejected { 
+            border-color: #8b949e; border-width: 2px;
+            background: linear-gradient(135deg, #2d2d2d 0%, #21262d 100%); 
+            opacity: 0.5;
+        }
+        
+        .badge {
+            display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 9px;
+            font-weight: bold; margin-bottom: 4px;
+        }
+        .badge.question { background: #58a6ff; color: #fff; }
+        .badge.critical { background: #f85149; color: #fff; }
+        .badge.parallel { background: #f79009; color: #fff; }
+        .badge.rejected { background: #8b949e; color: #fff; }
+        
+        .node h3 { font-size: 11px; margin-bottom: 4px; color: #f0f6fc; font-weight: 600; }
+        .node p { font-size: 10px; line-height: 1.2; margin-bottom: 4px; color: #8b949e; }
+        .node .info { font-size: 9px; color: #6e7681; margin-top: 3px; }
+        
+        .connection {
+            position: absolute; height: 2px; transform-origin: left center; z-index: -1;
+            pointer-events: none;
+        }
+        .connection.q-to-answer { background: #58a6ff; }
+        .connection.answer-to-q { background: #f79009; height: 3px; }
+        .connection.active { height: 4px; filter: brightness(1.5); z-index: 10; }
+        
+        .arrow {
+            position: absolute; width: 0; height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 7px solid #58a6ff;
+            right: -4px; top: 50%; transform: translateY(-50%);
+        }
+        .connection.answer-to-q .arrow { border-top-color: #f79009; }
+        
+        .controls {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 1000; background: rgba(33, 38, 45, 0.95); 
+            padding: 12px; border-radius: 12px; border: 1px solid #30363d;
+            display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+            max-width: 90vw;
+        }
+        .controls button {
+            background: #238636; color: #fff; border: none; 
+            padding: 12px 16px; border-radius: 8px; cursor: pointer; 
+            font-size: 13px; min-width: 44px; min-height: 44px;
+            font-weight: 600; touch-action: manipulation;
+        }
+        .controls button:active { background: #2ea043; transform: scale(0.95); }
+        .controls button.active { background: #1f6feb; }
+        
+        .zoom-info {
+            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 8px 12px; 
+            border-radius: 8px; border: 1px solid #30363d; font-size: 12px;
+        }
+        
+        .layout-selector {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.95); padding: 8px; 
+            border-radius: 8px; border: 1px solid #30363d;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .layout-selector button {
+            background: #238636; color: #fff; border: none; 
+            padding: 10px 14px; border-radius: 6px; cursor: pointer; 
+            font-size: 11px; min-height: 44px; touch-action: manipulation;
+        }
+        .layout-selector button:active { background: #2ea043; }
+        .layout-selector button.active { background: #1f6feb; }
+    </style>
+</head>
+<body>
+    <div class="layout-selector">
+        <button onclick="setLayout('horizontal')" id="btn-horizontal" class="active">→</button>
+        <button onclick="setLayout('vertical')" id="btn-vertical">↓</button>
+        <button onclick="setLayout('compact')" id="btn-compact">⊡</button>
+        <button onclick="setLayout('tree')" id="btn-tree">⊞</button>
+    </div>
+    
+    <div class="zoom-info">
+        <span id="zoomLevel">100%</span>
+    </div>
+    
+    <div class="controls">
+        <button onclick="resetView()">Сброс</button>
+        <button onclick="zoomIn()">+</button>
+        <button onclick="zoomOut()">−</button>
+    </div>
+    
+    <div id="viewport">
+        <div id="canvas"></div>
+    </div>
+
+    <script>
+        let scale = 0.25;
+        let translateX = 50;
+        let translateY = 50;
+        let isDragging = false;
+        let lastTouchX = 0;
+        let lastTouchY = 0;
+        let lastTouchDistance = 0;
+        let currentLayout = 'horizontal';
+        let planData = null;
+
+        fetch('./development_plan.json')
+            .then(response => response.json())
+            .then(data => {
+                planData = data;
+                initCanvas(currentLayout);
+                updateTransform();
+            });
+
+        function setLayout(layout) {
+            currentLayout = layout;
+            document.querySelectorAll('.layout-selector button').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${layout}`).classList.add('active');
+            
+            if (planData) {
+                initCanvas(layout);
+                resetView();
+            }
+        }
+
+        function initCanvas(layout) {
+            const canvas = document.getElementById('canvas');
+            canvas.innerHTML = '';
+            const nodeMap = {};
+            
+            const critical = planData.levels[0].tracks.critical.criteria;
+            const parallel = planData.levels[0].tracks.parallel.criteria;
+            const allCriteria = [...critical, ...parallel];
+            
+            switch(layout) {
+                case 'horizontal':
+                    layoutHorizontal(canvas, allCriteria, nodeMap);
+                    break;
+                case 'vertical':
+                    layoutVertical(canvas, allCriteria, nodeMap);
+                    break;
+                case 'compact':
+                    layoutCompact(canvas, allCriteria, nodeMap);
+                    break;
+                case 'tree':
+                    layoutTree(canvas, allCriteria, nodeMap);
+                    break;
+            }
+            
+            setTimeout(() => {
+                allCriteria.forEach(criterion => {
+                    if (criterion.blocks && criterion.blocks.length > 0) {
+                        const selectedId = `${criterion.id}_selected`;
+                        criterion.blocks.forEach(blockedQId => {
+                            const nextQId = `q${blockedQId.replace('q', '')}`;
+                            if (nodeMap[selectedId] && nodeMap[nextQId]) {
+                                canvas.appendChild(createConnection(
+                                    nodeMap[selectedId],
+                                    nodeMap[nextQId],
+                                    'answer-to-q'
+                                ));
+                            }
+                        });
+                    }
+                    
+                    if (criterion.requires && criterion.requires.length > 0) {
+                        criterion.requires.forEach(reqId => {
+                            const reqCriterion = allCriteria.find(c => {
+                                const mapping = planData.nodeMapping && planData.nodeMapping[c.id];
+                                return mapping && mapping.selected === reqId;
+                            });
+                            if (reqCriterion && nodeMap[`${reqCriterion.id}_selected`] && nodeMap[`q${criterion.id}`]) {
+                                canvas.appendChild(createConnection(
+                                    nodeMap[`${reqCriterion.id}_selected`],
+                                    nodeMap[`q${criterion.id}`],
+                                    'answer-to-q'
+                                ));
+                            }
+                        });
+                    }
+                });
+            }, 100);
+        }
+
+        function layoutHorizontal(canvas, criteria, nodeMap) {
+            let yOffset = 200;
+            criteria.forEach(criterion => {
+                const questionId = `q${criterion.id}`;
+                const xBase = 300;
+                
+                const qNode = createQuestionNode(criterion);
+                qNode.style.left = xBase + 'px';
+                qNode.style.top = yOffset + 'px';
+                canvas.appendChild(qNode);
+                nodeMap[questionId] = { x: xBase, y: yOffset };
+                
+                const selectedNode = createAnswerNode(criterion, criterion.solution, criterion.priority);
+                selectedNode.style.left = (xBase + 400) + 'px';
+                selectedNode.style.top = yOffset + 'px';
+                canvas.appendChild(selectedNode);
+                const selectedId = `${criterion.id}_selected`;
+                nodeMap[selectedId] = { x: xBase + 400, y: yOffset };
+                
+                setTimeout(() => {
+                    if (nodeMap[questionId] && nodeMap[selectedId]) {
+                        canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
+                    }
+                }, 50);
+                
+                yOffset += 300;
+            });
+        }
+
+        function layoutVertical(canvas, criteria, nodeMap) {
+            let xOffset = 300;
+            criteria.forEach(criterion => {
+                const questionId = `q${criterion.id}`;
+                const yBase = 200;
+                
+                const qNode = createQuestionNode(criterion);
+                qNode.style.left = xOffset + 'px';
+                qNode.style.top = yBase + 'px';
+                canvas.appendChild(qNode);
+                nodeMap[questionId] = { x: xOffset, y: yBase };
+                
+                const selectedNode = createAnswerNode(criterion, criterion.solution, criterion.priority);
+                selectedNode.style.left = xOffset + 'px';
+                selectedNode.style.top = (yBase + 200) + 'px';
+                canvas.appendChild(selectedNode);
+                const selectedId = `${criterion.id}_selected`;
+                nodeMap[selectedId] = { x: xOffset, y: yBase + 200 };
+                
+                setTimeout(() => {
+                    if (nodeMap[questionId] && nodeMap[selectedId]) {
+                        canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
+                    }
+                }, 50);
+                
+                xOffset += 450;
+            });
+        }
+
+        function layoutCompact(canvas, criteria, nodeMap) {
+            let yOffset = 150;
+            criteria.forEach(criterion => {
+                const questionId = `q${criterion.id}`;
+                const xBase = 250;
+                
+                const qNode = createQuestionNode(criterion);
+                qNode.style.left = xBase + 'px';
+                qNode.style.top = yOffset + 'px';
+                canvas.appendChild(qNode);
+                nodeMap[questionId] = { x: xBase, y: yOffset };
+                
+                const selectedNode = createAnswerNode(criterion, criterion.solution, criterion.priority);
+                selectedNode.style.left = (xBase + 350) + 'px';
+                selectedNode.style.top = yOffset + 'px';
+                canvas.appendChild(selectedNode);
+                const selectedId = `${criterion.id}_selected`;
+                nodeMap[selectedId] = { x: xBase + 350, y: yOffset };
+                
+                setTimeout(() => {
+                    if (nodeMap[questionId] && nodeMap[selectedId]) {
+                        canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
+                    }
+                }, 50);
+                
+                yOffset += 200;
+            });
+        }
+
+        function layoutTree(canvas, criteria, nodeMap) {
+            const critical = criteria.filter(c => c.priority === 'critical');
+            const parallel = criteria.filter(c => c.priority === 'parallel');
+            
+            let yOffset = 200;
+            
+            critical.forEach(criterion => {
+                const questionId = `q${criterion.id}`;
+                const xBase = 300;
+                
+                const qNode = createQuestionNode(criterion);
+                qNode.style.left = xBase + 'px';
+                qNode.style.top = yOffset + 'px';
+                canvas.appendChild(qNode);
+                nodeMap[questionId] = { x: xBase, y: yOffset };
+                
+                const selectedNode = createAnswerNode(criterion, criterion.solution, criterion.priority);
+                selectedNode.style.left = (xBase + 400) + 'px';
+                selectedNode.style.top = yOffset + 'px';
+                canvas.appendChild(selectedNode);
+                const selectedId = `${criterion.id}_selected`;
+                nodeMap[selectedId] = { x: xBase + 400, y: yOffset };
+                
+                setTimeout(() => {
+                    if (nodeMap[questionId] && nodeMap[selectedId]) {
+                        canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
+                    }
+                }, 50);
+                
+                yOffset += 250;
+            });
+            
+            yOffset = 200;
+            parallel.forEach(criterion => {
+                const questionId = `q${criterion.id}`;
+                const xBase = 1200;
+                
+                const qNode = createQuestionNode(criterion);
+                qNode.style.left = xBase + 'px';
+                qNode.style.top = yOffset + 'px';
+                canvas.appendChild(qNode);
+                nodeMap[questionId] = { x: xBase, y: yOffset };
+                
+                const selectedNode = createAnswerNode(criterion, criterion.solution, criterion.priority);
+                selectedNode.style.left = (xBase + 400) + 'px';
+                selectedNode.style.top = yOffset + 'px';
+                canvas.appendChild(selectedNode);
+                const selectedId = `${criterion.id}_selected`;
+                nodeMap[selectedId] = { x: xBase + 400, y: yOffset };
+                
+                setTimeout(() => {
+                    if (nodeMap[questionId] && nodeMap[selectedId]) {
+                        canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
+                    }
+                }, 50);
+                
+                yOffset += 250;
+            });
+        }
+
+        function createQuestionNode(criterion) {
+            const div = document.createElement('div');
+            div.className = 'node question';
+            div.innerHTML = `
+                <div class="badge question">❓ №${criterion.id}</div>
+                <h3>${criterion.question}</h3>
+                <p>${criterion.title}</p>
+            `;
+            
+            div.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+                div.classList.toggle('active');
+            });
+            
+            return div;
+        }
+
+        function createAnswerNode(criterion, solution, priority) {
+            const div = document.createElement('div');
+            div.className = `node ${priority}`;
+            const badgeText = priority === 'critical' ? '🔴 №' + criterion.id :
+                             priority === 'parallel' ? '🟠 №' + criterion.id : '❌ №' + criterion.id;
+            
+            div.innerHTML = `
+                <div class="badge ${priority}">${badgeText}</div>
+                <h3>${solution.name}</h3>
+                <p>${solution.description}</p>
+            `;
+            
+            div.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+                div.classList.toggle('active');
+            });
+            
+            return div;
+        }
+
+        function createConnection(from, to, type) {
+            const line = document.createElement('div');
+            line.className = `connection ${type}`;
+            
+            const nodes = document.querySelectorAll('.node');
+            let fromNode = null, toNode = null;
+            nodes.forEach(node => {
+                const x = parseInt(node.style.left);
+                const y = parseInt(node.style.top);
+                if (x === from.x && y === from.y) fromNode = node;
+                if (x === to.x && y === to.y) toNode = node;
+            });
+            
+            const fromWidth = fromNode ? fromNode.offsetWidth : 220;
+            const fromHeight = fromNode ? fromNode.offsetHeight : 100;
+            const toWidth = toNode ? toNode.offsetWidth : 220;
+            const toHeight = toNode ? toNode.offsetHeight : 100;
+            
+            const fromCenterX = from.x + fromWidth / 2;
+            const fromCenterY = from.y + fromHeight / 2;
+            const toCenterX = to.x + toWidth / 2;
+            const toCenterY = to.y + toHeight / 2;
+            
+            const fromIntersect = getRectIntersection(
+                fromCenterX, fromCenterY, toCenterX, toCenterY,
+                from.x, from.y, fromWidth, fromHeight
+            );
+            
+            const toIntersect = getRectIntersection(
+                toCenterX, toCenterY, fromCenterX, fromCenterY,
+                to.x, to.y, toWidth, toHeight
+            );
+            
+            const dx = toCenterX - fromCenterX;
+            const dy = toCenterY - fromCenterY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const dirX = dx / distance;
+            const dirY = dy / distance;
+            
+            const fromX = fromIntersect.x + dirX * (-5);
+            const fromY = fromIntersect.y + dirY * (-5);
+            const toX = toIntersect.x - dirX * 5;
+            const toY = toIntersect.y - dirY * 5;
+            
+            const finalDx = toX - fromX;
+            const finalDy = toY - fromY;
+            const length = Math.sqrt(finalDx * finalDx + finalDy * finalDy);
+            const angle = Math.atan2(finalDy, finalDx) * 180 / Math.PI;
+            
+            line.style.left = fromX + 'px';
+            line.style.top = fromY + 'px';
+            line.style.width = length + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            line.appendChild(arrow);
+            
+            return line;
+        }
+        
+        function getRectIntersection(cx, cy, tx, ty, rx, ry, rw, rh) {
+            const dx = tx - cx;
+            const dy = ty - cy;
+            
+            let minT = Infinity;
+            let resultX = cx;
+            let resultY = cy;
+            
+            if (dx !== 0) {
+                const t = (rx + rw - cx) / dx;
+                const y = cy + dy * t;
+                if (t > 0 && t < minT && y >= ry && y <= ry + rh) {
+                    minT = t;
+                    resultX = rx + rw;
+                    resultY = y;
+                }
+            }
+            
+            if (dx !== 0) {
+                const t = (rx - cx) / dx;
+                const y = cy + dy * t;
+                if (t > 0 && t < minT && y >= ry && y <= ry + rh) {
+                    minT = t;
+                    resultX = rx;
+                    resultY = y;
+                }
+            }
+            
+            if (dy !== 0) {
+                const t = (ry + rh - cy) / dy;
+                const x = cx + dx * t;
+                if (t > 0 && t < minT && x >= rx && x <= rx + rw) {
+                    minT = t;
+                    resultX = x;
+                    resultY = ry + rh;
+                }
+            }
+            
+            if (dy !== 0) {
+                const t = (ry - cy) / dy;
+                const x = cx + dx * t;
+                if (t > 0 && t < minT && x >= rx && x <= rx + rw) {
+                    minT = t;
+                    resultX = x;
+                    resultY = ry;
+                }
+            }
+            
+            return { x: resultX, y: resultY };
+        }
+
+        function updateTransform() {
+            const canvas = document.getElementById('canvas');
+            canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
+        }
+
+        function resetView() {
+            scale = 0.25;
+            translateX = 50;
+            translateY = 50;
+            updateTransform();
+        }
+
+        function zoomIn() {
+            scale = Math.min(2, scale * 1.2);
+            updateTransform();
+        }
+
+        function zoomOut() {
+            scale = Math.max(0.1, scale / 1.2);
+            updateTransform();
+        }
+
+        const viewport = document.getElementById('viewport');
+
+        // Touch events
+        viewport.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                lastTouchX = e.touches[0].clientX;
+                lastTouchY = e.touches[0].clientY;
+            } else if (e.touches.length === 2) {
+                isDragging = false;
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                lastTouchDistance = Math.sqrt(dx * dx + dy * dy);
+            }
+        });
+
+        viewport.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            
+            if (e.touches.length === 1 && isDragging) {
+                const deltaX = e.touches[0].clientX - lastTouchX;
+                const deltaY = e.touches[0].clientY - lastTouchY;
+                translateX += deltaX;
+                translateY += deltaY;
+                lastTouchX = e.touches[0].clientX;
+                lastTouchY = e.touches[0].clientY;
+                updateTransform();
+            } else if (e.touches.length === 2) {
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (lastTouchDistance > 0) {
+                    const delta = distance / lastTouchDistance;
+                    const newScale = Math.max(0.1, Math.min(2, scale * delta));
+                    
+                    const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                    const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                    
+                    const canvasX = (centerX - translateX) / scale;
+                    const canvasY = (centerY - translateY) / scale;
+                    
+                    scale = newScale;
+                    translateX = centerX - canvasX * scale;
+                    translateY = centerY - canvasY * scale;
+                    
+                    updateTransform();
+                }
+                
+                lastTouchDistance = distance;
+            }
+        });
+
+        viewport.addEventListener('touchend', () => {
+            isDragging = false;
+            lastTouchDistance = 0;
+        });
+    </script>
+</body>
+</html>
