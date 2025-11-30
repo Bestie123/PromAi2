@@ -188,14 +188,31 @@
                     criterion.blocks.forEach(blockedQId => {
                         const blockedCriterion = allCriteria.find(c => `q${c.id}` === blockedQId);
                         if (blockedCriterion) {
-                            // Найдем позицию следующего вопроса
                             const nextQId = `q${blockedCriterion.id}`;
-                            // Отложим отрисовку связи до создания всех нод
                             setTimeout(() => {
                                 if (nodeMap[nextQId]) {
                                     canvas.appendChild(createConnection(
                                         nodeMap[selectedId],
                                         nodeMap[nextQId],
+                                        'answer-to-q'
+                                    ));
+                                }
+                            }, 100);
+                        }
+                    });
+                }
+                
+                // Стрелки от зависимостей к текущему вопросу
+                if (criterion.requires && criterion.requires.length > 0) {
+                    criterion.requires.forEach(reqId => {
+                        const reqNum = planData.nodeMapping ? Object.keys(planData.nodeMapping).find(k => planData.nodeMapping[k].selected === reqId) : null;
+                        if (reqNum) {
+                            const reqSelectedId = `${reqNum}_selected`;
+                            setTimeout(() => {
+                                if (nodeMap[reqSelectedId] && nodeMap[questionId]) {
+                                    canvas.appendChild(createConnection(
+                                        nodeMap[reqSelectedId],
+                                        nodeMap[questionId],
                                         'answer-to-q'
                                     ));
                                 }
