@@ -495,41 +495,62 @@
             const line = document.createElement('div');
             line.className = `connection ${type}`;
             
+            // Автоопределение оптимальных точек входа/выхода на основе взаимного расположения нод
+            const nodeWidth = 260;
+            const nodeHeight = 100;
+            const dx = to.x - from.x;
+            const dy = to.y - from.y;
+            
+            // Центры нод
+            const fromCenterX = from.x + nodeWidth / 2;
+            const fromCenterY = from.y + nodeHeight / 2;
+            const toCenterX = to.x + nodeWidth / 2;
+            const toCenterY = to.y + nodeHeight / 2;
+            
+            // Определяем угол между нодами
+            const angle = Math.atan2(toCenterY - fromCenterY, toCenterX - fromCenterX);
+            const angleDeg = angle * 180 / Math.PI;
+            
             let fromX, fromY, toX, toY;
             
-            // Определяем направление стрелки (вверх или вниз)
-            const goingUp = to.y < from.y;
-            
-            if (goingUp) {
-                // Любая стрелка вверх: выход из верха исходной ноды, вход в низ целевой ноды
-                fromX = from.x + 130;
+            // Определяем точку выхода из исходной ноды
+            if (angleDeg >= -45 && angleDeg < 45) {
+                // Выход справа
+                fromX = from.x + nodeWidth;
+                fromY = fromCenterY;
+            } else if (angleDeg >= 45 && angleDeg < 135) {
+                // Выход снизу
+                fromX = fromCenterX;
+                fromY = from.y + nodeHeight + 10;
+            } else if (angleDeg >= -135 && angleDeg < -45) {
+                // Выход сверху
+                fromX = fromCenterX;
                 fromY = from.y - 10;
-                toX = to.x + 130;
-                toY = to.y + 120; // Примыкает к нижней границе ноды
             } else {
-                // Стрелка вниз или горизонтально
-                if (type === 'answer-to-q') {
-                    // Ответ → Вопрос: проверяем откуда приходит стрелка
-                    if (from.x < to.x) {
-                        // Стрелка слева направо: выход справа, вход в низ
-                        fromX = from.x + 260;
-                        fromY = from.y + 50;
-                        toX = to.x + 130;
-                        toY = to.y + 120; // Вход в нижнюю границу
-                    } else {
-                        // Стрелка справа налево: выход слева, вход в верх
-                        fromX = from.x;
-                        fromY = from.y + 50;
-                        toX = to.x + 130;
-                        toY = to.y - 10;
-                    }
-                } else {
-                    // Вопрос → Ответ: выход из правого края, вход в левый край
-                    fromX = from.x + 260;
-                    fromY = from.y + 50;
-                    toX = to.x - 10;
-                    toY = to.y + 50;
-                }
+                // Выход слева
+                fromX = from.x - 10;
+                fromY = fromCenterY;
+            }
+            
+            // Определяем точку входа в целевую ноду (противоположная сторона)
+            const reverseAngleDeg = (angleDeg + 180) % 360 - 180;
+            
+            if (reverseAngleDeg >= -45 && reverseAngleDeg < 45) {
+                // Вход справа
+                toX = to.x + nodeWidth + 10;
+                toY = toCenterY;
+            } else if (reverseAngleDeg >= 45 && reverseAngleDeg < 135) {
+                // Вход снизу
+                toX = toCenterX;
+                toY = to.y + nodeHeight + 10;
+            } else if (reverseAngleDeg >= -135 && reverseAngleDeg < -45) {
+                // Вход сверху
+                toX = toCenterX;
+                toY = to.y - 10;
+            } else {
+                // Вход слева
+                toX = to.x - 10;
+                toY = toCenterY;
             }
             
             const dx = toX - fromX;
