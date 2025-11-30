@@ -511,44 +511,79 @@
             
             let fromX, fromY, toX, toY;
             
-            // Определяем точку выхода из исходной ноды (НА границе)
-            if (angleDeg >= -45 && angleDeg < 45) {
-                // Выход справа - на правой границе
-                fromX = from.x + nodeWidth;
-                fromY = fromCenterY;
-            } else if (angleDeg >= 45 && angleDeg < 135) {
-                // Выход снизу - на нижней границе
-                fromX = fromCenterX;
-                fromY = from.y + nodeHeight;
-            } else if (angleDeg >= -135 && angleDeg < -45) {
-                // Выход сверху - на верхней границе
-                fromX = fromCenterX;
-                fromY = from.y;
-            } else {
-                // Выход слева - на левой границе
-                fromX = from.x;
-                fromY = fromCenterY;
-            }
+            // ВАРИАНТ: Математический расчет точного пересечения с границами нод
+            // Вычисляем точку выхода из исходной ноды
+            const fromIntersect = getRectIntersection(
+                fromCenterX, fromCenterY,
+                toCenterX, toCenterY,
+                from.x, from.y, nodeWidth, nodeHeight
+            );
+            fromX = fromIntersect.x;
+            fromY = fromIntersect.y;
             
-            // Определяем точку входа в целевую ноду (НА границе, противоположная сторона)
-            const reverseAngleDeg = (angleDeg + 180) % 360 - 180;
+            // Вычисляем точку входа в целевую ноду (обратное направление)
+            const toIntersect = getRectIntersection(
+                toCenterX, toCenterY,
+                fromCenterX, fromCenterY,
+                to.x, to.y, nodeWidth, nodeHeight
+            );
+            toX = toIntersect.x;
+            toY = toIntersect.y;
             
-            if (reverseAngleDeg >= -45 && reverseAngleDeg < 45) {
-                // Вход справа - на правой границе
-                toX = to.x + nodeWidth;
-                toY = toCenterY;
-            } else if (reverseAngleDeg >= 45 && reverseAngleDeg < 135) {
-                // Вход снизу - на нижней границе
-                toX = toCenterX;
-                toY = to.y + nodeHeight;
-            } else if (reverseAngleDeg >= -135 && reverseAngleDeg < -45) {
-                // Вход сверху - на верхней границе
-                toX = toCenterX;
-                toY = to.y;
-            } else {
-                // Вход слева - на левой границе
-                toX = to.x;
-                toY = toCenterY;
+            // Функция вычисления пересечения луча с прямоугольником
+            function getRectIntersection(cx, cy, tx, ty, rx, ry, rw, rh) {
+                const dx = tx - cx;
+                const dy = ty - cy;
+                
+                let minT = Infinity;
+                let resultX = cx;
+                let resultY = cy;
+                
+                // Проверяем пересечение с правой границей
+                if (dx !== 0) {
+                    const t = (rx + rw - cx) / dx;
+                    const y = cy + dy * t;
+                    if (t > 0 && t < minT && y >= ry && y <= ry + rh) {
+                        minT = t;
+                        resultX = rx + rw;
+                        resultY = y;
+                    }
+                }
+                
+                // Проверяем пересечение с левой границей
+                if (dx !== 0) {
+                    const t = (rx - cx) / dx;
+                    const y = cy + dy * t;
+                    if (t > 0 && t < minT && y >= ry && y <= ry + rh) {
+                        minT = t;
+                        resultX = rx;
+                        resultY = y;
+                    }
+                }
+                
+                // Проверяем пересечение с нижней границей
+                if (dy !== 0) {
+                    const t = (ry + rh - cy) / dy;
+                    const x = cx + dx * t;
+                    if (t > 0 && t < minT && x >= rx && x <= rx + rw) {
+                        minT = t;
+                        resultX = x;
+                        resultY = ry + rh;
+                    }
+                }
+                
+                // Проверяем пересечение с верхней границей
+                if (dy !== 0) {
+                    const t = (ry - cy) / dy;
+                    const x = cx + dx * t;
+                    if (t > 0 && t < minT && x >= rx && x <= rx + rw) {
+                        minT = t;
+                        resultX = x;
+                        resultY = ry;
+                    }
+                }
+                
+                return { x: resultX, y: resultY };
             }
             
             const deltaX = toX - fromX;
