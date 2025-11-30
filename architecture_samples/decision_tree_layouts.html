@@ -426,14 +426,17 @@
         function getCompatibility(solutionId, criterion) {
             if (!planData.compatibility || !solutionId || !criterion.alternatives) return '';
             
+            const altIds = planData.nodeMapping && planData.nodeMapping[criterion.id] 
+                ? planData.nodeMapping[criterion.id].alternatives || [] 
+                : [];
+            
             const results = [];
-            criterion.alternatives.forEach(alt => {
-                const altId = alt.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            altIds.forEach((altId, idx) => {
                 const key1 = `${solutionId},${altId}`;
                 const key2 = `${altId},${solutionId}`;
                 const compat = planData.compatibility[key1] || planData.compatibility[key2];
-                if (compat) {
-                    results.push(`${alt.name}: ${compat}`);
+                if (compat && criterion.alternatives[idx]) {
+                    results.push(`${criterion.alternatives[idx].name}: ${compat}`);
                 }
             });
             
