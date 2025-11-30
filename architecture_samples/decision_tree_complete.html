@@ -247,13 +247,18 @@
             const line = document.createElement('div');
             line.className = `connection ${type}`;
             
-            const dx = to.x - from.x;
-            const dy = to.y - from.y;
-            const length = Math.sqrt(dx * dx + dy * dy);
+            const fromX = from.x + 260;
+            const fromY = from.y + 50;
+            const toX = to.x;
+            const toY = to.y + 50;
+            
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const length = Math.sqrt(dx * dx + dy * dy) - 20;
             const angle = Math.atan2(dy, dx) * 180 / Math.PI;
             
-            line.style.left = (from.x + 130) + 'px';
-            line.style.top = (from.y + 50) + 'px';
+            line.style.left = fromX + 'px';
+            line.style.top = fromY + 'px';
             line.style.width = length + 'px';
             line.style.transform = `rotate(${angle}deg)`;
             
