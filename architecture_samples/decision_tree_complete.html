@@ -247,9 +247,18 @@
             const line = document.createElement('div');
             line.className = `connection ${type}`;
             
-            const fromX = from.x + 260;
+            let fromX, toX;
+            if (type === 'answer-to-q') {
+                // От ответа к вопросу: выход из левой границы, вход в левую границу
+                fromX = from.x;
+                toX = to.x;
+            } else {
+                // От вопроса к ответу: выход из правой границы, вход в левую границу
+                fromX = from.x + 260;
+                toX = to.x;
+            }
+            
             const fromY = from.y + 50;
-            const toX = to.x;
             const toY = to.y + 50;
             
             const dx = toX - fromX;
