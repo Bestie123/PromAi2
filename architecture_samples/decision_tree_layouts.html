@@ -374,9 +374,9 @@
             const reqNums = criterion.requires && criterion.requires.length > 0
                 ? criterion.requires.map(r => planData.nodeMapping ? Object.keys(planData.nodeMapping).find(k => planData.nodeMapping[k].selected === r) : r).filter(Boolean)
                 : [];
-            const reqText = reqNums.length > 0 ? `📋 Требует: №${reqNums.join(', №')}` : '';
+            const reqText = reqNums.length > 0 ? `📋 Требует: №${reqNums.join(', №')}` : '📋 Не требует зависимостей';
             const blockText = criterion.blocks && criterion.blocks.length > 0 
-                ? `🚫 Блокирует: №${criterion.blocks.map(b => b.replace('q', '')).join(', №')}` : '';
+                ? `🚫 Блокирует: №${criterion.blocks.map(b => b.replace('q', '')).join(', №')}` : '🚫 Ничего не блокирует';
             
             div.innerHTML = `
                 <div class="badge question">❓ ВОПРОС №${criterion.id}</div>
@@ -398,9 +398,9 @@
             const reqNums = criterion.requires && criterion.requires.length > 0
                 ? criterion.requires.map(r => planData.nodeMapping ? Object.keys(planData.nodeMapping).find(k => planData.nodeMapping[k].selected === r) : r).filter(Boolean)
                 : [];
-            const reqText = reqNums.length > 0 ? `📋 Требует: №${reqNums.join(', №')}` : '';
+            const reqText = reqNums.length > 0 ? `📋 Требует: №${reqNums.join(', №')}` : '📋 Не требует зависимостей';
             const blockText = criterion.blocks && criterion.blocks.length > 0 
-                ? `🚫 Блокирует: №${criterion.blocks.map(b => b.replace('q', '')).join(', №')}` : '';
+                ? `🚫 Блокирует: №${criterion.blocks.map(b => b.replace('q', '')).join(', №')}` : '🚫 Ничего не блокирует';
             
             const prosText = solution.pros && solution.pros.length > 0
                 ? `✅ Плюсы: ${solution.pros.join('; ')}` : '';
