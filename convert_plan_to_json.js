@@ -13,16 +13,29 @@ const mdContent = fs.readFileSync(mdPath, 'utf8');
 
 // Парсим детали из строки
 function parseDetails(details) {
-  const parts = details.split('|').map(s => s.trim());
-  const result = { pros: [], cons: [] };
+  const result = { pros: [], cons: [], week: null };
   
-  parts.forEach(part => {
-    if (part.startsWith('➕')) result.pros.push(part.replace('➕', '').trim());
-    if (part.startsWith('➖')) result.cons.push(part.replace('➖', '').trim());
-    if (part.startsWith('Week')) result.week = parseInt(part.replace('Week', '').trim());
-    if (part.startsWith('Требует:')) result.requires = part.replace('Требует:', '').trim();
-    if (part.startsWith('Блокирует:')) result.blocks = part.replace('Блокирует:', '').trim();
+  // Разделяем по ➕ и ➖
+  const plusParts = details.split('➕').filter(s => s.trim());
+  const minusParts = details.split('➖').filter(s => s.trim());
+  
+  plusParts.forEach(part => {
+    const cleaned = part.split('➖')[0].split('|')[0].trim();
+    if (cleaned && !cleaned.startsWith('Week') && !cleaned.startsWith('Требует') && !cleaned.startsWith('Блокирует')) {
+      result.pros.push(cleaned);
+    }
   });
+  
+  minusParts.forEach(part => {
+    const cleaned = part.split('➕')[0].split('|')[0].trim();
+    if (cleaned && !cleaned.startsWith('Week') && !cleaned.startsWith('Требует') && !cleaned.startsWith('Блокирует')) {
+      result.cons.push(cleaned);
+    }
+  });
+  
+  // Извлекаем week
+  const weekMatch = details.match(/Week\s+(\d+)/);
+  if (weekMatch) result.week = parseInt(weekMatch[1]);
   
   return result;
 }
