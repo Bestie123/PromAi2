@@ -73,7 +73,6 @@
         .connection {
             position: absolute; height: 2px; transform-origin: left center; z-index: -1;
             cursor: pointer; pointer-events: auto; transition: all 0.2s;
-            padding: 10px 0;
         }
         .connection.q-to-answer { background: #58a6ff; }
         .connection.answer-to-q { background: #f79009; height: 3px; }
@@ -82,10 +81,10 @@
         
         .arrow {
             position: absolute; width: 0; height: 0;
-            border-left: 4px solid transparent;
-            border-right: 4px solid transparent;
-            border-top: 7px solid #58a6ff;
-            right: -4px; top: 50%; transform: translateY(-50%);
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 8px solid #58a6ff;
+            right: -5px; top: 50%; transform: translateY(-50%); transition: all 0.2s;
         }
         .connection.answer-to-q .arrow { border-top-color: #f79009; }
         
@@ -452,25 +451,25 @@
                 line.style.transform = `rotate(${ang}deg)`;
             };
             
+            const nodes = document.querySelectorAll('.node');
+            let fromNode = null, toNode = null;
+            nodes.forEach(node => {
+                const x = parseInt(node.style.left);
+                const y = parseInt(node.style.top);
+                if (x === from.x && y === from.y) fromNode = node;
+                if (x === to.x && y === to.y) toNode = node;
+            });
+            
+            if (fromNode) {
+                if (!fromNode.arrowUpdateFunctions) fromNode.arrowUpdateFunctions = [];
+                fromNode.arrowUpdateFunctions.push(updateArrowPosition);
+            }
+            if (toNode) {
+                if (!toNode.arrowUpdateFunctions) toNode.arrowUpdateFunctions = [];
+                toNode.arrowUpdateFunctions.push(updateArrowPosition);
+            }
+            
             line.addEventListener('touchstart', (e) => {
-                const nodes = document.querySelectorAll('.node');
-                let fromNode = null, toNode = null;
-                nodes.forEach(node => {
-                    const x = parseInt(node.style.left);
-                    const y = parseInt(node.style.top);
-                    if (x === from.x && y === from.y) fromNode = node;
-                    if (x === to.x && y === to.y) toNode = node;
-                });
-                
-                if (fromNode && !fromNode.arrowUpdateFunctions) fromNode.arrowUpdateFunctions = [];
-                if (toNode && !toNode.arrowUpdateFunctions) toNode.arrowUpdateFunctions = [];
-                if (fromNode && !fromNode.arrowUpdateFunctions.includes(updateArrowPosition)) {
-                    fromNode.arrowUpdateFunctions.push(updateArrowPosition);
-                }
-                if (toNode && !toNode.arrowUpdateFunctions.includes(updateArrowPosition)) {
-                    toNode.arrowUpdateFunctions.push(updateArrowPosition);
-                }
-                
                 e.stopPropagation();
                 if (line.classList.contains('locked')) {
                     line.classList.remove('locked');
