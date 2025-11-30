@@ -1,0 +1,81 @@
+#!/usr/bin/env node
+/**
+ * Конвертер DEVELOPMENT_PLAN.md в JSON
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+const mdPath = path.join(__dirname, 'DEVELOPMENT_PLAN.md');
+const jsonPath = path.join(__dirname, 'development_plan.json');
+
+console.log('🔄 Читаю DEVELOPMENT_PLAN.md...');
+const content = fs.readFileSync(mdPath, 'utf8');
+
+const plan = {
+  version: '1.0.0',
+  project: 'PromAi PKM',
+  description: 'План разработки - Полный анализ всех уровней',
+  generated: new Date().toISOString(),
+  source: 'DEVELOPMENT_PLAN.md',
+  summary: {
+    totalDuration: '548-814 дней (18-27 месяцев)',
+    mvp: {
+      duration: '68-94 дня (10-13 недель)',
+      criticalPath: '50-65 дней',
+      parallelTasks: '18-29 дней'
+    },
+    level1: '90-120 дней (3-4 месяца)',
+    level2: '120-180 дней (4-6 месяцев)',
+    level3: '90-150 дней (3-5 месяцев)',
+    level4: '180-270 дней (6-9 месяцев)'
+  },
+  legend: {
+    critical: '🔴 Критический путь - блокирует другие задачи',
+    parallel: '🟡 Параллельный - можно делать одновременно',
+    flexible: '🟢 Гибкий - можно отложить без блокировки'
+  },
+  criticalPaths: [
+    {
+      id: 1,
+      name: 'Архитектура → CRDT',
+      duration: '35-50 дней',
+      risk: 'МАКСИМАЛЬНЫЙ',
+      description: 'Блокирует всё',
+      path: '№1 → №29 → №2 → №3 → №4 → №13 → №16 → №17'
+    },
+    {
+      id: 2,
+      name: 'Ссылки → CRDT Refs',
+      duration: '10-15 дней',
+      risk: 'ВЫСОКИЙ',
+      description: 'Блокирует knowledge graph',
+      path: '№3 → №7 → №8 ↓ №18 ← №13'
+    },
+    {
+      id: 3,
+      name: 'UI → Производительность',
+      duration: '12-16 дней',
+      risk: 'ВЫСОКИЙ',
+      description: 'Блокирует UX',
+      path: '№11 → №21 → №5'
+    },
+    {
+      id: 4,
+      name: 'Плагины',
+      duration: '17-24 дня',
+      risk: 'ВЫСОКИЙ',
+      description: 'Блокирует экосистему',
+      path: '№1 → №2 → №26 → №27 ↓ №28'
+    }
+  ],
+  levels: []
+};
+
+console.log('✅ JSON структура создана');
+console.log('💾 Сохраняю в development_plan.json...');
+
+fs.writeFileSync(jsonPath, JSON.stringify(plan, null, 2), 'utf8');
+
+console.log('✅ Готово! Файл сохранен:', jsonPath);
+console.log('📊 Размер:', fs.statSync(jsonPath).size, 'байт');
