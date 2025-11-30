@@ -370,11 +370,19 @@
         function createQuestionNode(criterion) {
             const div = document.createElement('div');
             div.className = 'node question';
+            
+            const reqText = criterion.requires && criterion.requires.length > 0 
+                ? `📋 Зависит от: ${criterion.requires.join(', ')}` : '';
+            const blockText = criterion.blocks && criterion.blocks.length > 0 
+                ? `🚫 Блокирует: №${criterion.blocks.map(b => b.replace('q', '')).join(', №')}` : '';
+            
             div.innerHTML = `
-                <div class="badge question">❓ ВОПРОС</div>
-                <h3>№${criterion.id} • ${criterion.question}</h3>
+                <div class="badge question">❓ ВОПРОС №${criterion.id}</div>
+                <h3>${criterion.question}</h3>
                 <p>${criterion.title}</p>
                 <div class="info">Week ${criterion.week || '?'} | ${criterion.time}</div>
+                <div class="info">${reqText}</div>
+                <div class="info">${blockText}</div>
             `;
             return div;
         }
@@ -382,12 +390,18 @@
         function createAnswerNode(criterion, solution, priority) {
             const div = document.createElement('div');
             div.className = `node ${priority}`;
-            const badgeText = priority === 'critical' ? '🔴 КРИТИЧЕСКИЙ' :
-                             priority === 'parallel' ? '🟠 ПАРАЛЛЕЛЬНЫЙ' : '❌ ОТКЛОНЕНО';
+            const badgeText = priority === 'critical' ? '🔴 КРИТИЧЕСКИЙ №' + criterion.id :
+                             priority === 'parallel' ? '🟠 ПАРАЛЛЕЛЬНЫЙ №' + criterion.id : '❌ ОТКЛОНЕНО №' + criterion.id;
+            
             const reqText = criterion.requires && criterion.requires.length > 0 
-                ? `📋 Требует: ${criterion.requires.length}` : '';
+                ? `📋 Требует: ${criterion.requires.join(', ')}` : '';
             const blockText = criterion.blocks && criterion.blocks.length > 0 
                 ? `🚫 Блокирует: №${criterion.blocks.map(b => b.replace('q', '')).join(', №')}` : '';
+            
+            const prosText = solution.pros && solution.pros.length > 0
+                ? `✅ Плюсы: ${solution.pros.join('; ')}` : '';
+            const consText = solution.cons && solution.cons.length > 0
+                ? `❌ Минусы: ${solution.cons.join('; ')}` : '';
             
             div.innerHTML = `
                 <div class="badge ${priority}">${badgeText}</div>
@@ -395,6 +409,8 @@
                 <p>${solution.description}</p>
                 <div class="info">${reqText}</div>
                 <div class="info">${blockText}</div>
+                <div class="info" style="color: #3fb950;">${prosText}</div>
+                <div class="info" style="color: #f85149;">${consText}</div>
             `;
             return div;
         }
