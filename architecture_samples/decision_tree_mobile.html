@@ -12,7 +12,7 @@
             touch-action: none;
         }
         #canvas { 
-            width: 15000px; height: 10000px; position: relative; 
+            width: 25000px; height: 15000px; position: relative; 
             background: radial-gradient(circle at 50% 50%, #161b22 0%, #0d1117 100%);
             transform-origin: 0 0;
         }
@@ -24,17 +24,22 @@
         
         .node {
             position: absolute; background: #21262d; border: 2px solid #30363d;
-            border-radius: 8px; padding: 12px; min-width: 200px; max-width: 250px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.4); transition: all 0.2s ease;
+            border-radius: 12px; padding: 14px; min-width: 260px; max-width: 300px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease;
         }
-        .node.active { 
-            transform: scale(1.15);
-            box-shadow: 0 0 20px rgba(88, 166, 255, 0.8); 
+        .node.arrow-highlighted { 
+            transform: scale(1.08); 
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.6); 
             z-index: 101;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(88, 166, 255, 0.6); }
+            50% { box-shadow: 0 0 30px rgba(88, 166, 255, 0.9); }
         }
         
         .question { 
-            border-color: #58a6ff; border-width: 2px;
+            border-color: #58a6ff; border-width: 3px;
             background: linear-gradient(135deg, #1b2332 0%, #21262d 100%);
         }
         .critical { 
@@ -52,88 +57,68 @@
         }
         
         .badge {
-            display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 9px;
-            font-weight: bold; margin-bottom: 4px;
+            display: inline-block; padding: 3px 7px; border-radius: 5px; font-size: 10px;
+            font-weight: bold; margin-bottom: 6px; margin-right: 3px;
         }
         .badge.question { background: #58a6ff; color: #fff; }
         .badge.critical { background: #f85149; color: #fff; }
         .badge.parallel { background: #f79009; color: #fff; }
         .badge.rejected { background: #8b949e; color: #fff; }
         
-        .node h3 { font-size: 11px; margin-bottom: 4px; color: #f0f6fc; font-weight: 600; }
-        .node p { font-size: 10px; line-height: 1.2; margin-bottom: 4px; color: #8b949e; }
-        .node .info { font-size: 9px; color: #6e7681; margin-top: 3px; }
+        .node h3 { font-size: 13px; margin-bottom: 6px; color: #f0f6fc; font-weight: 600; }
+        .node p { font-size: 11px; line-height: 1.3; margin-bottom: 5px; color: #8b949e; }
+        .node .info { font-size: 10px; color: #6e7681; margin-top: 4px; }
         
         .connection {
             position: absolute; height: 2px; transform-origin: left center; z-index: -1;
-            cursor: pointer;
+            cursor: pointer; pointer-events: auto; transition: all 0.2s;
         }
         .connection.q-to-answer { background: #58a6ff; }
         .connection.answer-to-q { background: #f79009; height: 3px; }
-        .connection.active { height: 4px; filter: brightness(1.5); z-index: 10; }
+        .connection.highlighted { height: 4px; filter: brightness(1.5); z-index: 10; }
+        .connection.locked { height: 5px; filter: brightness(1.8) drop-shadow(0 0 8px currentColor); z-index: 20; }
         
         .arrow {
             position: absolute; width: 0; height: 0;
-            border-left: 4px solid transparent;
-            border-right: 4px solid transparent;
-            border-top: 7px solid #58a6ff;
-            right: -4px; top: 50%; transform: translateY(-50%);
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 8px solid #58a6ff;
+            right: -5px; top: 50%; transform: translateY(-50%);
         }
         .connection.answer-to-q .arrow { border-top-color: #f79009; }
         
         .controls {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            z-index: 1000; background: rgba(33, 38, 45, 0.95); 
-            padding: 12px; border-radius: 12px; border: 1px solid #30363d;
-            display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
-            max-width: 90vw;
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.95); padding: 14px; border-radius: 8px;
+            border: 1px solid #30363d;
         }
         .controls button {
-            background: #238636; color: #fff; border: none; 
-            padding: 12px 16px; border-radius: 8px; cursor: pointer; 
-            font-size: 13px; min-width: 44px; min-height: 44px;
-            font-weight: 600; touch-action: manipulation;
+            background: #238636; color: #fff; border: none; padding: 10px 14px;
+            border-radius: 6px; margin-right: 6px; margin-bottom: 6px; cursor: pointer; font-size: 11px;
+            min-width: 44px; min-height: 44px; touch-action: manipulation;
         }
         .controls button:active { background: #2ea043; transform: scale(0.95); }
-        .controls button.active { background: #1f6feb; }
+        .controls .legend { margin-top: 10px; font-size: 10px; color: #8b949e; }
         
         .zoom-info {
-            position: fixed; top: 20px; right: 20px; z-index: 1000;
-            background: rgba(33, 38, 45, 0.9); padding: 8px 12px; 
-            border-radius: 8px; border: 1px solid #30363d; font-size: 12px;
+            position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+            background: rgba(33, 38, 45, 0.9); padding: 7px 11px; border-radius: 6px;
+            border: 1px solid #30363d; font-size: 11px;
         }
-        
-        .layout-selector {
-            position: fixed; top: 20px; left: 20px; z-index: 1000;
-            background: rgba(33, 38, 45, 0.95); padding: 8px; 
-            border-radius: 8px; border: 1px solid #30363d;
-            display: flex; flex-direction: column; gap: 6px;
-        }
-        .layout-selector button {
-            background: #238636; color: #fff; border: none; 
-            padding: 10px 14px; border-radius: 6px; cursor: pointer; 
-            font-size: 11px; min-height: 44px; touch-action: manipulation;
-        }
-        .layout-selector button:active { background: #2ea043; }
-        .layout-selector button.active { background: #1f6feb; }
     </style>
 </head>
 <body>
-    <div class="layout-selector">
-        <button onclick="setLayout('horizontal')" id="btn-horizontal" class="active">→</button>
-        <button onclick="setLayout('vertical')" id="btn-vertical">↓</button>
-        <button onclick="setLayout('compact')" id="btn-compact">⊡</button>
-        <button onclick="setLayout('tree')" id="btn-tree">⊞</button>
+    <div class="controls">
+        <button onclick="resetView()">Сброс</button>
+        <button onclick="centerView()">Центр</button>
+        
+        <div class="legend">
+            🔵 Вопрос → 🔴 Критический / 🟠 Параллельный → 🔵 След. вопрос
+        </div>
     </div>
     
     <div class="zoom-info">
-        <span id="zoomLevel">100%</span>
-    </div>
-    
-    <div class="controls">
-        <button onclick="resetView()">Сброс</button>
-        <button onclick="zoomIn()">+</button>
-        <button onclick="zoomOut()">−</button>
+        Зум: <span id="zoomLevel">100%</span>
     </div>
     
     <div id="viewport">
@@ -141,36 +126,24 @@
     </div>
 
     <script>
-        let scale = 0.25;
-        let translateX = 50;
-        let translateY = 50;
+        let scale = 0.12;
+        let translateX = 100;
+        let translateY = 100;
         let isDragging = false;
         let lastTouchX = 0;
         let lastTouchY = 0;
         let lastTouchDistance = 0;
-        let currentLayout = 'horizontal';
         let planData = null;
 
         fetch('./development_plan.json')
             .then(response => response.json())
             .then(data => {
                 planData = data;
-                initCanvas(currentLayout);
+                initCanvas(data);
                 updateTransform();
             });
 
-        function setLayout(layout) {
-            currentLayout = layout;
-            document.querySelectorAll('.layout-selector button').forEach(b => b.classList.remove('active'));
-            document.getElementById(`btn-${layout}`).classList.add('active');
-            
-            if (planData) {
-                initCanvas(layout);
-                resetView();
-            }
-        }
-
-        function initCanvas(layout) {
+        function initCanvas(planData) {
             const canvas = document.getElementById('canvas');
             canvas.innerHTML = '';
             const nodeMap = {};
@@ -179,216 +152,106 @@
             const parallel = planData.levels[0].tracks.parallel.criteria;
             const allCriteria = [...critical, ...parallel];
             
-            switch(layout) {
-                case 'horizontal':
-                    layoutHorizontal(canvas, allCriteria, nodeMap);
-                    break;
-                case 'vertical':
-                    layoutVertical(canvas, allCriteria, nodeMap);
-                    break;
-                case 'compact':
-                    layoutCompact(canvas, allCriteria, nodeMap);
-                    break;
-                case 'tree':
-                    layoutTree(canvas, allCriteria, nodeMap);
-                    break;
-            }
+            let yOffset = 300;
             
-            setTimeout(() => {
-                allCriteria.forEach(criterion => {
-                    if (criterion.blocks && criterion.blocks.length > 0) {
-                        const selectedId = `${criterion.id}_selected`;
-                        criterion.blocks.forEach(blockedQId => {
-                            const nextQId = `q${blockedQId.replace('q', '')}`;
-                            if (nodeMap[selectedId] && nodeMap[nextQId]) {
-                                canvas.appendChild(createConnection(
-                                    nodeMap[selectedId],
-                                    nodeMap[nextQId],
-                                    'answer-to-q'
-                                ));
-                            }
-                        });
-                    }
-                    
-                    if (criterion.requires && criterion.requires.length > 0) {
-                        criterion.requires.forEach(reqId => {
-                            const reqCriterion = allCriteria.find(c => {
-                                const mapping = planData.nodeMapping && planData.nodeMapping[c.id];
-                                return mapping && mapping.selected === reqId;
-                            });
-                            if (reqCriterion && nodeMap[`${reqCriterion.id}_selected`] && nodeMap[`q${criterion.id}`]) {
-                                canvas.appendChild(createConnection(
-                                    nodeMap[`${reqCriterion.id}_selected`],
-                                    nodeMap[`q${criterion.id}`],
-                                    'answer-to-q'
-                                ));
-                            }
-                        });
-                    }
-                });
-            }, 100);
-        }
-
-        function layoutHorizontal(canvas, criteria, nodeMap) {
-            let yOffset = 200;
-            criteria.forEach(criterion => {
+            allCriteria.forEach((criterion, idx) => {
                 const questionId = `q${criterion.id}`;
-                const xBase = 300;
+                const xBase = 500;
                 
                 const qNode = createQuestionNode(criterion);
                 qNode.style.left = xBase + 'px';
                 qNode.style.top = yOffset + 'px';
                 canvas.appendChild(qNode);
-                nodeMap[questionId] = { x: xBase, y: yOffset };
+                nodeMap[questionId] = { x: xBase, y: yOffset, data: criterion };
                 
                 const selectedNode = createAnswerNode(criterion, criterion.solution, criterion.priority);
-                selectedNode.style.left = (xBase + 400) + 'px';
+                selectedNode.style.left = (xBase + 600) + 'px';
                 selectedNode.style.top = yOffset + 'px';
                 canvas.appendChild(selectedNode);
                 const selectedId = `${criterion.id}_selected`;
-                nodeMap[selectedId] = { x: xBase + 400, y: yOffset };
+                nodeMap[selectedId] = { x: xBase + 600, y: yOffset, data: criterion };
                 
-                setTimeout(() => {
-                    if (nodeMap[questionId] && nodeMap[selectedId]) {
-                        canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
-                    }
-                }, 50);
+                canvas.appendChild(createConnection(
+                    nodeMap[questionId], 
+                    nodeMap[selectedId], 
+                    'q-to-answer'
+                ));
                 
-                yOffset += 300;
-            });
-        }
-
-        function layoutVertical(canvas, criteria, nodeMap) {
-            let xOffset = 300;
-            criteria.forEach(criterion => {
-                const questionId = `q${criterion.id}`;
-                const yBase = 200;
+                if (criterion.alternatives && criterion.alternatives.length > 0) {
+                    criterion.alternatives.forEach((alt, altIdx) => {
+                        const altNode = createAnswerNode(criterion, alt, 'rejected');
+                        const altY = yOffset + (altIdx + 1) * 200;
+                        altNode.style.left = (xBase + 600) + 'px';
+                        altNode.style.top = altY + 'px';
+                        canvas.appendChild(altNode);
+                        
+                        canvas.appendChild(createConnection(
+                            nodeMap[questionId], 
+                            { x: xBase + 600, y: altY }, 
+                            'q-to-answer'
+                        ));
+                    });
+                }
                 
-                const qNode = createQuestionNode(criterion);
-                qNode.style.left = xOffset + 'px';
-                qNode.style.top = yBase + 'px';
-                canvas.appendChild(qNode);
-                nodeMap[questionId] = { x: xOffset, y: yBase };
+                if (criterion.blocks && criterion.blocks.length > 0) {
+                    criterion.blocks.forEach(blockedQId => {
+                        const blockedCriterion = allCriteria.find(c => `q${c.id}` === blockedQId);
+                        if (blockedCriterion) {
+                            const nextQId = `q${blockedCriterion.id}`;
+                            setTimeout(() => {
+                                if (nodeMap[nextQId]) {
+                                    canvas.appendChild(createConnection(
+                                        nodeMap[selectedId],
+                                        nodeMap[nextQId],
+                                        'answer-to-q'
+                                    ));
+                                }
+                            }, 100);
+                        }
+                    });
+                }
                 
-                const selectedNode = createAnswerNode(criterion, criterion.solution, criterion.priority);
-                selectedNode.style.left = xOffset + 'px';
-                selectedNode.style.top = (yBase + 200) + 'px';
-                canvas.appendChild(selectedNode);
-                const selectedId = `${criterion.id}_selected`;
-                nodeMap[selectedId] = { x: xOffset, y: yBase + 200 };
+                if (criterion.requires && criterion.requires.length > 0) {
+                    criterion.requires.forEach(reqId => {
+                        const reqNum = planData.nodeMapping ? Object.keys(planData.nodeMapping).find(k => planData.nodeMapping[k].selected === reqId) : null;
+                        if (reqNum) {
+                            const reqSelectedId = `${reqNum}_selected`;
+                            setTimeout(() => {
+                                if (nodeMap[reqSelectedId] && nodeMap[questionId]) {
+                                    canvas.appendChild(createConnection(
+                                        nodeMap[reqSelectedId],
+                                        nodeMap[questionId],
+                                        'answer-to-q'
+                                    ));
+                                }
+                            }, 100);
+                        }
+                    });
+                }
                 
-                setTimeout(() => {
-                    if (nodeMap[questionId] && nodeMap[selectedId]) {
-                        canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
-                    }
-                }, 50);
-                
-                xOffset += 450;
-            });
-        }
-
-        function layoutCompact(canvas, criteria, nodeMap) {
-            let yOffset = 150;
-            criteria.forEach(criterion => {
-                const questionId = `q${criterion.id}`;
-                const xBase = 250;
-                
-                const qNode = createQuestionNode(criterion);
-                qNode.style.left = xBase + 'px';
-                qNode.style.top = yOffset + 'px';
-                canvas.appendChild(qNode);
-                nodeMap[questionId] = { x: xBase, y: yOffset };
-                
-                const selectedNode = createAnswerNode(criterion, criterion.solution, criterion.priority);
-                selectedNode.style.left = (xBase + 350) + 'px';
-                selectedNode.style.top = yOffset + 'px';
-                canvas.appendChild(selectedNode);
-                const selectedId = `${criterion.id}_selected`;
-                nodeMap[selectedId] = { x: xBase + 350, y: yOffset };
-                
-                setTimeout(() => {
-                    if (nodeMap[questionId] && nodeMap[selectedId]) {
-                        canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
-                    }
-                }, 50);
-                
-                yOffset += 200;
-            });
-        }
-
-        function layoutTree(canvas, criteria, nodeMap) {
-            const critical = criteria.filter(c => c.priority === 'critical');
-            const parallel = criteria.filter(c => c.priority === 'parallel');
-            
-            let yOffset = 200;
-            
-            critical.forEach(criterion => {
-                const questionId = `q${criterion.id}`;
-                const xBase = 300;
-                
-                const qNode = createQuestionNode(criterion);
-                qNode.style.left = xBase + 'px';
-                qNode.style.top = yOffset + 'px';
-                canvas.appendChild(qNode);
-                nodeMap[questionId] = { x: xBase, y: yOffset };
-                
-                const selectedNode = createAnswerNode(criterion, criterion.solution, criterion.priority);
-                selectedNode.style.left = (xBase + 400) + 'px';
-                selectedNode.style.top = yOffset + 'px';
-                canvas.appendChild(selectedNode);
-                const selectedId = `${criterion.id}_selected`;
-                nodeMap[selectedId] = { x: xBase + 400, y: yOffset };
-                
-                setTimeout(() => {
-                    if (nodeMap[questionId] && nodeMap[selectedId]) {
-                        canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
-                    }
-                }, 50);
-                
-                yOffset += 250;
-            });
-            
-            yOffset = 200;
-            parallel.forEach(criterion => {
-                const questionId = `q${criterion.id}`;
-                const xBase = 1200;
-                
-                const qNode = createQuestionNode(criterion);
-                qNode.style.left = xBase + 'px';
-                qNode.style.top = yOffset + 'px';
-                canvas.appendChild(qNode);
-                nodeMap[questionId] = { x: xBase, y: yOffset };
-                
-                const selectedNode = createAnswerNode(criterion, criterion.solution, criterion.priority);
-                selectedNode.style.left = (xBase + 400) + 'px';
-                selectedNode.style.top = yOffset + 'px';
-                canvas.appendChild(selectedNode);
-                const selectedId = `${criterion.id}_selected`;
-                nodeMap[selectedId] = { x: xBase + 400, y: yOffset };
-                
-                setTimeout(() => {
-                    if (nodeMap[questionId] && nodeMap[selectedId]) {
-                        canvas.appendChild(createConnection(nodeMap[questionId], nodeMap[selectedId], 'q-to-answer'));
-                    }
-                }, 50);
-                
-                yOffset += 250;
+                yOffset += 400 + (criterion.alternatives ? criterion.alternatives.length * 200 : 0);
             });
         }
 
         function createQuestionNode(criterion) {
             const div = document.createElement('div');
             div.className = 'node question';
+            
+            const reqNums = criterion.requires && criterion.requires.length > 0 && planData && planData.nodeMapping
+                ? criterion.requires.map(r => Object.keys(planData.nodeMapping).find(k => planData.nodeMapping[k].selected === r)).filter(Boolean)
+                : [];
+            const reqText = reqNums.length > 0 ? `📋 Требует: №${reqNums.join(', №')}` : (criterion.requires && criterion.requires.length > 0 ? `📋 Требует: ${criterion.requires.join(', ')}` : '📋 Не требует зависимостей');
+            const blockText = criterion.blocks && criterion.blocks.length > 0 
+                ? `🚫 Блокирует: №${criterion.blocks.map(b => b.replace('q', '')).join(', №')}` : '🚫 Ничего не блокирует';
+            
             div.innerHTML = `
-                <div class="badge question">❓ №${criterion.id}</div>
+                <div class="badge question">❓ ВОПРОС №${criterion.id}</div>
                 <h3>${criterion.question}</h3>
                 <p>${criterion.title}</p>
+                <div class="info">Week ${criterion.week || '?'} | ${criterion.time}</div>
+                <div class="info">${reqText}</div>
+                <div class="info">${blockText}</div>
             `;
-            
-            div.addEventListener('touchstart', (e) => {
-                e.stopPropagation();
-                div.classList.toggle('active');
-            });
             
             return div;
         }
@@ -396,54 +259,79 @@
         function createAnswerNode(criterion, solution, priority) {
             const div = document.createElement('div');
             div.className = `node ${priority}`;
-            const badgeText = priority === 'critical' ? '🔴 №' + criterion.id :
-                             priority === 'parallel' ? '🟠 №' + criterion.id : '❌ №' + criterion.id;
+            
+            const badgeText = priority === 'critical' ? '🔴 КРИТИЧЕСКИЙ №' + criterion.id :
+                             priority === 'parallel' ? '🟠 ПАРАЛЛЕЛЬНЫЙ №' + criterion.id : '❌ ОТКЛОНЕНО №' + criterion.id;
+            
+            const reqNums = criterion.requires && criterion.requires.length > 0 && planData && planData.nodeMapping
+                ? criterion.requires.map(r => Object.keys(planData.nodeMapping).find(k => planData.nodeMapping[k].selected === r)).filter(Boolean)
+                : [];
+            const reqText = reqNums.length > 0 ? `📋 Требует: №${reqNums.join(', №')}` : (criterion.requires && criterion.requires.length > 0 ? `📋 Требует: ${criterion.requires.join(', ')}` : '📋 Не требует зависимостей');
+            const blockText = criterion.blocks && criterion.blocks.length > 0 
+                ? `🚫 Блокирует: №${criterion.blocks.map(b => b.replace('q', '')).join(', №')}` : '🚫 Ничего не блокирует';
+            
+            const prosText = solution.pros && solution.pros.length > 0
+                ? `✅ Плюсы: ${solution.pros.join('; ')}` : '';
+            const consText = solution.cons && solution.cons.length > 0
+                ? `❌ Минусы: ${solution.cons.join('; ')}` : '';
+            
+            const solutionId = planData.nodeMapping && planData.nodeMapping[criterion.id] ? planData.nodeMapping[criterion.id].selected : null;
+            const compatText = getCompatibility(solutionId, criterion);
             
             div.innerHTML = `
                 <div class="badge ${priority}">${badgeText}</div>
                 <h3>${solution.name}</h3>
                 <p>${solution.description}</p>
+                <div class="info">${reqText}</div>
+                <div class="info">${blockText}</div>
+                <div class="info" style="color: #3fb950;">${prosText}</div>
+                <div class="info" style="color: #f85149;">${consText}</div>
+                <div class="info" style="color: #a371f7;">${compatText}</div>
             `;
             
-            div.addEventListener('touchstart', (e) => {
-                e.stopPropagation();
-                div.classList.toggle('active');
+            return div;
+        }
+        
+        function getCompatibility(solutionId, criterion) {
+            if (!planData.compatibility || !solutionId || !criterion.alternatives) return '';
+            
+            const altIds = planData.nodeMapping && planData.nodeMapping[criterion.id] 
+                ? planData.nodeMapping[criterion.id].alternatives || [] 
+                : [];
+            
+            const results = [];
+            altIds.forEach((altId, idx) => {
+                const key1 = `${solutionId},${altId}`;
+                const key2 = `${altId},${solutionId}`;
+                const compat = planData.compatibility[key1] || planData.compatibility[key2];
+                if (compat && criterion.alternatives[idx]) {
+                    results.push(`${criterion.alternatives[idx].name}: ${compat}`);
+                }
             });
             
-            return div;
+            return results.length > 0 ? `🔀 Совместимость: ${results.join('; ')}` : '';
         }
 
         function createConnection(from, to, type) {
             const line = document.createElement('div');
             line.className = `connection ${type}`;
             
-            const nodes = document.querySelectorAll('.node');
-            let fromNode = null, toNode = null;
-            nodes.forEach(node => {
-                const x = parseInt(node.style.left);
-                const y = parseInt(node.style.top);
-                if (x === from.x && y === from.y) fromNode = node;
-                if (x === to.x && y === to.y) toNode = node;
-            });
+            const nodeWidth = 260;
+            const nodeHeight = 100;
             
-            const fromWidth = fromNode ? fromNode.offsetWidth : 220;
-            const fromHeight = fromNode ? fromNode.offsetHeight : 100;
-            const toWidth = toNode ? toNode.offsetWidth : 220;
-            const toHeight = toNode ? toNode.offsetHeight : 100;
-            
-            const fromCenterX = from.x + fromWidth / 2;
-            const fromCenterY = from.y + fromHeight / 2;
-            const toCenterX = to.x + toWidth / 2;
-            const toCenterY = to.y + toHeight / 2;
+            const fromCenterX = from.x + nodeWidth / 2;
+            const fromCenterY = from.y + nodeHeight / 2;
+            const toCenterX = to.x + nodeWidth / 2;
+            const toCenterY = to.y + nodeHeight / 2;
             
             const fromIntersect = getRectIntersection(
                 fromCenterX, fromCenterY, toCenterX, toCenterY,
-                from.x, from.y, fromWidth, fromHeight
+                from.x, from.y, nodeWidth, nodeHeight
             );
             
             const toIntersect = getRectIntersection(
                 toCenterX, toCenterY, fromCenterX, fromCenterY,
-                to.x, to.y, toWidth, toHeight
+                to.x, to.y, nodeWidth, nodeHeight
             );
             
             const dx = toCenterX - fromCenterX;
@@ -467,14 +355,44 @@
             line.style.width = length + 'px';
             line.style.transform = `rotate(${angle}deg)`;
             
+            line.dataset.fromX = from.x;
+            line.dataset.fromY = from.y;
+            line.dataset.toX = to.x;
+            line.dataset.toY = to.y;
+            
             const arrow = document.createElement('div');
             arrow.className = 'arrow';
             line.appendChild(arrow);
             
+            const highlightNodes = () => {
+                const nodes = document.querySelectorAll('.node');
+                nodes.forEach(node => {
+                    const nodeX = parseInt(node.style.left);
+                    const nodeY = parseInt(node.style.top);
+                    if ((nodeX === from.x && nodeY === from.y) || (nodeX === to.x && nodeY === to.y)) {
+                        node.classList.add('arrow-highlighted');
+                    }
+                });
+            };
+            
+            const unhighlightNodes = () => {
+                document.querySelectorAll('.node.arrow-highlighted').forEach(n => {
+                    n.classList.remove('arrow-highlighted');
+                });
+            };
+            
             line.addEventListener('touchstart', (e) => {
                 e.stopPropagation();
-                document.querySelectorAll('.connection').forEach(c => c.classList.remove('active'));
-                line.classList.add('active');
+                if (line.classList.contains('locked')) {
+                    line.classList.remove('locked');
+                    unhighlightNodes();
+                } else {
+                    document.querySelectorAll('.connection.locked').forEach(c => c.classList.remove('locked'));
+                    unhighlightNodes();
+                    line.classList.add('locked');
+                    line.classList.remove('highlighted');
+                    highlightNodes();
+                }
             });
             
             return line;
@@ -538,25 +456,20 @@
         }
 
         function resetView() {
-            scale = 0.25;
-            translateX = 50;
-            translateY = 50;
+            scale = 0.12;
+            translateX = 100;
+            translateY = 100;
             updateTransform();
         }
 
-        function zoomIn() {
-            scale = Math.min(2, scale * 1.2);
-            updateTransform();
-        }
-
-        function zoomOut() {
-            scale = Math.max(0.1, scale / 1.2);
+        function centerView() {
+            translateX = window.innerWidth / 2 - 800;
+            translateY = 100;
             updateTransform();
         }
 
         const viewport = document.getElementById('viewport');
 
-        // Touch events
         viewport.addEventListener('touchstart', (e) => {
             if (e.touches.length === 1) {
                 isDragging = true;
@@ -588,7 +501,7 @@
                 
                 if (lastTouchDistance > 0) {
                     const delta = distance / lastTouchDistance;
-                    const newScale = Math.max(0.1, Math.min(2, scale * delta));
+                    const newScale = Math.max(0.05, Math.min(2, scale * delta));
                     
                     const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
                     const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
