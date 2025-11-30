@@ -371,8 +371,10 @@
             const div = document.createElement('div');
             div.className = 'node question';
             
-            const reqText = criterion.requires && criterion.requires.length > 0 
-                ? `📋 Требует: ${criterion.requires.join(', ')}` : '';
+            const reqNums = criterion.requires && criterion.requires.length > 0
+                ? criterion.requires.map(r => planData.nodeMapping ? Object.keys(planData.nodeMapping).find(k => planData.nodeMapping[k].selected === r) : r).filter(Boolean)
+                : [];
+            const reqText = reqNums.length > 0 ? `📋 Требует: №${reqNums.join(', №')}` : '';
             const blockText = criterion.blocks && criterion.blocks.length > 0 
                 ? `🚫 Блокирует: №${criterion.blocks.map(b => b.replace('q', '')).join(', №')}` : '';
             
@@ -393,8 +395,10 @@
             const badgeText = priority === 'critical' ? '🔴 КРИТИЧЕСКИЙ №' + criterion.id :
                              priority === 'parallel' ? '🟠 ПАРАЛЛЕЛЬНЫЙ №' + criterion.id : '❌ ОТКЛОНЕНО №' + criterion.id;
             
-            const reqText = criterion.requires && criterion.requires.length > 0 
-                ? `📋 Требует: ${criterion.requires.join(', ')}` : '';
+            const reqNums = criterion.requires && criterion.requires.length > 0
+                ? criterion.requires.map(r => planData.nodeMapping ? Object.keys(planData.nodeMapping).find(k => planData.nodeMapping[k].selected === r) : r).filter(Boolean)
+                : [];
+            const reqText = reqNums.length > 0 ? `📋 Требует: №${reqNums.join(', №')}` : '';
             const blockText = criterion.blocks && criterion.blocks.length > 0 
                 ? `🚫 Блокирует: №${criterion.blocks.map(b => b.replace('q', '')).join(', №')}` : '';
             
@@ -402,6 +406,9 @@
                 ? `✅ Плюсы: ${solution.pros.join('; ')}` : '';
             const consText = solution.cons && solution.cons.length > 0
                 ? `❌ Минусы: ${solution.cons.join('; ')}` : '';
+            
+            const solutionId = planData.nodeMapping && planData.nodeMapping[criterion.id] ? planData.nodeMapping[criterion.id].selected : null;
+            const compatText = getCompatibility(solutionId, criterion);
             
             div.innerHTML = `
                 <div class="badge ${priority}">${badgeText}</div>
@@ -411,8 +418,26 @@
                 <div class="info">${blockText}</div>
                 <div class="info" style="color: #3fb950;">${prosText}</div>
                 <div class="info" style="color: #f85149;">${consText}</div>
+                <div class="info" style="color: #a371f7;">${compatText}</div>
             `;
             return div;
+        }
+        
+        function getCompatibility(solutionId, criterion) {
+            if (!planData.compatibility || !solutionId || !criterion.alternatives) return '';
+            
+            const results = [];
+            criterion.alternatives.forEach(alt => {
+                const altId = alt.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                const key1 = `${solutionId},${altId}`;
+                const key2 = `${altId},${solutionId}`;
+                const compat = planData.compatibility[key1] || planData.compatibility[key2];
+                if (compat) {
+                    results.push(`${alt.name}: ${compat}`);
+                }
+            });
+            
+            return results.length > 0 ? `🔀 Совместимость: ${results.join('; ')}` : '';
         }
 
         function createConnection(from, to, type) {
