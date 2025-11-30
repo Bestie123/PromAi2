@@ -58,22 +58,16 @@
         .node p { font-size: 11px; line-height: 1.3; margin-bottom: 5px; color: #8b949e; }
         .node .info { font-size: 10px; color: #6e7681; margin-top: 4px; }
         
-        /* Стрелки между нодами */
-        .connection {
-            position: absolute; height: 2px; transform-origin: left center; z-index: -1;
+        /* SVG для стрелок */
+        #arrows-svg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1;
         }
-        .connection.q-to-answer { background: #58a6ff; } /* Синяя: вопрос → ответ */
-        .connection.answer-to-q { background: #f79009; height: 3px; } /* Оранжевая: ответ → вопрос */
-        
-        /* Указатель на конце стрелки */
-        .arrow {
-            position: absolute; width: 0; height: 0;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-top: 8px solid #58a6ff; /* Синий по умолчанию */
-            right: -5px; top: -3px;
-        }
-        .connection.answer-to-q .arrow { border-top-color: #f79009; } /* Оранжевый для answer-to-q */
+        .arrow-line { stroke-width: 2; fill: none; }
+        .arrow-line.q-to-answer { stroke: #58a6ff; } /* Синяя: вопрос → ответ */
+        .arrow-line.answer-to-q { stroke: #f79009; stroke-width: 3; } /* Оранжевая: ответ → вопрос */
+        .arrow-head { fill: #58a6ff; }
+        .arrow-head.answer-to-q { fill: #f79009; }
         
         .controls {
             position: fixed; top: 20px; left: 20px; z-index: 1000;
@@ -119,7 +113,9 @@
     </div>
     
     <div id="viewport">
-        <div id="canvas"></div>
+        <div id="canvas">
+            <svg id="arrows-svg"></svg>
+        </div>
     </div>
 
     <script>
@@ -463,40 +459,50 @@
             return results.length > 0 ? `🔀 Совместимость: ${results.join('; ')}` : '';
         }
 
-        // Создание стрелки между нодами
+        // Создание стрелки между нодами (SVG)
         // type: 'q-to-answer' (вопрос→ответ, синяя) или 'answer-to-q' (ответ→вопрос, оранжевая)
         function createConnection(from, to, type) {
-            const line = document.createElement('div');
-            line.className = `connection ${type}`;
+            const svg = document.getElementById('arrows-svg');
             
             let fromX, fromY, toX, toY;
             if (type === 'q-to-answer') {
                 // Вопрос → Ответ: выход из правого края вопроса, вход в левый край ответа
                 fromX = from.x + 260; // правый край вопроса
                 fromY = from.y + 50;  // центр по вертикали
-                toX = to.x;           // левый край ответа
+                toX = to.x - 10;      // левый край ответа (отступ для стрелки)
                 toY = to.y + 50;      // центр по вертикали
             } else {
                 // Ответ → Вопрос: выход из левого края ответа, вход в верхний край вопроса
                 fromX = from.x;       // левый край ответа
                 fromY = from.y + 50;  // центр по вертикали
                 toX = to.x + 130;     // центр вопроса по горизонтали
-                toY = to.y;           // верхний край вопроса
+                toY = to.y - 10;      // верхний край вопроса (отступ для стрелки)
             }
             
-            const dx = toX - fromX;
-            const dy = toY - fromY;
-            const length = Math.sqrt(dx * dx + dy * dy);
-            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            // Линия
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', fromX);
+            line.setAttribute('y1', fromY);
+            line.setAttribute('x2', toX);
+            line.setAttribute('y2', toY);
+            line.setAttribute('class', `arrow-line ${type}`);
+            svg.appendChild(line);
             
-            line.style.left = fromX + 'px';
-            line.style.top = fromY + 'px';
-            line.style.width = length + 'px';
-            line.style.transform = `rotate(${angle}deg)`;
+            // Указатель стрелки
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            const arrowSize = 8;
+            const arrowX = toX;
+            const arrowY = toY;
             
-            const arrow = document.createElement('div');
-            arrow.className = 'arrow';
-            line.appendChild(arrow);
+            const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            const points = [
+                [arrowX, arrowY],
+                [arrowX - arrowSize * Math.cos(angle - Math.PI / 6), arrowY - arrowSize * Math.sin(angle - Math.PI / 6)],
+                [arrowX - arrowSize * Math.cos(angle + Math.PI / 6), arrowY - arrowSize * Math.sin(angle + Math.PI / 6)]
+            ];
+            polygon.setAttribute('points', points.map(p => p.join(',')).join(' '));
+            polygon.setAttribute('class', `arrow-head ${type}`);
+            svg.appendChild(polygon);
             
             return line;
         }
