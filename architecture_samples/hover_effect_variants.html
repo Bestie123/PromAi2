@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Варианты эффектов при наведении</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif;
+            background: #0d1117; 
+            color: #c9d1d9; 
+            padding: 20px;
+        }
+        
+        .variant {
+            margin-bottom: 60px;
+            border: 2px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+            background: #161b22;
+        }
+        
+        h2 {
+            color: #58a6ff;
+            margin-bottom: 15px;
+        }
+        
+        .canvas {
+            position: relative;
+            width: 800px;
+            height: 300px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+        }
+        
+        .node {
+            position: absolute;
+            background: #21262d;
+            border: 2px solid #58a6ff;
+            border-radius: 8px;
+            padding: 14px;
+            width: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        /* Вариант A: Transform scale */
+        .variant-a .node:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.6);
+        }
+        
+        /* Вариант B: Padding increase */
+        .variant-b .node:hover {
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.6);
+        }
+        
+        /* Вариант C: Border width */
+        .variant-c .node:hover {
+            border-width: 4px;
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.6);
+        }
+        
+        /* Вариант D: Box-shadow outline */
+        .variant-d .node:hover {
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.6), 0 0 0 4px rgba(88, 166, 255, 0.3);
+        }
+        
+        /* Вариант E: Font size increase */
+        .variant-e .node:hover {
+            font-size: 18px;
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.6);
+        }
+        
+        /* Вариант F: Width/Height increase */
+        .variant-f .node {
+            width: 150px;
+            height: 80px;
+        }
+        .variant-f .node:hover {
+            width: 165px;
+            height: 88px;
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.6);
+        }
+        
+        .connection {
+            position: absolute;
+            height: 3px;
+            background: #f79009;
+            transform-origin: left center;
+        }
+        
+        .arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 10px solid #f79009;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+<body>
+    <h1>Варианты эффектов при наведении на ноды</h1>
+    
+    <div class="variant variant-a">
+        <h2>Вариант A: Transform Scale (1.1x)</h2>
+        <p>Визуальное увеличение через transform: scale() - не меняет layout</p>
+        <div class="canvas" id="canvas-a"></div>
+    </div>
+    
+    <div class="variant variant-b">
+        <h2>Вариант B: Padding Increase (14px → 20px)</h2>
+        <p>Увеличение внутреннего отступа - меняет offsetWidth/Height</p>
+        <div class="canvas" id="canvas-b"></div>
+    </div>
+    
+    <div class="variant variant-c">
+        <h2>Вариант C: Border Width (2px → 4px)</h2>
+        <p>Увеличение толщины границы - меняет размер</p>
+        <div class="canvas" id="canvas-c"></div>
+    </div>
+    
+    <div class="variant variant-d">
+        <h2>Вариант D: Box-Shadow Outline</h2>
+        <p>Визуальный контур через box-shadow - не меняет размер</p>
+        <div class="canvas" id="canvas-d"></div>
+    </div>
+    
+    <div class="variant variant-e">
+        <h2>Вариант E: Font Size Increase</h2>
+        <p>Увеличение размера шрифта - меняет высоту</p>
+        <div class="canvas" id="canvas-e"></div>
+    </div>
+    
+    <div class="variant variant-f">
+        <h2>Вариант F: Width/Height Increase</h2>
+        <p>Прямое увеличение ширины и высоты - точный контроль</p>
+        <div class="canvas" id="canvas-f"></div>
+    </div>
+
+    <script>
+        const nodes = [
+            { x: 50, y: 100, label: 'Нода 1' },
+            { x: 300, y: 100, label: 'Нода 2' },
+            { x: 550, y: 100, label: 'Нода 3' }
+        ];
+        
+        ['a', 'b', 'c', 'd', 'e', 'f'].forEach(variant => {
+            const canvas = document.getElementById(`canvas-${variant}`);
+            
+            nodes.forEach(node => {
+                const div = document.createElement('div');
+                div.className = 'node';
+                div.style.left = node.x + 'px';
+                div.style.top = node.y + 'px';
+                div.textContent = node.label;
+                canvas.appendChild(div);
+                
+                div.addEventListener('mouseenter', () => updateArrows(canvas));
+                div.addEventListener('mouseleave', () => updateArrows(canvas));
+            });
+            
+            createConnection(canvas, nodes[0], nodes[1]);
+            createConnection(canvas, nodes[1], nodes[2]);
+        });
+        
+        function createConnection(canvas, from, to) {
+            const line = document.createElement('div');
+            line.className = 'connection';
+            line.dataset.fromX = from.x;
+            line.dataset.fromY = from.y;
+            line.dataset.toX = to.x;
+            line.dataset.toY = to.y;
+            
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            line.appendChild(arrow);
+            
+            canvas.appendChild(line);
+            updateArrow(canvas, line);
+        }
+        
+        function updateArrows(canvas) {
+            canvas.querySelectorAll('.connection').forEach(line => {
+                updateArrow(canvas, line);
+            });
+        }
+        
+        function updateArrow(canvas, line) {
+            const fromX = parseInt(line.dataset.fromX);
+            const fromY = parseInt(line.dataset.fromY);
+            const toX = parseInt(line.dataset.toX);
+            const toY = parseInt(line.dataset.toY);
+            
+            let fromNode = null, toNode = null;
+            canvas.querySelectorAll('.node').forEach(node => {
+                const x = parseInt(node.style.left);
+                const y = parseInt(node.style.top);
+                if (x === fromX && y === fromY) fromNode = node;
+                if (x === toX && y === toY) toNode = node;
+            });
+            
+            if (!fromNode || !toNode) return;
+            
+            const fromWidth = fromNode.offsetWidth;
+            const fromHeight = fromNode.offsetHeight;
+            const toWidth = toNode.offsetWidth;
+            const toHeight = toNode.offsetHeight;
+            
+            const fromCenterX = fromX + fromWidth / 2;
+            const fromCenterY = fromY + fromHeight / 2;
+            const toCenterX = toX + toWidth / 2;
+            const toCenterY = toY + toHeight / 2;
+            
+            const fromIntersect = getRectIntersection(
+                fromCenterX, fromCenterY, toCenterX, toCenterY,
+                fromX, fromY, fromWidth, fromHeight
+            );
+            
+            const toIntersect = getRectIntersection(
+                toCenterX, toCenterY, fromCenterX, fromCenterY,
+                toX, toY, toWidth, toHeight
+            );
+            
+            const dx = toCenterX - fromCenterX;
+            const dy = toCenterY - fromCenterY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const dirX = dx / distance;
+            const dirY = dy / distance;
+            
+            const startX = fromIntersect.x + dirX * (-5);
+            const startY = fromIntersect.y + dirY * (-5);
+            const endX = toIntersect.x - dirX * 5;
+            const endY = toIntersect.y - dirY * 5;
+            
+            const finalDx = endX - startX;
+            const finalDy = endY - startY;
+            const length = Math.sqrt(finalDx * finalDx + finalDy * finalDy);
+            const angle = Math.atan2(finalDy, finalDx) * 180 / Math.PI;
+            
+            line.style.left = startX + 'px';
+            line.style.top = startY + 'px';
+            line.style.width = length + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+        }
+        
+        function getRectIntersection(cx, cy, tx, ty, rx, ry, rw, rh) {
+            const dx = tx - cx;
+            const dy = ty - cy;
+            
+            let minT = Infinity;
+            let resultX = cx;
+            let resultY = cy;
+            
+            if (dx !== 0) {
+                const t = (rx + rw - cx) / dx;
+                const y = cy + dy * t;
+                if (t > 0 && t < minT && y >= ry && y <= ry + rh) {
+                    minT = t;
+                    resultX = rx + rw;
+                    resultY = y;
+                }
+            }
+            
+            if (dx !== 0) {
+                const t = (rx - cx) / dx;
+                const y = cy + dy * t;
+                if (t > 0 && t < minT && y >= ry && y <= ry + rh) {
+                    minT = t;
+                    resultX = rx;
+                    resultY = y;
+                }
+            }
+            
+            if (dy !== 0) {
+                const t = (ry + rh - cy) / dy;
+                const x = cx + dx * t;
+                if (t > 0 && t < minT && x >= rx && x <= rx + rw) {
+                    minT = t;
+                    resultX = x;
+                    resultY = ry + rh;
+                }
+            }
+            
+            if (dy !== 0) {
+                const t = (ry - cy) / dy;
+                const x = cx + dx * t;
+                if (t > 0 && t < minT && x >= rx && x <= rx + rw) {
+                    minT = t;
+                    resultX = x;
+                    resultY = ry;
+                }
+            }
+            
+            return { x: resultX, y: resultY };
+        }
+    </script>
+</body>
+</html>
