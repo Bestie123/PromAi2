@@ -26,6 +26,16 @@
             box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease;
         }
         .node:hover { transform: scale(1.05); box-shadow: 0 12px 48px rgba(0,0,0,0.6); z-index: 100; }
+        .node.arrow-highlighted { 
+            transform: scale(1.08); 
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.6); 
+            z-index: 101;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(88, 166, 255, 0.6); }
+            50% { box-shadow: 0 0 30px rgba(88, 166, 255, 0.9); }
+        }
         
         .question { 
             border-color: #58a6ff; border-width: 3px;
@@ -60,9 +70,12 @@
         
         .connection {
             position: absolute; height: 2px; transform-origin: left center; z-index: -1;
+            cursor: pointer; pointer-events: auto; transition: all 0.2s;
         }
         .connection.q-to-answer { background: #58a6ff; }
         .connection.answer-to-q { background: #f79009; height: 3px; }
+        .connection:hover, .connection.highlighted { height: 4px; filter: brightness(1.5); z-index: 10; }
+        .connection.locked { height: 5px; filter: brightness(1.8) drop-shadow(0 0 8px currentColor); z-index: 20; }
         
         .arrow {
             position: absolute; width: 0; height: 0;
@@ -347,9 +360,57 @@
             line.style.width = length + 'px';
             line.style.transform = `rotate(${angle}deg)`;
             
+            line.dataset.fromX = from.x;
+            line.dataset.fromY = from.y;
+            line.dataset.toX = to.x;
+            line.dataset.toY = to.y;
+            
             const arrow = document.createElement('div');
             arrow.className = 'arrow';
             line.appendChild(arrow);
+            
+            const highlightNodes = () => {
+                const nodes = document.querySelectorAll('.node');
+                nodes.forEach(node => {
+                    const nodeX = parseInt(node.style.left);
+                    const nodeY = parseInt(node.style.top);
+                    if ((nodeX === from.x && nodeY === from.y) || (nodeX === to.x && nodeY === to.y)) {
+                        node.classList.add('arrow-highlighted');
+                    }
+                });
+            };
+            
+            const unhighlightNodes = () => {
+                document.querySelectorAll('.node.arrow-highlighted').forEach(n => {
+                    n.classList.remove('arrow-highlighted');
+                });
+            };
+            
+            line.addEventListener('mouseenter', () => {
+                if (!line.classList.contains('locked')) {
+                    line.classList.add('highlighted');
+                }
+            });
+            
+            line.addEventListener('mouseleave', () => {
+                if (!line.classList.contains('locked')) {
+                    line.classList.remove('highlighted');
+                }
+            });
+            
+            line.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (line.classList.contains('locked')) {
+                    line.classList.remove('locked');
+                    unhighlightNodes();
+                } else {
+                    document.querySelectorAll('.connection.locked').forEach(c => c.classList.remove('locked'));
+                    unhighlightNodes();
+                    line.classList.add('locked');
+                    line.classList.remove('highlighted');
+                    highlightNodes();
+                }
+            });
             
             return line;
         }
