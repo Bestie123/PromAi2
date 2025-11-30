@@ -60,18 +60,35 @@
         
         .connection {
             position: absolute; height: 2px; transform-origin: left center; z-index: -1;
+            cursor: pointer; pointer-events: auto; transition: all 0.2s;
         }
         .connection.q-to-answer { background: #58a6ff; }
         .connection.answer-to-q { background: #f79009; height: 3px; }
+        .connection:hover, .connection.highlighted { height: 4px; filter: brightness(1.5); z-index: 10; }
+        .connection.locked { height: 5px; filter: brightness(1.8) drop-shadow(0 0 8px currentColor); z-index: 20; }
         
         .arrow {
             position: absolute; width: 0; height: 0;
             border-left: 5px solid transparent;
             border-right: 5px solid transparent;
             border-top: 8px solid #58a6ff;
-            right: -8px; top: -3px;
+            right: -8px; top: -3px; transition: all 0.2s;
         }
         .connection.answer-to-q .arrow { border-top-color: #f79009; }
+        .connection:hover .arrow, .connection.highlighted .arrow { 
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-top: 12px solid #58a6ff;
+            top: -5px;
+        }
+        .connection.answer-to-q:hover .arrow, .connection.answer-to-q.highlighted .arrow { border-top-color: #f79009; }
+        .connection.locked .arrow {
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 14px solid #58a6ff;
+            top: -6px;
+        }
+        .connection.answer-to-q.locked .arrow { border-top-color: #f79009; }
         
         .controls {
             position: fixed; top: 20px; left: 20px; z-index: 1000;
@@ -495,6 +512,31 @@
             arrow.className = 'arrow';
             line.appendChild(arrow);
             
+            // Обработчики для подсветки и фиксации
+            line.addEventListener('mouseenter', () => {
+                if (!line.classList.contains('locked')) {
+                    line.classList.add('highlighted');
+                }
+            });
+            
+            line.addEventListener('mouseleave', () => {
+                if (!line.classList.contains('locked')) {
+                    line.classList.remove('highlighted');
+                }
+            });
+            
+            line.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (line.classList.contains('locked')) {
+                    line.classList.remove('locked');
+                } else {
+                    // Убираем locked со всех других стрелок
+                    document.querySelectorAll('.connection.locked').forEach(c => c.classList.remove('locked'));
+                    line.classList.add('locked');
+                    line.classList.remove('highlighted');
+                }
+            });
+            
             return line;
         }
 
@@ -536,6 +578,10 @@
 
         viewport.addEventListener('mousedown', (e) => {
             if (e.button === 0) {
+                // Если клик не по стрелке - убираем все locked
+                if (!e.target.closest('.connection')) {
+                    document.querySelectorAll('.connection.locked').forEach(c => c.classList.remove('locked'));
+                }
                 isDragging = true;
                 lastMouseX = e.clientX;
                 lastMouseY = e.clientY;
