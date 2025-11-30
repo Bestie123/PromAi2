@@ -15,6 +15,7 @@ console.log('🔍 Validating development_plan.json...\n');
 // Expected dependencies based on critical paths
 const expectedDeps = {
   // Critical path: №1 → №29 → №2 → №3 → №4 → №13 → №16 → №17
+  1: { requires: [], blocks: ['q29', 'q2', 'q11', 'q26'] },
   29: { requires: ['modular-arch'], blocks: ['q2'] },
   2: { requires: ['modular-arch'], blocks: ['q3', 'q4'] },
   3: { requires: ['all-blocks'], blocks: ['q4', 'q7'] },
