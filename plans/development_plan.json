@@ -76,9 +76,10 @@
               "priority": "critical",
               "requires": [],
               "blocks": [
+                "q29",
                 "q2",
-                "q3",
-                "q29"
+                "q11",
+                "q26"
               ],
               "solution": {
                 "type": "selected",
@@ -115,7 +116,9 @@
               "requires": [
                 "modular-arch"
               ],
-              "blocks": [],
+              "blocks": [
+                "q2"
+              ],
               "solution": {
                 "type": "selected",
                 "name": "Модульный",
@@ -269,7 +272,9 @@
               ],
               "blocks": [
                 "q14",
-                "q16"
+                "q16",
+                "q18",
+                "q25"
               ],
               "solution": {
                 "type": "selected",
@@ -303,8 +308,12 @@
               "week": null,
               "time": "3-4 дня",
               "priority": "critical",
-              "requires": [],
-              "blocks": [],
+              "requires": [
+                "yjs-crdt"
+              ],
+              "blocks": [
+                "q17"
+              ],
               "solution": {
                 "type": "selected",
                 "name": "Только CRDT",
@@ -337,7 +346,9 @@
               "week": null,
               "time": "3-4 дня",
               "priority": "critical",
-              "requires": [],
+              "requires": [
+                "crdt-only"
+              ],
               "blocks": [],
               "solution": {
                 "type": "selected",
@@ -371,7 +382,9 @@
               "week": null,
               "time": "2-3 дня",
               "priority": "critical",
-              "requires": [],
+              "requires": [
+                "yjs-crdt"
+              ],
               "blocks": [],
               "solution": {
                 "type": "selected",
@@ -405,7 +418,9 @@
               "week": null,
               "time": "7-10 дней",
               "priority": "critical",
-              "requires": [],
+              "requires": [
+                "all-blocks"
+              ],
               "blocks": [],
               "solution": {
                 "type": "selected",
@@ -439,8 +454,12 @@
               "week": null,
               "time": "5-7 дней",
               "priority": "critical",
-              "requires": [],
-              "blocks": [],
+              "requires": [
+                "declarative-ui"
+              ],
+              "blocks": [
+                "q5"
+              ],
               "solution": {
                 "type": "selected",
                 "name": "Virtual scrolling",
@@ -473,7 +492,9 @@
               "week": null,
               "time": "5-7 дней",
               "priority": "critical",
-              "requires": [],
+              "requires": [
+                "virtual-scrolling"
+              ],
               "blocks": [],
               "solution": {
                 "type": "selected",
@@ -507,8 +528,14 @@
               "week": null,
               "time": "7-10 дней",
               "priority": "critical",
-              "requires": [],
-              "blocks": [],
+              "requires": [
+                "all-blocks",
+                "modular-arch"
+              ],
+              "blocks": [
+                "q27",
+                "q28"
+              ],
               "solution": {
                 "type": "selected",
                 "name": "Единая система",
@@ -541,7 +568,9 @@
               "week": null,
               "time": "5-7 дней",
               "priority": "critical",
-              "requires": [],
+              "requires": [
+                "plugin-unified"
+              ],
               "blocks": [],
               "solution": {
                 "type": "selected",
@@ -575,7 +604,9 @@
               "week": null,
               "time": "3-4 дня",
               "priority": "critical",
-              "requires": [],
+              "requires": [
+                "plugin-unified"
+              ],
               "blocks": [],
               "solution": {
                 "type": "selected",
@@ -661,8 +692,14 @@
               "week": null,
               "time": "2-3 дня",
               "priority": "parallel",
-              "requires": [],
-              "blocks": [],
+              "requires": [
+                "modular-arch"
+              ],
+              "blocks": [
+                "q21",
+                "q12",
+                "q20"
+              ],
               "solution": {
                 "type": "selected",
                 "name": "Декларативный",
@@ -695,7 +732,9 @@
               "week": null,
               "time": "1-2 дня",
               "priority": "parallel",
-              "requires": [],
+              "requires": [
+                "declarative-ui"
+              ],
               "blocks": [],
               "solution": {
                 "type": "selected",
@@ -729,7 +768,9 @@
               "week": null,
               "time": "1 день",
               "priority": "parallel",
-              "requires": [],
+              "requires": [
+                "declarative-ui"
+              ],
               "blocks": [],
               "solution": {
                 "type": "selected",
@@ -763,7 +804,9 @@
               "week": null,
               "time": "1-2 дня",
               "priority": "parallel",
-              "requires": [],
+              "requires": [
+                "json-storage"
+              ],
               "blocks": [],
               "solution": {
                 "type": "selected",
@@ -842,8 +885,13 @@
               "week": null,
               "time": "2-3 дня",
               "priority": "parallel",
-              "requires": [],
-              "blocks": [],
+              "requires": [
+                "uuid-v4"
+              ],
+              "blocks": [
+                "q8",
+                "q18"
+              ],
               "solution": {
                 "type": "selected",
                 "name": "По UUID",
@@ -876,7 +924,9 @@
               "week": null,
               "time": "2-3 дня",
               "priority": "parallel",
-              "requires": [],
+              "requires": [
+                "refs-uuid"
+              ],
               "blocks": [],
               "solution": {
                 "type": "selected",
@@ -910,7 +960,10 @@
               "week": null,
               "time": "3-4 дня",
               "priority": "parallel",
-              "requires": [],
+              "requires": [
+                "yjs-crdt",
+                "refs-uuid"
+              ],
               "blocks": [],
               "solution": {
                 "type": "selected",
@@ -944,7 +997,9 @@
               "week": null,
               "time": "1-2 дня",
               "priority": "parallel",
-              "requires": [],
+              "requires": [
+                "all-blocks"
+              ],
               "blocks": [],
               "solution": {
                 "type": "selected",
@@ -1012,7 +1067,9 @@
               "week": null,
               "time": "2-3 дня",
               "priority": "parallel",
-              "requires": [],
+              "requires": [
+                "nested-blocks"
+              ],
               "blocks": [],
               "solution": {
                 "type": "selected",
@@ -1046,7 +1103,9 @@
               "week": null,
               "time": "3-4 дня",
               "priority": "parallel",
-              "requires": [],
+              "requires": [
+                "json-storage"
+              ],
               "blocks": [],
               "solution": {
                 "type": "selected",
@@ -1080,7 +1139,9 @@
               "week": null,
               "time": "3-4 дня",
               "priority": "parallel",
-              "requires": [],
+              "requires": [
+                "yjs-crdt"
+              ],
               "blocks": [],
               "solution": {
                 "type": "selected",
